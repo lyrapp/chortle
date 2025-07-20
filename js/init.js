@@ -1,4 +1,4 @@
-/* Chortle v5.0 - App Initialization */
+/* Chortle v5.1 - App Initialization with History */
 
 // Main initialization function
 function initializeChortle() {
@@ -14,6 +14,11 @@ function initializeChortle() {
         // Show warning for unsupported browsers
         if (!browserSupport.mediaRecorder || !browserSupport.getUserMedia) {
             showBrowserWarning();
+        }
+
+        // NEW: Show localStorage warning if not supported
+        if (!browserSupport.localStorage) {
+            showLocalStorageWarning();
         }
         
         // Initialize modules in order
@@ -59,6 +64,14 @@ function initializeModules() {
     
     // Templates (no init needed - just data)
     console.log('✓ Templates loaded:', Object.keys(window.ChortleTemplates.templates).length, 'templates');
+    
+    // NEW: History system (must be before App initialization)
+    if (window.ChortleHistory) {
+        window.ChortleHistory.initialize();
+        console.log('✓ History module initialized');
+    } else {
+        console.warn('⚠️ History module not loaded - history features disabled');
+    }
     
     // App (main logic)
     window.ChortleApp.initialize();
@@ -206,6 +219,40 @@ function showBrowserWarning() {
     }, 10000);
 }
 
+// NEW: Show localStorage warning
+function showLocalStorageWarning() {
+    const warningDiv = document.createElement('div');
+    warningDiv.className = 'localStorage-warning';
+    warningDiv.style.cssText = `
+        position: fixed;
+        top: 40px;
+        left: 0;
+        right: 0;
+        background: #17a2b8;
+        color: white;
+        padding: 10px;
+        text-align: center;
+        z-index: 9998;
+        font-size: 0.9em;
+    `;
+    
+    warningDiv.innerHTML = `
+        💾 History features disabled: Your browser doesn't support local storage.
+        <button onclick="this.parentElement.remove()" style="margin-left: 10px; background: none; border: 1px solid white; color: white; padding: 5px 10px; cursor: pointer;">
+            Dismiss
+        </button>
+    `;
+    
+    document.body.appendChild(warningDiv);
+    
+    // Auto-remove after 8 seconds
+    setTimeout(() => {
+        if (warningDiv.parentElement) {
+            warningDiv.remove();
+        }
+    }, 8000);
+}
+
 // Show initialization error
 function showInitializationError(error) {
     const errorDiv = document.createElement('div');
@@ -258,6 +305,15 @@ function setupDevelopmentHelpers() {
                 console.log('Current state:', window.ChortleState);
                 console.log('Browser support:', window.ChortleApp.checkBrowserSupport());
                 console.log('Performance timings:', window.performance.getEntriesByType('measure'));
+                
+                // NEW: History info
+                if (window.ChortleHistory) {
+                    console.log('History stats:', window.ChortleHistory.getStats());
+                    console.log('Recent history:', window.ChortleHistory.getHistory().slice(0, 3));
+                } else {
+                    console.log('History module not available');
+                }
+                
                 console.groupEnd();
             },
             
@@ -289,6 +345,80 @@ function setupDevelopmentHelpers() {
                 console.log('App reset complete');
             },
             
+            // NEW: History debugging
+            showHistory: function() {
+                if (window.ChortleHistory) {
+                    const history = window.ChortleHistory.getHistory();
+                    console.table(history.map(entry => ({
+                        id: entry.id,
+                        template: entry.templateTitle,
+                        status: entry.status,
+                        created: window.ChortleHistory.formatDate(entry.createdAt)
+                    })));
+                } else {
+                    console.log('History module not available');
+                }
+            },
+            
+            clearHistory: function() {
+                if (window.ChortleHistory) {
+                    window.ChortleHistory.clearHistory();
+                    console.log('History cleared');
+                } else {
+                    console.log('History module not available');
+                }
+            },
+            
+            // Export history for backup
+            exportHistory: function() {
+                if (window.ChortleHistory) {
+                    window.ChortleHistory.exportHistory();
+                } else {
+                    console.log('History module not available');
+                }
+            },
+            
+            // Get detailed statistics
+            getHistoryStats: function() {
+                if (window.ChortleHistory) {
+                    const stats = window.ChortleHistory.getStats();
+                    console.log('History Statistics:', stats);
+                    return stats;
+                } else {
+                    console.log('History module not available');
+                    return null;
+                }
+            },
+            
+            // Generate test chortle and save to history
+            testWithHistory: function(templateKey = 'silly-story') {
+                const testData = {
+                    template: templateKey,
+                    name: 'Debug User',
+                    adjective1: 'fantastic',
+                    animal: 'dragon',
+                    verb1: 'flew',
+                    place: 'Jupiter',
+                    adjective2: 'incredible',
+                    number: 99
+                };
+                
+                const encodedData = window.ChortleUtils.encodeChortleData(testData);
+                const testUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
+                
+                // Save to history
+                if (window.ChortleHistory) {
+                    const chortleId = window.ChortleHistory.saveChortle(testData, testUrl);
+                    console.log('Test chortle saved to history with ID:', chortleId);
+                    console.log('Test URL:', testUrl);
+                } else {
+                    console.log('History not available - only generating URL');
+                    console.log('Test URL:', testUrl);
+                }
+                
+                return testUrl;
+            },
+            
             // Show all available debug functions
             help: function() {
                 console.group('🛠️ Chortle Debug Commands');
@@ -296,7 +426,11 @@ function setupDevelopmentHelpers() {
                 console.log('ChortleDebug.testTemplate() - Generate test chortle');
                 console.log('ChortleDebug.reset() - Reset app state');
                 console.log('ChortleDebug.getState() - Get current app state');
-                console.log('ChortleDebug.generateTestLink() - Generate test link');
+                console.log('ChortleDebug.showHistory() - Display history table');
+                console.log('ChortleDebug.clearHistory() - Clear all history');
+                console.log('ChortleDebug.exportHistory() - Export history as JSON');
+                console.log('ChortleDebug.getHistoryStats() - Get detailed statistics');
+                console.log('ChortleDebug.testWithHistory() - Generate test with history');
                 console.groupEnd();
             },
             
