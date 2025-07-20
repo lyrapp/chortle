@@ -1,4 +1,4 @@
-/* Chortle v5.1 - Mobile Styles with Orange Theme */
+/* Chortle v5.1 - Mobile Styles with Clean Orange Theme */
 
 /* Mobile optimizations */
 @media (max-width: 768px) {
@@ -46,6 +46,8 @@
     .nav-btn {
         width: 100%;
         min-width: auto;
+        padding: 16px 24px;
+        font-size: 1.1em;
     }
 
     /* Share Page Mobile */
@@ -179,6 +181,7 @@
 
     .page {
         padding: 20px;
+        border-radius: 15px;
     }
 
     .completed-madlib {
@@ -205,7 +208,7 @@
     }
 }
 
-/* Touch-friendly interactions */
+/* Touch-friendly interactions with clean theme */
 .template-btn:active, 
 .video-btn:active, 
 .nav-btn:active, 
@@ -252,6 +255,11 @@
         font-size: 1.1em;
         min-height: 100px;
         border-radius: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .template-btn:hover {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
     }
 
     .template-btn-title {
@@ -284,6 +292,7 @@
     .share-instructions {
         padding: 20px;
         border-radius: 12px;
+        background: #F7FAFC;
     }
 
     .share-step {
@@ -340,11 +349,11 @@
 /* High DPI / Retina displays */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
     .template-btn, .video-btn, .nav-btn {
-        border-width: 1px; /* Thinner borders on high-DPI */
+        border-width: 1px; /* Keep clean 1px borders on high-DPI */
     }
     
     .step-input {
-        border-width: 2px;
+        border-width: 1px;
     }
 }
 
@@ -355,20 +364,21 @@
         min-height: 44px; /* iOS recommended minimum */
     }
     
-    /* Better focus states for mobile with orange theme */
+    /* Better focus states for mobile with clean orange theme */
     .step-input:focus,
     .search-input:focus {
-        border-width: 3px;
-        box-shadow: 0 0 0 2px rgba(232, 90, 79, 0.2);
+        border-width: 2px;
+        box-shadow: 0 0 0 2px rgba(232, 90, 79, 0.15);
     }
     
     /* Improved contrast for mobile viewing */
     .template-btn-desc {
-        opacity: 0.9; /* Higher opacity for better readability */
+        opacity: 1; /* Full opacity for better readability */
+        color: #718096;
     }
 }
 
-/* Dark mode support for mobile */
+/* Dark mode support for mobile with clean theme */
 @media (prefers-color-scheme: dark) and (max-width: 768px) {
     .page {
         background: rgba(40, 40, 40, 0.95);
@@ -383,6 +393,12 @@
     
     .template-btn {
         background: rgba(60, 60, 60, 0.8);
+        color: #e0e0e0;
+        border-color: rgba(226, 232, 240, 0.3);
+    }
+    
+    .completed-madlib {
+        background: rgba(50, 50, 50, 0.9);
         color: #e0e0e0;
     }
 }
@@ -414,12 +430,46 @@
 @media (max-width: 768px) {
     .page {
         backdrop-filter: none; /* Remove backdrop filter for better performance */
-        background: rgba(255, 255, 255, 0.98);
+        background: white;
     }
     
     /* Simpler shadows for better performance */
     .template-btn:hover,
     .video-btn:hover {
-        box-shadow: 0 4px 12px rgba(232, 90, 79, 0.15);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* Enhanced mobile focus states */
+@media (max-width: 768px) {
+    .category-btn:focus,
+    .template-btn:focus,
+    .nav-btn:focus,
+    .share-btn:focus {
+        outline: 2px solid #E85A4F;
+        outline-offset: 2px;
+    }
+    
+    .step-input:focus,
+    .search-input:focus {
+        outline: none; /* Already has custom focus styling */
+    }
+}
+
+/* Improved mobile typography */
+@media (max-width: 768px) {
+    .header p {
+        font-size: 1em;
+        line-height: 1.5;
+    }
+    
+    .simple-intro {
+        font-size: 0.95em;
+        line-height: 1.4;
+        padding: 12px;
+    }
+    
+    .template-btn-desc {
+        line-height: 1.5;
     }
 }
