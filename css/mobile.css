@@ -1,4 +1,4 @@
-/* Chortle v5.1 - Mobile Styles */
+/* Chortle v5.1 - Mobile Styles with Orange Theme */
 
 /* Mobile optimizations */
 @media (max-width: 768px) {
@@ -355,11 +355,11 @@
         min-height: 44px; /* iOS recommended minimum */
     }
     
-    /* Better focus states for mobile */
+    /* Better focus states for mobile with orange theme */
     .step-input:focus,
     .search-input:focus {
         border-width: 3px;
-        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        box-shadow: 0 0 0 2px rgba(232, 90, 79, 0.2);
     }
     
     /* Improved contrast for mobile viewing */
@@ -378,7 +378,7 @@
     .step-input, .search-input {
         background: rgba(60, 60, 60, 0.9);
         color: #e0e0e0;
-        border-color: rgba(102, 126, 234, 0.5);
+        border-color: rgba(232, 90, 79, 0.5);
     }
     
     .template-btn {
@@ -420,6 +420,6 @@
     /* Simpler shadows for better performance */
     .template-btn:hover,
     .video-btn:hover {
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        box-shadow: 0 4px 12px rgba(232, 90, 79, 0.15);
     }
 }
