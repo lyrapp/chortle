@@ -1,4 +1,4 @@
-/* Chortle v5.1 - Video Recording & Playback with History Integration */
+/* Chortle v5.1 - Video Recording & Playback (History Disabled) */
 
 window.ChortleVideo = {
     // Initialize video system
@@ -265,7 +265,7 @@ window.ChortleVideo = {
             const encodedLinkData = window.ChortleUtils.encodeChortleData(linkData);
             const playbackUrl = window.ChortleUtils.getBaseUrl() + '#video=' + encodedLinkData;
 
-            // Show success
+            // Show success (no history update in this version)
             this.updateUploadProgress(100, 'Upload complete!');
             document.getElementById('playback-link').value = playbackUrl;
             document.getElementById('upload-progress').style.display = 'none';
