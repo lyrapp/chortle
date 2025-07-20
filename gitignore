@@ -1,0 +1,24 @@
+# Personal notes
+TODO.txt
+notes.md
+my-ideas.txt
+
+# Editor files (VS Code, etc.)
+.vscode/
+.idea/
+
+# Mac/Windows system files  
+.DS_Store
+Thumbs.db
+
+# If you add API keys later
+config-private.js
+secrets.js
+
+# Test recordings (can be large)
+test-videos/
+recordings/
+
+# Backup files
+*.bak
+*.backup
