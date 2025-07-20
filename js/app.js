@@ -1,4 +1,4 @@
-/* Chortle v5.0 - Main App Logic */
+/* Chortle v5.1 - Main App Logic with History Integration */
 
 window.ChortleApp = {
     // Initialize the main app
@@ -11,6 +11,9 @@ window.ChortleApp = {
         this.setupCategoryFilters();
         this.setupSharePage();
         this.setupNavigation();
+        
+        // NEW: Initialize history system
+        window.ChortleHistory.initialize();
         
         console.log('App initialization complete');
     },
@@ -202,6 +205,14 @@ window.ChortleApp = {
                 const shareableUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
                 console.log('Generated URL:', shareableUrl);
 
+                // NEW: Save to history
+                const chortleId = window.ChortleHistory.saveChortle(wizardData, shareableUrl);
+                if (chortleId) {
+                    console.log('Chortle saved to history with ID:', chortleId);
+                    // Store the ID for potential status updates
+                    window.ChortleState.currentChortleId = chortleId;
+                }
+
                 // Display the link
                 document.getElementById('generated-link').value = shareableUrl;
                 document.getElementById('link-section').classList.add('active');
@@ -270,7 +281,9 @@ window.ChortleApp = {
             searchTerm: '',
             currentStep: 0,
             wizardData: {},
-            currentPage: 'template-selection-page'
+            currentPage: 'template-selection-page',
+            // NEW: Reset current chortle ID
+            currentChortleId: null
         });
 
         // Reset search
@@ -334,7 +347,38 @@ window.ChortleApp = {
         const story = window.ChortleTemplates.renderTemplate(template, templateData);
         document.getElementById('completed-story').innerHTML = story;
 
+        // NEW: Store the chortle data for potential history updates
+        window.ChortleState.currentChortleData = data;
+
         console.log('Generated story displayed');
+    },
+
+    // NEW: Update chortle status when video is completed
+    updateChortleStatus: function(chortleData, videoUrl) {
+        if (!chortleData) return;
+
+        // Try to find the chortle in history by matching the data
+        const history = window.ChortleHistory.getHistory();
+        const matchingChortle = history.find(entry => {
+            // Match by template and key fields
+            if (entry.template !== chortleData.template) return false;
+            
+            // Check if all fields match
+            const entryFields = entry.fields || {};
+            const chortleFields = { ...chortleData };
+            delete chortleFields.template;
+            
+            return Object.keys(chortleFields).every(key => {
+                return entryFields[key] === chortleFields[key];
+            });
+        });
+
+        if (matchingChortle) {
+            window.ChortleHistory.markCompleted(matchingChortle.id, videoUrl);
+            console.log('Updated chortle status to completed:', matchingChortle.id);
+        } else {
+            console.log('Could not find matching chortle in history for status update');
+        }
     },
 
     // Show error message
@@ -404,7 +448,9 @@ window.ChortleApp = {
             globalState: window.ChortleState,
             currentPage: window.ChortleState.currentPage,
             templateStats: window.ChortleTemplates.getStats(),
-            wizardState: window.ChortleWizard ? window.ChortleWizard.debug() : null
+            wizardState: window.ChortleWizard ? window.ChortleWizard.debug() : null,
+            // NEW: Include history stats
+            historyStats: window.ChortleHistory.getStats()
         };
     },
 
@@ -425,7 +471,18 @@ window.ChortleApp = {
             wakeLock: 'wakeLock' in navigator,
             vibrate: 'vibrate' in navigator,
             clipboard: !!(navigator.clipboard && navigator.clipboard.writeText),
-            webGL: !!window.WebGLRenderingContext
+            webGL: !!window.WebGLRenderingContext,
+            // NEW: Check localStorage support
+            localStorage: (() => {
+                try {
+                    const test = 'test';
+                    localStorage.setItem(test, test);
+                    localStorage.removeItem(test);
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            })()
         };
 
         console.log('Browser support check:', features);
@@ -433,6 +490,10 @@ window.ChortleApp = {
         // Warn about missing critical features
         if (!features.mediaRecorder || !features.getUserMedia) {
             console.warn('Video recording not supported in this browser');
+        }
+
+        if (!features.localStorage) {
+            console.warn('localStorage not supported - history will not be saved');
         }
 
         return features;
