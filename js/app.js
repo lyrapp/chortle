@@ -1,4 +1,4 @@
-/* Chortle v5.1 - Main App Logic */
+/* Chortle v5.1 - Main App Logic (History Disabled) */
 
 window.ChortleApp = {
     // Initialize the main app
@@ -202,7 +202,7 @@ window.ChortleApp = {
                 const shareableUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
                 console.log('Generated URL:', shareableUrl);
 
-                // Display the link
+                // Display the link (no history saving in this version)
                 document.getElementById('generated-link').value = shareableUrl;
                 document.getElementById('link-section').classList.add('active');
 
@@ -334,6 +334,9 @@ window.ChortleApp = {
         const story = window.ChortleTemplates.renderTemplate(template, templateData);
         document.getElementById('completed-story').innerHTML = story;
 
+        // Store the chortle data for reference
+        window.ChortleState.currentChortleData = data;
+
         console.log('Generated story displayed');
     },
 
@@ -404,7 +407,8 @@ window.ChortleApp = {
             globalState: window.ChortleState,
             currentPage: window.ChortleState.currentPage,
             templateStats: window.ChortleTemplates.getStats(),
-            wizardState: window.ChortleWizard ? window.ChortleWizard.debug() : null
+            wizardState: window.ChortleWizard ? window.ChortleWizard.debug() : null,
+            historyNote: 'History feature disabled in this version'
         };
     },
 
@@ -425,7 +429,17 @@ window.ChortleApp = {
             wakeLock: 'wakeLock' in navigator,
             vibrate: 'vibrate' in navigator,
             clipboard: !!(navigator.clipboard && navigator.clipboard.writeText),
-            webGL: !!window.WebGLRenderingContext
+            webGL: !!window.WebGLRenderingContext,
+            localStorage: (() => {
+                try {
+                    const test = 'test';
+                    localStorage.setItem(test, test);
+                    localStorage.removeItem(test);
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            })()
         };
 
         console.log('Browser support check:', features);
@@ -433,6 +447,11 @@ window.ChortleApp = {
         // Warn about missing critical features
         if (!features.mediaRecorder || !features.getUserMedia) {
             console.warn('Video recording not supported in this browser');
+        }
+
+        // Note: localStorage check kept for compatibility but no warning shown
+        if (!features.localStorage) {
+            console.log('localStorage not supported - history feature already disabled');
         }
 
         return features;
