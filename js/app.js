@@ -11,6 +11,7 @@ window.ChortleApp = {
         this.setupCategoryFilters();
         this.setupSharePage();
         this.setupNavigation();
+        this.setupHistoryPage(); // NEW: Setup history functionality
         
         // NEW: Initialize history system
         window.ChortleHistory.initialize();
@@ -253,11 +254,233 @@ window.ChortleApp = {
 
     // Setup navigation buttons
     setupNavigation: function() {
+        // View history button
+        const viewHistoryBtn = document.getElementById('view-history-btn');
+        if (viewHistoryBtn) {
+            viewHistoryBtn.addEventListener('click', () => this.showHistoryPage());
+        }
+
         // Create new buttons
-        const createNewBtns = document.querySelectorAll('#create-new, #create-another');
+        const createNewBtns = document.querySelectorAll('#create-new, #create-another, #create-first-chortle, #back-to-templates');
         createNewBtns.forEach(btn => {
             btn.addEventListener('click', () => this.createNewChortle());
         });
+    },
+
+    // NEW: Setup history page functionality
+    setupHistoryPage: function() {
+        // Clear history button
+        const clearHistoryBtn = document.getElementById('clear-history-btn');
+        if (clearHistoryBtn) {
+            clearHistoryBtn.addEventListener('click', () => this.clearHistory());
+        }
+
+        // Export history button
+        const exportHistoryBtn = document.getElementById('export-history-btn');
+        if (exportHistoryBtn) {
+            exportHistoryBtn.addEventListener('click', () => {
+                if (window.ChortleHistory) {
+                    window.ChortleHistory.exportHistory();
+                }
+            });
+        }
+    },
+
+    // NEW: Show history page
+    showHistoryPage: function() {
+        // Update URL hash for navigation
+        window.location.hash = '#history';
+        
+        this.showPage('history-page');
+        this.populateHistoryPage();
+    },
+
+    // NEW: Populate history page with data
+    populateHistoryPage: function() {
+        if (!window.ChortleHistory) {
+            document.getElementById('history-list').innerHTML = 
+                '<p style="text-align: center; color: #666;">History not available in this browser.</p>';
+            return;
+        }
+
+        const history = window.ChortleHistory.getHistory();
+        const stats = window.ChortleHistory.getStats();
+        
+        // Update stats
+        document.getElementById('total-chortles').textContent = stats.total;
+        document.getElementById('pending-chortles').textContent = stats.pending;
+        document.getElementById('completed-chortles').textContent = stats.completed;
+
+        // Show/hide empty state
+        const historyList = document.getElementById('history-list');
+        const historyEmpty = document.getElementById('history-empty');
+        
+        if (history.length === 0) {
+            historyList.style.display = 'none';
+            historyEmpty.style.display = 'block';
+            return;
+        }
+
+        historyList.style.display = 'block';
+        historyEmpty.style.display = 'none';
+
+        // Populate history list
+        historyList.innerHTML = '';
+        
+        history.forEach(entry => {
+            const historyItem = this.createHistoryItem(entry);
+            historyList.appendChild(historyItem);
+        });
+    },
+
+    // NEW: Create history item element
+    createHistoryItem: function(entry) {
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        
+        const statusClass = `status-${entry.status}`;
+        const statusText = window.ChortleHistory.getStatusText(entry.status);
+        const statusEmoji = window.ChortleHistory.getStatusEmoji(entry.status);
+        const timeText = window.ChortleHistory.formatDate(entry.createdAt);
+        
+        item.innerHTML = `
+            <div class="history-item-header">
+                <div class="history-item-title">${entry.templateTitle}</div>
+                <div class="history-item-status ${statusClass}">
+                    ${statusEmoji} ${statusText}
+                </div>
+            </div>
+            <div class="history-item-details">
+                Created ${timeText} • ${Object.keys(entry.fields || {}).length} fields filled
+            </div>
+            <div class="history-item-actions">
+                <button class="history-action-btn btn-copy" data-url="${entry.shareUrl}">
+                    📋 Copy Link
+                </button>
+                ${entry.videoUrl ? `
+                    <button class="history-action-btn btn-watch" data-video-url="${entry.videoUrl}">
+                        🎬 Watch Video
+                    </button>
+                ` : ''}
+                <button class="history-action-btn btn-delete" data-id="${entry.id}">
+                    🗑️ Delete
+                </button>
+            </div>
+        `;
+
+        // Add event listeners
+        this.setupHistoryItemEvents(item, entry);
+        
+        return item;
+    },
+
+    // NEW: Setup event listeners for history item
+    setupHistoryItemEvents: function(item, entry) {
+        // Copy link button
+        const copyBtn = item.querySelector('.btn-copy');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', (e) => {
+                const url = e.target.dataset.url;
+                this.copyHistoryLink(url, copyBtn);
+            });
+        }
+
+        // Watch video button
+        const watchBtn = item.querySelector('.btn-watch');
+        if (watchBtn) {
+            watchBtn.addEventListener('click', (e) => {
+                const videoUrl = e.target.dataset.videoUrl;
+                window.open(videoUrl, '_blank');
+            });
+        }
+
+        // Delete button
+        const deleteBtn = item.querySelector('.btn-delete');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', (e) => {
+                const id = e.target.dataset.id;
+                this.deleteHistoryItem(id, item);
+            });
+        }
+    },
+
+    // NEW: Copy history link
+    copyHistoryLink: function(url, button) {
+        window.ChortleUtils.copyToClipboard(url).then(success => {
+            if (success) {
+                const originalText = button.textContent;
+                button.textContent = '✅ Copied!';
+                button.style.background = '#28a745';
+
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '';
+                }, 2000);
+            } else {
+                alert('Copy failed. Please manually copy this link:\n\n' + url);
+            }
+        });
+    },
+
+    // NEW: Delete history item
+    deleteHistoryItem: function(id, itemElement) {
+        if (confirm('Delete this Chortle from your history? This cannot be undone.')) {
+            if (window.ChortleHistory.deleteChortle(id)) {
+                itemElement.remove();
+                
+                // Update stats and check if empty
+                this.populateHistoryPage();
+                
+                this.showSuccess('Chortle deleted from history');
+            } else {
+                this.showError('Failed to delete Chortle');
+            }
+        }
+    },
+
+    // NEW: Clear all history
+    clearHistory: function() {
+        const confirmText = 'Delete ALL Chortles from your history? This cannot be undone.\n\nType "DELETE" to confirm:';
+        const confirmation = prompt(confirmText);
+        
+        if (confirmation === 'DELETE') {
+            if (window.ChortleHistory.clearHistory()) {
+                this.populateHistoryPage();
+                this.showSuccess('All history cleared');
+            } else {
+                this.showError('Failed to clear history');
+            }
+        }
+    },
+
+    // NEW: Show success message
+    showSuccess: function(message) {
+        // Remove existing messages
+        document.querySelectorAll('.success-message').forEach(el => el.remove());
+
+        // Create success element
+        const successDiv = document.createElement('div');
+        successDiv.className = 'success-message';
+        successDiv.style.cssText = `
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #155724;
+        `;
+        successDiv.innerHTML = `<strong>Success:</strong> ${message}`;
+
+        // Add to current page
+        const activePage = document.querySelector('.page.active');
+        if (activePage) {
+            activePage.appendChild(successDiv);
+        }
+
+        // Auto-remove after timeout
+        setTimeout(() => {
+            successDiv.remove();
+        }, 3000);
     },
 
     // Create new chortle (reset app)
@@ -408,7 +631,7 @@ window.ChortleApp = {
         window.ChortleUtils.logError(new Error(message), 'UI');
     },
 
-    // Check for incoming links (chortle or video)
+    // Check for incoming links (chortle, video, or history)
     checkForIncomingLinks: function() {
         const hash = window.location.hash;
         console.log('Checking for incoming links, hash:', hash);
@@ -437,6 +660,10 @@ window.ChortleApp = {
                 this.showError('Invalid video link. Please check the link and try again.');
                 return false;
             }
+        } else if (hash === '#history') {
+            console.log('Showing history page');
+            this.showHistoryPage();
+            return true;
         }
 
         return false;
