@@ -66,6 +66,19 @@
             font-weight: 300;
         }
 
+        /* Version info */
+        .version-info {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            color: #666;
+            z-index: 1000;
+        }
+
         /* Simple intro */
         .simple-intro {
             text-align: center;
@@ -800,6 +813,7 @@
     </style>
 </head>
 <body>
+    <div class="version-info">v4.0</div>
     <div class="container">
         <div class="header">
             <h1>🎭 Chortle</h1>
@@ -1826,7 +1840,7 @@
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, initializing Chortle'); // Debug log
+            console.log('DOM loaded, initializing Chortle v4.0'); // Debug log
             
             // Test link generation functionality
             function testLinkGeneration() {
