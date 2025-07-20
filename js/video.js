@@ -1,4 +1,4 @@
-/* Chortle v5.0 - Video Recording & Playback */
+/* Chortle v5.1 - Video Recording & Playback with History Integration */
 
 window.ChortleVideo = {
     // Initialize video system
@@ -264,6 +264,11 @@ window.ChortleVideo = {
 
             const encodedLinkData = window.ChortleUtils.encodeChortleData(linkData);
             const playbackUrl = window.ChortleUtils.getBaseUrl() + '#video=' + encodedLinkData;
+
+            // NEW: Update chortle status in history
+            if (chortleData && window.ChortleApp.updateChortleStatus) {
+                window.ChortleApp.updateChortleStatus(chortleData, playbackUrl);
+            }
 
             // Show success
             this.updateUploadProgress(100, 'Upload complete!');
