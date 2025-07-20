@@ -1,0 +1,248 @@
+/* Chortle v5.0 - Configuration & Global State */
+
+// API Configuration
+window.ChortleConfig = {
+    // api.video configuration
+    API_VIDEO: {
+        apiKey: '5KgKV3AkcCXrvHhs2FnSZrTVyrvwyC5K11qNnNvC70Z',
+        environment: 'sandbox',
+        uploadEndpoint: 'https://ws.api.video/upload'
+    },
+    
+    // App Settings
+    APP: {
+        maxRecordingTime: 30, // seconds
+        version: '5.0',
+        maxFileSize: 50 * 1024 * 1024, // 50MB
+        supportedVideoTypes: ['video/webm', 'video/mp4']
+    },
+    
+    // UI Configuration
+    UI: {
+        animationDuration: 300,
+        autoScrollDelay: 300,
+        copySuccessTimeout: 2000,
+        errorDisplayTimeout: 8000
+    }
+};
+
+// Global App State
+window.ChortleState = {
+    // Template system
+    currentTemplate: null,
+    currentCategory: 'all',
+    searchTerm: '',
+    
+    // Wizard system
+    currentStep: 0,
+    wizardData: {},
+    
+    // Video system
+    mediaRecorder: null,
+    recordedChunks: [],
+    stream: null,
+    recordingTimer: null,
+    recordingSeconds: 0,
+    
+    // UI state
+    isLoading: false,
+    currentPage: 'template-selection-page'
+};
+
+// Utility Functions
+window.ChortleUtils = {
+    // Generate unique IDs
+    generateId: function() {
+        return 'chortle_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    },
+    
+    // Device detection
+    isMobile: function() {
+        return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    },
+    
+    // Screen size detection
+    isSmallScreen: function() {
+        return window.innerWidth <= 768;
+    },
+    
+    // URL handling for iframe context
+    getBaseUrl: function() {
+        if (window.location.origin === 'null' || window.location.origin.includes('srcdoc')) {
+            // We're in an iframe/artifact context, use relative URL
+            return window.location.href.split('#')[0];
+        } else {
+            // Normal context
+            return window.location.origin + window.location.pathname;
+        }
+    },
+    
+    // Copy to clipboard with fallback
+    copyToClipboard: async function(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            try {
+                await navigator.clipboard.writeText(text);
+                return true;
+            } catch (err) {
+                console.warn('Clipboard API failed, using fallback');
+                return this.fallbackCopy(text);
+            }
+        } else {
+            return this.fallbackCopy(text);
+        }
+    },
+    
+    // Fallback copy method
+    fallbackCopy: function(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            return true;
+        } catch (err) {
+            document.body.removeChild(textArea);
+            return false;
+        }
+    },
+    
+    // Auto-scroll for mobile
+    scrollToElement: function(elementId, delay = 300) {
+        if (this.isSmallScreen()) {
+            setTimeout(() => {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
+                }
+            }, delay);
+        }
+    },
+    
+    // Haptic feedback
+    vibrate: function(pattern) {
+        if ('vibrate' in navigator) {
+            navigator.vibrate(pattern);
+        }
+    },
+    
+    // Wake lock for recording
+    requestWakeLock: async function() {
+        if ('wakeLock' in navigator) {
+            try {
+                const wakeLock = await navigator.wakeLock.request('screen');
+                return wakeLock;
+            } catch (err) {
+                console.warn('Wake lock failed:', err);
+                return null;
+            }
+        }
+        return null;
+    },
+    
+    // Error logging
+    logError: function(error, context = '') {
+        console.error(`Chortle Error ${context}:`, error);
+        // In production, you'd send this to your error tracking service
+    },
+    
+    // Performance timing
+    startTimer: function(name) {
+        if (window.performance && window.performance.mark) {
+            window.performance.mark(`chortle-${name}-start`);
+        }
+    },
+    
+    endTimer: function(name) {
+        if (window.performance && window.performance.mark && window.performance.measure) {
+            window.performance.mark(`chortle-${name}-end`);
+            window.performance.measure(`chortle-${name}`, `chortle-${name}-start`, `chortle-${name}-end`);
+        }
+    },
+    
+    // Data validation
+    validateChortleData: function(data) {
+        if (!data || typeof data !== 'object') return false;
+        if (!data.template || typeof data.template !== 'string') return false;
+        
+        // Check if template exists
+        if (!window.ChortleTemplates || !window.ChortleTemplates.templates[data.template]) {
+            return false;
+        }
+        
+        return true;
+    },
+    
+    // URL encoding/decoding
+    encodeChortleData: function(data) {
+        try {
+            return btoa(JSON.stringify(data));
+        } catch (error) {
+            this.logError(error, 'encoding chortle data');
+            return null;
+        }
+    },
+    
+    decodeChortleData: function(encodedData) {
+        try {
+            return JSON.parse(atob(encodedData));
+        } catch (error) {
+            this.logError(error, 'decoding chortle data');
+            return null;
+        }
+    }
+};
+
+// Debug helpers (only in development)
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    window.ChortleDebug = {
+        getState: () => window.ChortleState,
+        getConfig: () => window.ChortleConfig,
+        generateTestLink: () => {
+            const testData = {
+                template: 'silly-story',
+                name: 'Bob',
+                adjective1: 'sparkly',
+                animal: 'giraffe',
+                verb1: 'danced',
+                place: 'Mars',
+                adjective2: 'magnificent',
+                number: 47
+            };
+            
+            const encodedData = window.ChortleUtils.encodeChortleData(testData);
+            const testUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
+            
+            console.log('Test URL generated:', testUrl);
+            return testUrl;
+        },
+        clearState: () => {
+            // Reset state for testing
+            Object.assign(window.ChortleState, {
+                currentTemplate: null,
+                currentCategory: 'all',
+                searchTerm: '',
+                currentStep: 0,
+                wizardData: {},
+                mediaRecorder: null,
+                recordedChunks: [],
+                stream: null,
+                recordingTimer: null,
+                recordingSeconds: 0,
+                isLoading: false,
+                currentPage: 'template-selection-page'
+            });
+        }
+    };
+    
+    console.log('Chortle Debug mode enabled. Use ChortleDebug.generateTestLink() to create test links.');
+}
