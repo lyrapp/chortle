@@ -14,12 +14,6 @@
         padding: 25px;
     }
 
-    .nav-btn-header {
-        padding: 12px 20px;
-        font-size: 1em;
-        min-height: 44px;
-    }
-
     /* Template Selection Mobile */
     .template-categories {
         justify-content: flex-start;
@@ -32,56 +26,6 @@
         flex-shrink: 0;
         padding: 12px 20px;
         font-size: 1em;
-    }
-
-    /* History Page Mobile */
-    .history-stats {
-        gap: 10px;
-    }
-
-    .stat-item {
-        padding: 15px 10px;
-    }
-
-    .stat-number {
-        font-size: 1.5em;
-    }
-
-    .stat-label {
-        font-size: 0.8em;
-    }
-
-    .history-controls {
-        flex-direction: column;
-        gap: 10px;
-        align-items: stretch;
-    }
-
-    .history-btn {
-        padding: 15px 20px;
-        font-size: 1em;
-        min-height: 50px;
-    }
-
-    .history-item {
-        padding: 20px 15px;
-    }
-
-    .history-item-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    .history-item-actions {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .history-action-btn {
-        padding: 12px 16px;
-        font-size: 1em;
-        min-height: 45px;
     }
 
     /* Wizard Mobile */
@@ -259,30 +203,6 @@
     .step-question {
         font-size: 1.1em;
     }
-
-    /* History Mobile - Very Small */
-    .history-stats {
-        grid-template-columns: 1fr;
-        gap: 8px;
-    }
-
-    .stat-item {
-        padding: 12px;
-    }
-
-    .stat-number {
-        font-size: 1.3em;
-    }
-
-    .history-item {
-        padding: 15px;
-    }
-
-    .history-action-btn {
-        padding: 10px 14px;
-        font-size: 0.9em;
-        min-height: 42px;
-    }
 }
 
 /* Touch-friendly interactions */
@@ -290,10 +210,7 @@
 .video-btn:active, 
 .nav-btn:active, 
 .share-btn:active, 
-.copy-btn:active,
-.history-action-btn:active,
-.history-btn:active,
-.nav-btn-header:active {
+.copy-btn:active {
     transform: translateY(1px) scale(0.98);
     transition: transform 0.1s ease;
 }
@@ -380,15 +297,6 @@
         font-size: 0.85em;
         margin-right: 12px;
     }
-
-    /* History header mobile */
-    .history-header h2 {
-        font-size: 1.6em;
-    }
-
-    .history-header p {
-        font-size: 0.95em;
-    }
 }
 
 /* Landscape orientation adjustments */
@@ -427,40 +335,11 @@
     .step-navigation {
         margin-top: 20px;
     }
-
-    /* History in landscape */
-    .history-stats {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-    }
-
-    .stat-item {
-        padding: 10px 8px;
-    }
-
-    .stat-number {
-        font-size: 1.2em;
-    }
-
-    .stat-label {
-        font-size: 0.7em;
-    }
-
-    .history-controls {
-        flex-direction: row;
-        gap: 8px;
-    }
-
-    .history-btn {
-        padding: 8px 12px;
-        font-size: 0.8em;
-        min-height: 36px;
-    }
 }
 
 /* High DPI / Retina displays */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-    .template-btn, .video-btn, .nav-btn, .history-action-btn {
+    .template-btn, .video-btn, .nav-btn {
         border-width: 1px; /* Thinner borders on high-DPI */
     }
     
@@ -472,7 +351,7 @@
 /* Accessibility improvements for mobile */
 @media (max-width: 768px) {
     /* Larger minimum touch targets */
-    button, input, .template-btn, .category-btn, .history-action-btn {
+    button, input, .template-btn, .category-btn {
         min-height: 44px; /* iOS recommended minimum */
     }
     
@@ -486,10 +365,6 @@
     /* Improved contrast for mobile viewing */
     .template-btn-desc {
         opacity: 0.9; /* Higher opacity for better readability */
-    }
-
-    .history-item-details {
-        opacity: 0.9;
     }
 }
 
@@ -506,12 +381,7 @@
         border-color: rgba(102, 126, 234, 0.5);
     }
     
-    .template-btn, .history-item {
-        background: rgba(60, 60, 60, 0.8);
-        color: #e0e0e0;
-    }
-
-    .stat-item {
+    .template-btn {
         background: rgba(60, 60, 60, 0.8);
         color: #e0e0e0;
     }
@@ -521,19 +391,13 @@
 @media (prefers-reduced-motion: reduce) {
     .template-btn:hover,
     .video-btn:hover,
-    .nav-btn:hover,
-    .history-action-btn:hover,
-    .history-btn:hover,
-    .nav-btn-header:hover {
+    .nav-btn:hover {
         transform: none;
     }
     
     .template-btn:active,
     .video-btn:active,
-    .nav-btn:active,
-    .history-action-btn:active,
-    .history-btn:active,
-    .nav-btn-header:active {
+    .nav-btn:active {
         transform: scale(0.98);
     }
     
@@ -543,10 +407,6 @@
     
     .wizard-step {
         animation: none;
-    }
-
-    .history-item:hover {
-        transform: none;
     }
 }
 
@@ -559,8 +419,7 @@
     
     /* Simpler shadows for better performance */
     .template-btn:hover,
-    .video-btn:hover,
-    .history-item:hover {
+    .video-btn:hover {
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
     }
 }
