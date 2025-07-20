@@ -263,10 +263,7 @@ function setupDevelopmentHelpers() {
                 console.log('Current state:', window.ChortleState);
                 console.log('Browser support:', window.ChortleApp.checkBrowserSupport());
                 console.log('Performance timings:', window.performance.getEntriesByType('measure'));
-                
-                // History feature disabled
                 console.log('History: disabled in this version');
-                
                 console.groupEnd();
             },
             
@@ -323,3 +320,36 @@ function setupDevelopmentHelpers() {
                 console.log('History feature is disabled - using regular test instead');
                 return this.testTemplate(templateKey);
             },
+            
+            // Show all available debug functions
+            help: function() {
+                console.group('🛠️ Chortle Debug Commands');
+                console.log('ChortleDebug.logInitialization() - Show initialization info');
+                console.log('ChortleDebug.testTemplate() - Generate test chortle');
+                console.log('ChortleDebug.reset() - Reset app state');
+                console.log('ChortleDebug.getState() - Get current app state');
+                console.log('Note: History features disabled in this version');
+                console.groupEnd();
+            },
+            
+            getState: () => window.ChortleApp.getState()
+        });
+        
+        console.log('🛠️ Development helpers loaded. Use ChortleDebug.help() for commands.');
+    }
+}
+
+// Wait for DOM to be ready, then initialize
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeChortle();
+        setupDevelopmentHelpers();
+    });
+} else {
+    // DOM is already ready
+    initializeChortle();
+    setupDevelopmentHelpers();
+}
+
+// Prevent multiple initialization
+window.ChortleInitialized = true;
