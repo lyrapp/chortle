@@ -14,6 +14,9 @@
         <div class="header">
             <h1>🎭 Chortle</h1>
             <p>Create hilarious Mad Libs and share the fun!</p>
+            <div class="header-nav">
+                <button id="view-history-btn" class="nav-btn-header">📚 View History</button>
+            </div>
         </div>
         
         <div class="simple-intro">
@@ -98,6 +101,46 @@
 
                 <button id="create-new-chortle" class="create-new-btn" style="margin-top: 30px;">Create Another Chortle</button>
             </div>
+        </div>
+
+        <!-- NEW: History Page -->
+        <div id="history-page" class="page">
+            <div class="history-header">
+                <h2>Your Chortle History</h2>
+                <p>Keep track of all the Chortles you've created and shared</p>
+            </div>
+
+            <div class="history-stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="total-chortles">0</div>
+                    <div class="stat-label">Total Created</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="pending-chortles">0</div>
+                    <div class="stat-label">Waiting for Video</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="completed-chortles">0</div>
+                    <div class="stat-label">Videos Received</div>
+                </div>
+            </div>
+
+            <div class="history-controls">
+                <button id="clear-history-btn" class="history-btn secondary">Clear All History</button>
+                <button id="export-history-btn" class="history-btn secondary">Export Data</button>
+            </div>
+
+            <div id="history-list" class="history-list">
+                <!-- History entries will be populated here -->
+            </div>
+
+            <div id="history-empty" class="history-empty" style="display: none;">
+                <h4>📝 No Chortles Yet</h4>
+                <p>Create your first Chortle to see it here!</p>
+                <button id="create-first-chortle" class="create-new-btn">Create Your First Chortle</button>
+            </div>
+
+            <button id="back-to-templates" class="create-new-btn">Create New Chortle</button>
         </div>
 
         <!-- Reading View (for people who click Chortle links) -->
