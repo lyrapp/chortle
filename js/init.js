@@ -1,4 +1,4 @@
-/* Chortle v5.1 - App Initialization with History */
+/* Chortle v5.1 - App Initialization with Conditional History */
 
 // Main initialization function
 function initializeChortle() {
@@ -16,10 +16,7 @@ function initializeChortle() {
             showBrowserWarning();
         }
 
-        // NEW: Show localStorage warning if not supported
-        if (!browserSupport.localStorage) {
-            showLocalStorageWarning();
-        }
+        // History feature disabled in this version
         
         // Initialize modules in order
         initializeModules();
@@ -65,13 +62,8 @@ function initializeModules() {
     // Templates (no init needed - just data)
     console.log('✓ Templates loaded:', Object.keys(window.ChortleTemplates.templates).length, 'templates');
     
-    // NEW: History system (must be before App initialization)
-    if (window.ChortleHistory) {
-        window.ChortleHistory.initialize();
-        console.log('✓ History module initialized');
-    } else {
-        console.warn('⚠️ History module not loaded - history features disabled');
-    }
+    // History feature disabled in this version
+    console.log('⚠️ History feature disabled in this version');
     
     // App (main logic)
     window.ChortleApp.initialize();
@@ -219,40 +211,6 @@ function showBrowserWarning() {
     }, 10000);
 }
 
-// NEW: Show localStorage warning
-function showLocalStorageWarning() {
-    const warningDiv = document.createElement('div');
-    warningDiv.className = 'localStorage-warning';
-    warningDiv.style.cssText = `
-        position: fixed;
-        top: 40px;
-        left: 0;
-        right: 0;
-        background: #17a2b8;
-        color: white;
-        padding: 10px;
-        text-align: center;
-        z-index: 9998;
-        font-size: 0.9em;
-    `;
-    
-    warningDiv.innerHTML = `
-        💾 History features disabled: Your browser doesn't support local storage.
-        <button onclick="this.parentElement.remove()" style="margin-left: 10px; background: none; border: 1px solid white; color: white; padding: 5px 10px; cursor: pointer;">
-            Dismiss
-        </button>
-    `;
-    
-    document.body.appendChild(warningDiv);
-    
-    // Auto-remove after 8 seconds
-    setTimeout(() => {
-        if (warningDiv.parentElement) {
-            warningDiv.remove();
-        }
-    }, 8000);
-}
-
 // Show initialization error
 function showInitializationError(error) {
     const errorDiv = document.createElement('div');
@@ -306,13 +264,8 @@ function setupDevelopmentHelpers() {
                 console.log('Browser support:', window.ChortleApp.checkBrowserSupport());
                 console.log('Performance timings:', window.performance.getEntriesByType('measure'));
                 
-                // NEW: History info
-                if (window.ChortleHistory) {
-                    console.log('History stats:', window.ChortleHistory.getStats());
-                    console.log('Recent history:', window.ChortleHistory.getHistory().slice(0, 3));
-                } else {
-                    console.log('History module not available');
-                }
+                // History feature disabled
+                console.log('History: disabled in this version');
                 
                 console.groupEnd();
             },
@@ -345,113 +298,28 @@ function setupDevelopmentHelpers() {
                 console.log('App reset complete');
             },
             
-            // NEW: History debugging
+            // History debugging (disabled)
             showHistory: function() {
-                if (window.ChortleHistory) {
-                    const history = window.ChortleHistory.getHistory();
-                    console.table(history.map(entry => ({
-                        id: entry.id,
-                        template: entry.templateTitle,
-                        status: entry.status,
-                        created: window.ChortleHistory.formatDate(entry.createdAt)
-                    })));
-                } else {
-                    console.log('History module not available');
-                }
+                console.log('History feature is disabled in this version');
             },
             
             clearHistory: function() {
-                if (window.ChortleHistory) {
-                    window.ChortleHistory.clearHistory();
-                    console.log('History cleared');
-                } else {
-                    console.log('History module not available');
-                }
+                console.log('History feature is disabled in this version');
             },
             
-            // Export history for backup
+            // Export history (disabled)
             exportHistory: function() {
-                if (window.ChortleHistory) {
-                    window.ChortleHistory.exportHistory();
-                } else {
-                    console.log('History module not available');
-                }
+                console.log('History feature is disabled in this version');
             },
             
-            // Get detailed statistics
+            // Get detailed statistics (disabled)
             getHistoryStats: function() {
-                if (window.ChortleHistory) {
-                    const stats = window.ChortleHistory.getStats();
-                    console.log('History Statistics:', stats);
-                    return stats;
-                } else {
-                    console.log('History module not available');
-                    return null;
-                }
+                console.log('History feature is disabled in this version');
+                return null;
             },
             
-            // Generate test chortle and save to history
+            // Generate test chortle (no history)
             testWithHistory: function(templateKey = 'silly-story') {
-                const testData = {
-                    template: templateKey,
-                    name: 'Debug User',
-                    adjective1: 'fantastic',
-                    animal: 'dragon',
-                    verb1: 'flew',
-                    place: 'Jupiter',
-                    adjective2: 'incredible',
-                    number: 99
-                };
-                
-                const encodedData = window.ChortleUtils.encodeChortleData(testData);
-                const testUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
-                
-                // Save to history
-                if (window.ChortleHistory) {
-                    const chortleId = window.ChortleHistory.saveChortle(testData, testUrl);
-                    console.log('Test chortle saved to history with ID:', chortleId);
-                    console.log('Test URL:', testUrl);
-                } else {
-                    console.log('History not available - only generating URL');
-                    console.log('Test URL:', testUrl);
-                }
-                
-                return testUrl;
+                console.log('History feature is disabled - using regular test instead');
+                return this.testTemplate(templateKey);
             },
-            
-            // Show all available debug functions
-            help: function() {
-                console.group('🛠️ Chortle Debug Commands');
-                console.log('ChortleDebug.logInitialization() - Show initialization info');
-                console.log('ChortleDebug.testTemplate() - Generate test chortle');
-                console.log('ChortleDebug.reset() - Reset app state');
-                console.log('ChortleDebug.getState() - Get current app state');
-                console.log('ChortleDebug.showHistory() - Display history table');
-                console.log('ChortleDebug.clearHistory() - Clear all history');
-                console.log('ChortleDebug.exportHistory() - Export history as JSON');
-                console.log('ChortleDebug.getHistoryStats() - Get detailed statistics');
-                console.log('ChortleDebug.testWithHistory() - Generate test with history');
-                console.groupEnd();
-            },
-            
-            getState: () => window.ChortleApp.getState()
-        });
-        
-        console.log('🛠️ Development helpers loaded. Use ChortleDebug.help() for commands.');
-    }
-}
-
-// Wait for DOM to be ready, then initialize
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        initializeChortle();
-        setupDevelopmentHelpers();
-    });
-} else {
-    // DOM is already ready
-    initializeChortle();
-    setupDevelopmentHelpers();
-}
-
-// Prevent multiple initialization
-window.ChortleInitialized = true;
