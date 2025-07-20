@@ -1,692 +1,749 @@
-/* Chortle v5.0 - Core Styles */
+/* Chortle v5.1 - Main App Logic with History Integration */
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+window.ChortleApp = {
+    // Initialize the main app
+    initialize: function() {
+        console.log('Initializing Chortle App v' + window.ChortleConfig.APP.version);
+        
+        // Setup core functionality
+        this.setupTemplateSelection();
+        this.setupSearch();
+        this.setupCategoryFilters();
+        this.setupSharePage();
+        this.setupNavigation();
+        this.setupHistoryPage(); // NEW: Setup history functionality
+        
+        // NEW: Initialize history system
+        window.ChortleHistory.initialize();
+        
+        console.log('App initialization complete');
+    },
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-    background-size: 400% 400%;
-    animation: gradientShift 15s ease infinite;
-    min-height: 100vh;
-    color: #333;
-}
+    // Page navigation system
+    showPage: function(pageId) {
+        // Hide all pages
+        document.querySelectorAll('.page').forEach(page => {
+            page.classList.remove('active');
+        });
 
-@keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
+        // Show target page
+        const targetPage = document.getElementById(pageId);
+        if (targetPage) {
+            targetPage.classList.add('active');
+            window.ChortleState.currentPage = pageId;
+            
+            // Auto-scroll on mobile
+            if (window.ChortleUtils.isSmallScreen()) {
+                setTimeout(() => {
+                    targetPage.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
+                }, 100);
+            }
+        } else {
+            console.error('Page not found:', pageId);
+        }
+    },
 
-/* Layout */
-.container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
+    // Setup template selection functionality
+    setupTemplateSelection: function() {
+        // Initial render
+        this.renderTemplates();
+        
+        // Template button click handlers are added dynamically in renderTemplates
+    },
 
-/* Header */
-.header {
-    text-align: center;
-    margin-bottom: 30px;
-    color: white;
-    animation: fadeInDown 0.8s ease-out;
-}
+    // Render templates based on current filters
+    renderTemplates: function() {
+        const container = document.getElementById('template-container');
+        const emptyState = document.getElementById('templates-empty');
+        
+        if (!container || !emptyState) {
+            console.error('Template container elements not found');
+            return;
+        }
 
-@keyframes fadeInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-30px);
+        container.innerHTML = '';
+
+        // Get filtered templates
+        const templates = window.ChortleTemplates.filterTemplates(
+            window.ChortleState.currentCategory, 
+            window.ChortleState.searchTerm
+        );
+
+        const templateEntries = Object.entries(templates);
+
+        if (templateEntries.length === 0) {
+            emptyState.style.display = 'block';
+        } else {
+            emptyState.style.display = 'none';
+
+            templateEntries.forEach(([key, template]) => {
+                const button = document.createElement('button');
+                button.className = 'template-btn';
+                button.dataset.template = key;
+                button.innerHTML = `
+                    <div class="template-btn-title">${template.title}</div>
+                    <div class="template-btn-desc">${template.description}</div>
+                `;
+                
+                // Add click handler
+                button.addEventListener('click', () => this.selectTemplate(key));
+                
+                container.appendChild(button);
+            });
+        }
+    },
+
+    // Handle template selection
+    selectTemplate: function(templateKey) {
+        console.log('Template selected:', templateKey);
+        
+        // Validate template
+        if (!window.ChortleTemplates.validateTemplate(templateKey)) {
+            this.showError('Invalid template selected');
+            return;
+        }
+
+        // Setup wizard
+        const success = window.ChortleWizard.setup(templateKey);
+        if (success) {
+            this.showPage('wizard-page');
+        } else {
+            this.showError('Failed to setup wizard for template');
+        }
+    },
+
+    // Setup search functionality
+    setupSearch: function() {
+        const searchInput = document.getElementById('template-search');
+        if (!searchInput) return;
+
+        // Debounced search to avoid excessive filtering
+        let searchTimeout;
+        
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                window.ChortleState.searchTerm = e.target.value.toLowerCase();
+                this.renderTemplates();
+            }, 300); // 300ms debounce
+        });
+
+        // Clear search on escape
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                searchInput.value = '';
+                window.ChortleState.searchTerm = '';
+                this.renderTemplates();
+            }
+        });
+    },
+
+    // Setup category filtering
+    setupCategoryFilters: function() {
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all buttons
+                document.querySelectorAll('.category-btn').forEach(b => {
+                    b.classList.remove('active');
+                });
+                
+                // Add active class to clicked button
+                btn.classList.add('active');
+
+                // Update state and re-render
+                window.ChortleState.currentCategory = btn.dataset.category;
+                this.renderTemplates();
+            });
+        });
+    },
+
+    // Setup share page functionality
+    setupSharePage: function() {
+        // Share button
+        const shareBtn = document.getElementById('share-btn');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', () => this.generateShareLink());
+        }
+
+        // Copy link button
+        const copyBtn = document.getElementById('copy-link');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => this.copyShareLink());
+        }
+
+        // Create new chortle button
+        const createNewBtn = document.getElementById('create-new-chortle');
+        if (createNewBtn) {
+            createNewBtn.addEventListener('click', () => this.createNewChortle());
+        }
+    },
+
+    // Generate shareable link
+    generateShareLink: function() {
+        const shareBtn = document.getElementById('share-btn');
+        shareBtn.classList.add('btn-loading');
+        shareBtn.disabled = true;
+
+        // Add delay for better UX perception
+        setTimeout(() => {
+            try {
+                const wizardData = window.ChortleWizard.getWizardData();
+                
+                if (!wizardData || !wizardData.template) {
+                    throw new Error('No wizard data available');
+                }
+
+                console.log('Generating link with data:', wizardData);
+
+                const encodedData = window.ChortleUtils.encodeChortleData(wizardData);
+                if (!encodedData) {
+                    throw new Error('Failed to encode chortle data');
+                }
+
+                const shareableUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
+                console.log('Generated URL:', shareableUrl);
+
+                // NEW: Save to history
+                const chortleId = window.ChortleHistory.saveChortle(wizardData, shareableUrl);
+                if (chortleId) {
+                    console.log('Chortle saved to history with ID:', chortleId);
+                    // Store the ID for potential status updates
+                    window.ChortleState.currentChortleId = chortleId;
+                }
+
+                // Display the link
+                document.getElementById('generated-link').value = shareableUrl;
+                document.getElementById('link-section').classList.add('active');
+
+                // Auto-scroll on mobile
+                window.ChortleUtils.scrollToElement('link-section');
+
+            } catch (error) {
+                console.error('Link generation error:', error);
+                this.showError('Failed to generate link. Please try again.');
+            } finally {
+                shareBtn.classList.remove('btn-loading');
+                shareBtn.disabled = false;
+            }
+        }, 800);
+    },
+
+    // Copy share link
+    copyShareLink: function() {
+        const linkInput = document.getElementById('generated-link');
+        const copyBtn = document.getElementById('copy-link');
+
+        window.ChortleUtils.copyToClipboard(linkInput.value).then(success => {
+            if (success) {
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = '✅ Copied!';
+                copyBtn.style.background = '#28a745';
+
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.style.background = '';
+                }, window.ChortleConfig.UI.copySuccessTimeout);
+            } else {
+                alert('Copy failed. Please manually copy this link:\n\n' + linkInput.value);
+            }
+        });
+    },
+
+    // Setup navigation buttons
+    setupNavigation: function() {
+        // View history button
+        const viewHistoryBtn = document.getElementById('view-history-btn');
+        if (viewHistoryBtn) {
+            viewHistoryBtn.addEventListener('click', () => this.showHistoryPage());
+        }
+
+        // Create new buttons
+        const createNewBtns = document.querySelectorAll('#create-new, #create-another, #create-first-chortle, #back-to-templates');
+        createNewBtns.forEach(btn => {
+            btn.addEventListener('click', () => this.createNewChortle());
+        });
+    },
+
+    // NEW: Setup history page functionality
+    setupHistoryPage: function() {
+        // Clear history button
+        const clearHistoryBtn = document.getElementById('clear-history-btn');
+        if (clearHistoryBtn) {
+            clearHistoryBtn.addEventListener('click', () => this.clearHistory());
+        }
+
+        // Export history button
+        const exportHistoryBtn = document.getElementById('export-history-btn');
+        if (exportHistoryBtn) {
+            exportHistoryBtn.addEventListener('click', () => {
+                if (window.ChortleHistory) {
+                    window.ChortleHistory.exportHistory();
+                }
+            });
+        }
+    },
+
+    // NEW: Show history page
+    showHistoryPage: function() {
+        // Update URL hash for navigation
+        window.location.hash = '#history';
+        
+        this.showPage('history-page');
+        this.populateHistoryPage();
+    },
+
+    // NEW: Populate history page with data
+    populateHistoryPage: function() {
+        if (!window.ChortleHistory) {
+            document.getElementById('history-list').innerHTML = 
+                '<p style="text-align: center; color: #666;">History not available in this browser.</p>';
+            return;
+        }
+
+        const history = window.ChortleHistory.getHistory();
+        const stats = window.ChortleHistory.getStats();
+        
+        // Update stats
+        document.getElementById('total-chortles').textContent = stats.total;
+        document.getElementById('pending-chortles').textContent = stats.pending;
+        document.getElementById('completed-chortles').textContent = stats.completed;
+
+        // Show/hide empty state
+        const historyList = document.getElementById('history-list');
+        const historyEmpty = document.getElementById('history-empty');
+        
+        if (history.length === 0) {
+            historyList.style.display = 'none';
+            historyEmpty.style.display = 'block';
+            return;
+        }
+
+        historyList.style.display = 'block';
+        historyEmpty.style.display = 'none';
+
+        // Populate history list
+        historyList.innerHTML = '';
+        
+        history.forEach(entry => {
+            const historyItem = this.createHistoryItem(entry);
+            historyList.appendChild(historyItem);
+        });
+    },
+
+    // NEW: Create history item element
+    createHistoryItem: function(entry) {
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        
+        const statusClass = `status-${entry.status}`;
+        const statusText = window.ChortleHistory.getStatusText(entry.status);
+        const statusEmoji = window.ChortleHistory.getStatusEmoji(entry.status);
+        const timeText = window.ChortleHistory.formatDate(entry.createdAt);
+        
+        item.innerHTML = `
+            <div class="history-item-header">
+                <div class="history-item-title">${entry.templateTitle}</div>
+                <div class="history-item-status ${statusClass}">
+                    ${statusEmoji} ${statusText}
+                </div>
+            </div>
+            <div class="history-item-details">
+                Created ${timeText} • ${Object.keys(entry.fields || {}).length} fields filled
+            </div>
+            <div class="history-item-actions">
+                <button class="history-action-btn btn-copy" data-url="${entry.shareUrl}">
+                    📋 Copy Link
+                </button>
+                ${entry.videoUrl ? `
+                    <button class="history-action-btn btn-watch" data-video-url="${entry.videoUrl}">
+                        🎬 Watch Video
+                    </button>
+                ` : ''}
+                <button class="history-action-btn btn-delete" data-id="${entry.id}">
+                    🗑️ Delete
+                </button>
+            </div>
+        `;
+
+        // Add event listeners
+        this.setupHistoryItemEvents(item, entry);
+        
+        return item;
+    },
+
+    // NEW: Setup event listeners for history item
+    setupHistoryItemEvents: function(item, entry) {
+        // Copy link button
+        const copyBtn = item.querySelector('.btn-copy');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', (e) => {
+                const url = e.target.dataset.url;
+                this.copyHistoryLink(url, copyBtn);
+            });
+        }
+
+        // Watch video button
+        const watchBtn = item.querySelector('.btn-watch');
+        if (watchBtn) {
+            watchBtn.addEventListener('click', (e) => {
+                const videoUrl = e.target.dataset.videoUrl;
+                window.open(videoUrl, '_blank');
+            });
+        }
+
+        // Delete button
+        const deleteBtn = item.querySelector('.btn-delete');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', (e) => {
+                const id = e.target.dataset.id;
+                this.deleteHistoryItem(id, item);
+            });
+        }
+    },
+
+    // NEW: Copy history link
+    copyHistoryLink: function(url, button) {
+        window.ChortleUtils.copyToClipboard(url).then(success => {
+            if (success) {
+                const originalText = button.textContent;
+                button.textContent = '✅ Copied!';
+                button.style.background = '#28a745';
+
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '';
+                }, 2000);
+            } else {
+                alert('Copy failed. Please manually copy this link:\n\n' + url);
+            }
+        });
+    },
+
+    // NEW: Delete history item
+    deleteHistoryItem: function(id, itemElement) {
+        if (confirm('Delete this Chortle from your history? This cannot be undone.')) {
+            if (window.ChortleHistory.deleteChortle(id)) {
+                itemElement.remove();
+                
+                // Update stats and check if empty
+                this.populateHistoryPage();
+                
+                this.showSuccess('Chortle deleted from history');
+            } else {
+                this.showError('Failed to delete Chortle');
+            }
+        }
+    },
+
+    // NEW: Clear all history
+    clearHistory: function() {
+        const confirmText = 'Delete ALL Chortles from your history? This cannot be undone.\n\nType "DELETE" to confirm:';
+        const confirmation = prompt(confirmText);
+        
+        if (confirmation === 'DELETE') {
+            if (window.ChortleHistory.clearHistory()) {
+                this.populateHistoryPage();
+                this.showSuccess('All history cleared');
+            } else {
+                this.showError('Failed to clear history');
+            }
+        }
+    },
+
+    // NEW: Show success message
+    showSuccess: function(message) {
+        // Remove existing messages
+        document.querySelectorAll('.success-message').forEach(el => el.remove());
+
+        // Create success element
+        const successDiv = document.createElement('div');
+        successDiv.className = 'success-message';
+        successDiv.style.cssText = `
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #155724;
+        `;
+        successDiv.innerHTML = `<strong>Success:</strong> ${message}`;
+
+        // Add to current page
+        const activePage = document.querySelector('.page.active');
+        if (activePage) {
+            activePage.appendChild(successDiv);
+        }
+
+        // Auto-remove after timeout
+        setTimeout(() => {
+            successDiv.remove();
+        }, 3000);
+    },
+
+    // Create new chortle (reset app)
+    createNewChortle: function() {
+        // Clear URL hash
+        window.location.hash = '';
+        
+        // Reset app state
+        this.resetApp();
+        
+        // Show template selection
+        this.showPage('template-selection-page');
+    },
+
+    // Reset app to initial state
+    resetApp: function() {
+        // Reset global state
+        Object.assign(window.ChortleState, {
+            currentTemplate: null,
+            currentCategory: 'all',
+            searchTerm: '',
+            currentStep: 0,
+            wizardData: {},
+            currentPage: 'template-selection-page',
+            // NEW: Reset current chortle ID
+            currentChortleId: null
+        });
+
+        // Reset search
+        const searchInput = document.getElementById('template-search');
+        if (searchInput) {
+            searchInput.value = '';
+        }
+
+        // Reset category filter
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector('[data-category="all"]')?.classList.add('active');
+
+        // Reset wizard
+        window.ChortleWizard.reset();
+
+        // Reset share page
+        document.getElementById('link-section')?.classList.remove('active');
+        const linkInput = document.getElementById('generated-link');
+        if (linkInput) {
+            linkInput.value = '';
+        }
+
+        // Clean up video resources
+        window.ChortleVideo.cleanup();
+
+        // Re-render templates
+        this.renderTemplates();
+
+        console.log('App reset complete');
+    },
+
+    // Show completed chortle (when someone clicks a link)
+    showCompletedChortle: function(data) {
+        console.log('Showing completed chortle with data:', data);
+
+        // Validate data
+        if (!window.ChortleUtils.validateChortleData(data)) {
+            this.showError('Invalid Chortle data. This link may be corrupted.');
+            return;
+        }
+
+        const template = data.template;
+        const templateData = { ...data };
+        delete templateData.template;
+
+        console.log('Looking for template:', template);
+
+        const templateObj = window.ChortleTemplates.getTemplate(template);
+        if (!templateObj) {
+            console.error('Template not found:', template);
+            this.showError('Unknown template. This Chortle may be from a newer version.');
+            return;
+        }
+
+        console.log('Template found, showing reading view');
+        this.showPage('reading-view');
+
+        // Render the completed story
+        const story = window.ChortleTemplates.renderTemplate(template, templateData);
+        document.getElementById('completed-story').innerHTML = story;
+
+        // NEW: Store the chortle data for potential history updates
+        window.ChortleState.currentChortleData = data;
+
+        console.log('Generated story displayed');
+    },
+
+    // NEW: Update chortle status when video is completed
+    updateChortleStatus: function(chortleData, videoUrl) {
+        if (!chortleData) return;
+
+        // Try to find the chortle in history by matching the data
+        const history = window.ChortleHistory.getHistory();
+        const matchingChortle = history.find(entry => {
+            // Match by template and key fields
+            if (entry.template !== chortleData.template) return false;
+            
+            // Check if all fields match
+            const entryFields = entry.fields || {};
+            const chortleFields = { ...chortleData };
+            delete chortleFields.template;
+            
+            return Object.keys(chortleFields).every(key => {
+                return entryFields[key] === chortleFields[key];
+            });
+        });
+
+        if (matchingChortle) {
+            window.ChortleHistory.markCompleted(matchingChortle.id, videoUrl);
+            console.log('Updated chortle status to completed:', matchingChortle.id);
+        } else {
+            console.log('Could not find matching chortle in history for status update');
+        }
+    },
+
+    // Show error message
+    showError: function(message) {
+        // Remove existing error messages
+        document.querySelectorAll('.error-message').forEach(el => el.remove());
+
+        // Create error element
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+
+        // Add to current page
+        const activePage = document.querySelector('.page.active');
+        if (activePage) {
+            activePage.appendChild(errorDiv);
+        } else {
+            document.body.appendChild(errorDiv);
+        }
+
+        // Auto-remove after timeout
+        setTimeout(() => {
+            errorDiv.remove();
+        }, window.ChortleConfig.UI.errorDisplayTimeout);
+
+        // Log error
+        window.ChortleUtils.logError(new Error(message), 'UI');
+    },
+
+    // Check for incoming links (chortle, video, or history)
+    checkForIncomingLinks: function() {
+        const hash = window.location.hash;
+        console.log('Checking for incoming links, hash:', hash);
+
+        if (hash.startsWith('#chortle=')) {
+            try {
+                const chortleData = hash.substring(9);
+                console.log('Found chortle data:', chortleData);
+                const data = window.ChortleUtils.decodeChortleData(chortleData);
+                console.log('Decoded chortle:', data);
+                this.showCompletedChortle(data);
+                return true;
+            } catch (e) {
+                console.error('Invalid chortle data:', e);
+                this.showError('Invalid Chortle link. Please check the link and try again.');
+                return false;
+            }
+        } else if (hash.startsWith('#video=')) {
+            try {
+                const videoData = hash.substring(7);
+                console.log('Found video data:', videoData);
+                window.ChortleVideo.showVideoPlayback(videoData);
+                return true;
+            } catch (e) {
+                console.error('Invalid video data:', e);
+                this.showError('Invalid video link. Please check the link and try again.');
+                return false;
+            }
+        } else if (hash === '#history') {
+            console.log('Showing history page');
+            this.showHistoryPage();
+            return true;
+        }
+
+        return false;
+    },
+
+    // Get current app state for debugging
+    getState: function() {
+        return {
+            globalState: window.ChortleState,
+            currentPage: window.ChortleState.currentPage,
+            templateStats: window.ChortleTemplates.getStats(),
+            wizardState: window.ChortleWizard ? window.ChortleWizard.debug() : null,
+            // NEW: Include history stats
+            historyStats: window.ChortleHistory.getStats()
+        };
+    },
+
+    // Performance monitoring
+    startPerformanceTimer: function(name) {
+        window.ChortleUtils.startTimer(name);
+    },
+
+    endPerformanceTimer: function(name) {
+        window.ChortleUtils.endTimer(name);
+    },
+
+    // Feature detection and graceful degradation
+    checkBrowserSupport: function() {
+        const features = {
+            mediaRecorder: 'MediaRecorder' in window,
+            getUserMedia: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+            wakeLock: 'wakeLock' in navigator,
+            vibrate: 'vibrate' in navigator,
+            clipboard: !!(navigator.clipboard && navigator.clipboard.writeText),
+            webGL: !!window.WebGLRenderingContext,
+            // NEW: Check localStorage support
+            localStorage: (() => {
+                try {
+                    const test = 'test';
+                    localStorage.setItem(test, test);
+                    localStorage.removeItem(test);
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            })()
+        };
+
+        console.log('Browser support check:', features);
+
+        // Warn about missing critical features
+        if (!features.mediaRecorder || !features.getUserMedia) {
+            console.warn('Video recording not supported in this browser');
+        }
+
+        if (!features.localStorage) {
+            console.warn('localStorage not supported - history will not be saved');
+        }
+
+        return features;
+    },
+
+    // Handle app visibility changes (for cleanup)
+    handleVisibilityChange: function() {
+        if (document.hidden) {
+            // App hidden - cleanup if needed
+            console.log('App hidden - performing cleanup');
+        } else {
+            // App visible
+            console.log('App visible');
+        }
+    },
+
+    // Handle window beforeunload (cleanup)
+    handleBeforeUnload: function() {
+        window.ChortleVideo.cleanup();
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.header h1 {
-    font-size: 2.8em;
-    margin-bottom: 10px;
-    text-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    font-weight: 700;
-}
-
-.header p {
-    font-size: 1.1em;
-    opacity: 0.95;
-    font-weight: 300;
-}
-
-.simple-intro {
-    text-align: center;
-    color: white;
-    font-size: 1em;
-    opacity: 0.9;
-    margin-bottom: 30px;
-}
-
-/* Page System */
-.page {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 24px;
-    padding: 40px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    animation: fadeInUp 0.8s ease-out;
-    flex: 1;
-    display: none;
-}
-
-.page.active {
-    display: block;
-}
-
-.reading-view {
-    display: none;
-}
-
-.reading-view.active {
-    display: block;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Template Selection */
-.template-selector h2 {
-    margin-bottom: 25px;
-    color: #4a5568;
-    font-size: 1.8em;
-    font-weight: 600;
-    text-align: center;
-}
-
-.template-search {
-    margin-bottom: 20px;
-}
-
-.search-input {
-    width: 100%;
-    padding: 15px 20px;
-    border: 2px solid rgba(102, 126, 234, 0.3);
-    border-radius: 15px;
-    font-size: 1em;
-    background: rgba(255, 255, 255, 0.8);
-    transition: all 0.3s ease;
-}
-
-.search-input:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.template-categories {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 25px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.category-btn {
-    padding: 8px 16px;
-    border: 2px solid rgba(102, 126, 234, 0.3);
-    background: rgba(102, 126, 234, 0.1);
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: inherit;
-    font-size: 0.9em;
-    color: #667eea;
-    font-weight: 500;
-}
-
-.category-btn:hover {
-    background: rgba(102, 126, 234, 0.2);
-    transform: translateY(-2px);
-}
-
-.category-btn.active {
-    background: #667eea;
-    color: white;
-    transform: translateY(-2px);
-}
-
-.template-buttons {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 15px;
-}
-
-.template-btn {
-    padding: 20px;
-    border: 2px solid rgba(102, 126, 234, 0.2);
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-family: inherit;
-    font-size: 1em;
-    text-align: left;
-    position: relative;
-    overflow: hidden;
-}
-
-.template-btn:hover {
-    background: rgba(102, 126, 234, 0.05);
-    border-color: #667eea;
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
-}
-
-.template-btn-title {
-    font-weight: 600;
-    font-size: 1.1em;
-    margin-bottom: 5px;
-}
-
-.template-btn-desc {
-    font-size: 0.9em;
-    opacity: 0.8;
-    line-height: 1.4;
-}
-
-.templates-empty {
-    text-align: center;
-    padding: 40px 20px;
-    color: #666;
-}
-
-/* Wizard */
-.wizard-header {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.wizard-header h2 {
-    color: #4a5568;
-    font-size: 1.6em;
-    margin-bottom: 10px;
-}
-
-.wizard-header .template-name {
-    color: #667eea;
-    font-weight: 600;
-    font-size: 1.1em;
-}
-
-.progress-bar {
-    background: #f0f0f0;
-    border-radius: 10px;
-    height: 8px;
-    margin: 20px 0;
-    overflow: hidden;
-}
-
-.progress-fill {
-    background: linear-gradient(90deg, #667eea, #764ba2);
-    height: 100%;
-    border-radius: 10px;
-    transition: width 0.3s ease;
-    width: 0%;
-}
-
-.progress-text {
-    text-align: center;
-    margin-top: 10px;
-    font-size: 0.9em;
-    color: #666;
-}
-
-.wizard-step {
-    display: none;
-    animation: slideIn 0.4s ease-out;
-}
-
-.wizard-step.active {
-    display: block;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateX(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.step-content {
-    text-align: center;
-    margin: 40px 0;
-}
-
-.step-question {
-    font-size: 1.4em;
-    color: #4a5568;
-    margin-bottom: 25px;
-    font-weight: 600;
-}
-
-.step-input {
-    width: 100%;
-    max-width: 400px;
-    padding: 20px;
-    border: 3px solid rgba(102, 126, 234, 0.3);
-    border-radius: 15px;
-    font-size: 1.2em;
-    font-family: inherit;
-    text-align: center;
-    transition: all 0.3s ease;
-    background: rgba(255, 255, 255, 0.9);
-}
-
-.step-input:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    transform: translateY(-2px);
-}
-
-.step-input:valid {
-    border-color: #48bb78;
-}
-
-.step-navigation {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 40px;
-    gap: 20px;
-}
-
-.nav-btn {
-    padding: 15px 30px;
-    border: none;
-    border-radius: 12px;
-    font-size: 1.1em;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: inherit;
-    font-weight: 600;
-    min-width: 120px;
-}
-
-.nav-btn:hover {
-    transform: translateY(-2px);
-}
-
-.btn-back {
-    background: #f8f9fa;
-    color: #6c757d;
-    border: 2px solid #e9ecef;
-}
-
-.btn-back:hover {
-    background: #e9ecef;
-    border-color: #adb5bd;
-}
-
-.btn-next {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-}
-
-.btn-next:hover {
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-}
-
-.btn-next:disabled {
-    background: #cbd5e0;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-/* Share Page */
-.ready-content {
-    text-align: center;
-}
-
-.ready-content h2 {
-    color: #28a745;
-    font-size: 1.8em;
-    margin-bottom: 20px;
-}
-
-.success-icon {
-    font-size: 4em;
-    margin-bottom: 20px;
-    animation: bounce 0.6s ease-out;
-}
-
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-10px); }
-    60% { transform: translateY(-5px); }
-}
-
-.share-instructions {
-    background: #e3f2fd;
-    border-radius: 15px;
-    padding: 25px;
-    margin: 25px 0;
-    border-left: 4px solid #2196f3;
-}
-
-.share-step {
-    display: flex;
-    align-items: center;
-    margin: 15px 0;
-    font-size: 1em;
-}
-
-.share-step-number {
-    background: #2196f3;
-    color: white;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 15px;
-    font-weight: bold;
-    font-size: 0.9em;
-}
-
-.share-btn {
-    background: linear-gradient(135deg, #28a745, #20c997);
-    color: white;
-    border: none;
-    padding: 20px 40px;
-    border-radius: 15px;
-    font-size: 1.3em;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: inherit;
-    font-weight: 600;
-    width: 100%;
-    margin: 20px 0;
-}
-
-.share-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 30px rgba(40, 167, 69, 0.3);
-}
-
-.link-section {
-    margin-top: 20px;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 15px;
-    display: none;
-}
-
-.link-section.active {
-    display: block;
-}
-
-.link-box {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-top: 15px;
-}
-
-.link-input {
-    flex: 1;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-family: monospace;
-    font-size: 0.9em;
-    background: white;
-}
-
-.copy-btn {
-    padding: 15px 20px;
-    background: #28a745;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    font-weight: 600;
-}
-
-.copy-btn:hover {
-    background: #218838;
-}
-
-/* Loading States */
-.btn-loading {
-    position: relative;
-    color: transparent !important;
-}
-
-.btn-loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 20px;
-    height: 20px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-left: 2px solid white;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: translate(-50%, -50%) rotate(0deg); }
-    100% { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-/* Video Components */
-.completed-madlib {
-    font-size: 1.3em;
-    line-height: 1.6;
-    padding: 30px;
-    background: #f8f9fa;
-    border-radius: 15px;
-    border-left: 4px solid #667eea;
-    margin: 20px 0;
-}
-
-.filled-word {
-    color: #764ba2;
-    font-weight: bold;
-    background: #e7e3ff;
-    padding: 2px 6px;
-    border-radius: 4px;
-}
-
-.video-section {
-    margin: 30px 0;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 15px;
-    border-left: 4px solid #764ba2;
-}
-
-.camera-setup, .recording-area, .playback-area {
-    text-align: center;
-}
-
-.camera-setup h4, .playback-area h4 {
-    color: #764ba2;
-    margin-bottom: 10px;
-}
-
-#camera-preview, #recorded-video {
-    width: 100%;
-    max-width: 500px;
-    border-radius: 10px;
-    margin: 20px 0;
-    background: #000;
-}
-
-.recording-controls, .playback-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    margin: 20px 0;
-    flex-wrap: wrap;
-}
-
-.video-btn {
-    padding: 12px 20px;
-    border: none;
-    border-radius: 8px;
-    font-size: 1em;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 140px;
-}
-
-.video-btn:hover {
-    transform: translateY(-2px);
-}
-
-#start-camera {
-    background: #667eea;
-    color: white;
-}
-
-.record-btn {
-    background: #dc3545;
-    color: white;
-}
-
-.stop-btn {
-    background: #6c757d;
-    color: white;
-}
-
-.send-btn {
-    background: #28a745;
-    color: white;
-}
-
-#re-record {
-    background: #ffc107;
-    color: #000;
-}
-
-.timer {
-    font-family: monospace;
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #dc3545;
-    padding: 8px 16px;
-    background: rgba(220, 53, 69, 0.1);
-    border-radius: 5px;
-}
-
-.watermark-notice {
-    background: #fff3cd;
-    border: 1px solid #ffeaa7;
-    border-radius: 8px;
-    padding: 15px;
-    margin: 15px 0;
-    color: #856404;
-}
-
-.watermark-notice h5 {
-    margin-bottom: 8px;
-    color: #856404;
-}
-
-.upload-progress {
-    margin: 20px 0;
-    padding: 15px;
-    background: #e3f2fd;
-    border-radius: 10px;
-    border-left: 4px solid #2196f3;
-}
-
-.upload-progress-bar {
-    width: 100%;
-    height: 8px;
-    background: #ddd;
-    border-radius: 4px;
-    overflow: hidden;
-    margin: 10px 0;
-}
-
-.upload-progress-fill {
-    height: 100%;
-    background: #2196f3;
-    transition: width 0.3s ease;
-}
-
-.video-sent {
-    text-align: center;
-    padding: 20px;
-    background: #d4edda;
-    border: 1px solid #c3e6cb;
-    border-radius: 10px;
-    color: #155724;
-}
-
-.video-sent h4 {
-    color: #155724;
-}
-
-.create-new-btn {
-    margin-top: 20px;
-    background: #667eea;
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    border-radius: 10px;
-    font-size: 1em;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: inherit;
-}
-
-.create-new-btn:hover {
-    background: #5a6c7d;
-    transform: translateY(-2px);
-}
-
-.error-message {
-    background: #f8d7da;
-    border: 1px solid #f5c6cb;
-    border-radius: 8px;
-    padding: 15px;
-    margin: 15px 0;
-    color: #721c24;
-}
-
-.video-playback-container {
-    text-align: center;
-}
-
-.playback-video-area {
-    margin: 20px 0;
+};
+
+// Export for debugging
+if (window.ChortleDebug) {
+    window.ChortleDebug.app = window.ChortleApp;
 }
