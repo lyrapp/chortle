@@ -1,4 +1,4 @@
-/* Chortle v5.0 - Configuration & Global State */
+/* Chortle v5.1 - Configuration & Global State */
 
 // API Configuration
 window.ChortleConfig = {
@@ -12,7 +12,7 @@ window.ChortleConfig = {
     // App Settings
     APP: {
         maxRecordingTime: 30, // seconds
-        version: '5.0',
+        version: '5.1',
         maxFileSize: 50 * 1024 * 1024, // 50MB
         supportedVideoTypes: ['video/webm', 'video/mp4']
     },
