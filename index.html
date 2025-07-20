@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Chortle - Mad Libs Fun!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        /* Simple intro */
+        .simple-intro {
+            text-align: center;
+            color: white;
+            font-size: 1em;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .page {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: fadeInUp 0.8s ease-out;
+            flex: 1;
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Step 1: Template Selection */
+        .template-selector h2 {
+            margin-bottom: 25px;
+            color: #4a5568;
+            font-size: 1.8em;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .template-search {
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 15px;
+            font-size: 1em;
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .template-categories {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .category-btn {
+            padding: 8px 16px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-size: 0.9em;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .category-btn:hover {
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .category-btn.active {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .template-buttons {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .template-btn {
+            padding: 20px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            font-size: 1em;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .template-btn:hover {
+            background: rgba(102, 126, 234, 0.05);
+            border-color: #667eea;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .template-btn-title {
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .template-btn-desc {
+            font-size: 0.9em;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        .templates-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        /* Step 2: Wizard Form */
+        .wizard-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .wizard-header h2 {
+            color: #4a5568;
+            font-size: 1.6em;
+            margin-bottom: 10px;
+        }
+
+        .wizard-header .template-name {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .progress-bar {
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 8px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .wizard-step {
+            display: none;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        .wizard-step.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .step-content {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .step-question {
+            font-size: 1.4em;
+            color: #4a5568;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        .step-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-radius: 15px;
+            font-size: 1.2em;
+            font-family: inherit;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .step-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .step-input:valid {
+            border-color: #48bb78;
+        }
+
+        .step-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 40px;
+            gap: 20px;
+        }
+
+        .nav-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-weight: 600;
+            min-width: 120px;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-back {
+            background: #f8f9fa;
+            color: #6c757d;
+            border: 2px solid #e9ecef;
+        }
+
+        .btn-back:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-next:hover {
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-next:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Step 3: Ready to Share */
+        .ready-content {
+            text-align: center;
+        }
+
+        .ready-content h2 {
+            color: #28a745;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+
+        .success-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            animation: bounce 0.6s ease-out;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .share-instructions {
+            background: #e3f2fd;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            border-left: 4px solid #2196f3;
+        }
+
+        .share-step {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            font-size: 1em;
+        }
+
+        .share-step-number {
+            background: #2196f3;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .share-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-weight: 600;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .share-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(40, 167, 69, 0.3);
+        }
+
+        .link-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .link-section.active {
+            display: block;
+        }
+
+        .link-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .link-input {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9em;
+            background: white;
+        }
+
+        .copy-btn {
+            padding: 15px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-weight: 600;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        /* Loading states */
+        .btn-loading {
+            position: relative;
+            color: transparent !important;
+        }
+
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-left: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Reading View (for people who click Chortle links) */
+        .reading-view {
+            display: none;
+        }
+
+        .reading-view.active {
+            display: block;
+        }
+
+        .completed-madlib {
+            font-size: 1.3em;
+            line-height: 1.6;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 4px solid #667eea;
+            margin: 20px 0;
+        }
+
+        .filled-word {
+            color: #764ba2;
+            font-weight: bold;
+            background: #e7e3ff;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .video-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 4px solid #764ba2;
+        }
+
+        .camera-setup, .recording-area, .playback-area {
+            text-align: center;
+        }
+
+        .camera-setup h4, .playback-area h4 {
+            color: #764ba2;
+            margin-bottom: 10px;
+        }
+
+        #camera-preview, #recorded-video {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 10px;
+            margin: 20px 0;
+            background: #000;
+        }
+
+        .recording-controls, .playback-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .video-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 140px;
+        }
+
+        .video-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        #start-camera {
+            background: #667eea;
+            color: white;
+        }
+
+        .record-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .stop-btn {
+            background: #6c757d;
+            color: white;
+        }
+
+        .send-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        #re-record {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .timer {
+            font-family: monospace;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #dc3545;
+            padding: 8px 16px;
+            background: rgba(220, 53, 69, 0.1);
+            border-radius: 5px;
+        }
+
+        .watermark-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #856404;
+        }
+
+        .watermark-notice h5 {
+            margin-bottom: 8px;
+            color: #856404;
+        }
+
+        .upload-progress {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 10px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .upload-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .upload-progress-fill {
+            height: 100%;
+            background: #2196f3;
+            transition: width 0.3s ease;
+        }
+
+        .video-sent {
+            text-align: center;
+            padding: 20px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 10px;
+            color: #155724;
+        }
+
+        .video-sent h4 {
+            color: #155724;
+        }
+
+        .create-new-btn {
+            margin-top: 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .create-new-btn:hover {
+            background: #5a6c7d;
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #721c24;
+        }
+
+        /* Video Playback View */
+        .video-playback-container {
+            text-align: center;
+        }
+
+        .playback-video-area {
+            margin: 20px 0;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 2.2em;
+            }
+
+            .page {
+                padding: 25px;
+            }
+
+            .step-input {
+                padding: 18px;
+                font-size: 1.1em;
+            }
+
+            .step-question {
+                font-size: 1.2em;
+            }
+
+            .step-navigation {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-btn {
+                width: 100%;
+                min-width: auto;
+            }
+
+            .share-btn {
+                padding: 18px 35px;
+                font-size: 1.2em;
+            }
+
+            .link-box {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .link-input {
+                padding: 15px;
+                font-size: 1em;
+                border-radius: 10px;
+                order: 1;
+            }
+
+            .copy-btn {
+                padding: 15px 25px;
+                font-size: 1.1em;
+                border-radius: 10px;
+                min-height: 50px;
+                order: 2;
+            }
+
+            .recording-controls, .playback-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .video-btn {
+                min-width: 100%;
+                padding: 18px 25px;
+                font-size: 1.2em;
+                border-radius: 15px;
+                min-height: 60px;
+            }
+
+            .video-section {
+                padding: 20px;
+                border-radius: 15px;
+            }
+
+            .watermark-notice {
+                padding: 15px;
+                border-radius: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .page {
+                padding: 20px;
+            }
+
+            .template-categories {
+                justify-content: flex-start;
+                overflow-x: auto;
+                padding: 5px 0;
+            }
+
+            .category-btn {
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎭 Chortle</h1>
+            <p>Create hilarious Mad Libs and share the fun!</p>
+        </div>
+        
+        <div class="simple-intro">
+            Create a Mad Lib → Share with a friend → They record themselves reading it → Hilarity ensues!
+        </div>
+        
+        <!-- Page 1: Template Selection -->
+        <div id="template-selection-page" class="page active">
+            <div class="template-selector">
+                <h2>Choose Your Mad Lib</h2>
+                
+                <div class="template-search">
+                    <input type="text" class="search-input" placeholder="🔍 Search templates..." id="template-search">
+                </div>
+                
+                <div class="template-categories">
+                    <button class="category-btn active" data-category="all">All</button>
+                    <button class="category-btn" data-category="funny">😂 Funny</button>
+                    <button class="category-btn" data-category="adventure">🌟 Adventure</button>
+                    <button class="category-btn" data-category="romance">💕 Romance</button>
+                    <button class="category-btn" data-category="weird">🤪 Weird</button>
+                </div>
+                
+                <div class="template-buttons" id="template-container">
+                    <!-- Templates will be populated by JavaScript -->
+                </div>
+                
+                <div class="templates-empty" id="templates-empty" style="display: none;">
+                    <h4>🔍 No templates found</h4>
+                    <p>Try a different search term or category</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 2: Fill Out Mad Lib (Wizard) -->
+        <div id="wizard-page" class="page">
+            <div class="wizard-header">
+                <h2>Fill Out Your Mad Lib</h2>
+                <div class="template-name" id="wizard-template-name">Template Name</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="wizard-progress-fill"></div>
+                </div>
+                <div class="progress-text" id="wizard-progress-text">Step 1 of 7</div>
+            </div>
+
+            <div id="wizard-steps">
+                <!-- Wizard steps will be generated dynamically -->
+            </div>
+        </div>
+
+        <!-- Page 3: Ready to Share -->
+        <div id="share-page" class="page">
+            <div class="ready-content">
+                <div class="success-icon">🎉</div>
+                <h2>Your Chortle is Ready!</h2>
+                <p>Time to share the fun with someone!</p>
+                
+                <div class="share-instructions">
+                    <div class="share-step">
+                        <div class="share-step-number">1</div>
+                        Send the link to a friend
+                    </div>
+                    <div class="share-step">
+                        <div class="share-step-number">2</div>
+                        They'll record themselves reading your Mad Lib
+                    </div>
+                    <div class="share-step">
+                        <div class="share-step-number">3</div>
+                        You'll get a link to watch their hilarious reaction!
+                    </div>
+                </div>
+
+                <button id="share-btn" class="share-btn">📱 Share with Friend</button>
+
+                <div id="link-section" class="link-section">
+                    <h4>📎 Copy & Share This Link:</h4>
+                    <div class="link-box">
+                        <input type="text" id="generated-link" class="link-input" readonly>
+                        <button id="copy-link" class="copy-btn">Copy</button>
+                    </div>
+                </div>
+
+                <button id="create-new-chortle" class="create-new-btn" style="margin-top: 30px;">Create Another Chortle</button>
+            </div>
+        </div>
+
+        <!-- Reading View (for people who click Chortle links) -->
+        <div id="reading-view" class="page reading-view">
+            <h2 style="text-align: center; color: #667eea; margin-bottom: 20px;">🎭 Someone created a Chortle for you!</h2>
+            <p style="text-align: center; margin-bottom: 30px; font-size: 1.1em;">Read this hilarious Mad Lib out loud and record your reaction:</p>
+            
+            <div id="completed-story" class="completed-madlib"></div>
+            
+            <!-- Video Recording Section -->
+            <div id="video-section" class="video-section">
+                <div class="watermark-notice">
+                    <h5>📹 Test Version Notice</h5>
+                    <p>This is a test version of Chortle. Videos will have a small watermark and are limited to 30 seconds. Perfect for testing Mad Libs!</p>
+                </div>
+                
+                <div id="camera-setup" class="camera-setup">
+                    <h4>📹 Record Your Reading</h4>
+                    <p>Click "Start Camera" to begin recording yourself reading this Chortle:</p>
+                    <button id="start-camera" class="video-btn">Start Camera</button>
+                </div>
+                
+                <div id="recording-area" class="recording-area" style="display: none;">
+                    <video id="camera-preview" autoplay muted playsinline></video>
+                    <div class="recording-controls">
+                        <button id="start-recording" class="video-btn record-btn">🔴 Start Recording</button>
+                        <button id="stop-recording" class="video-btn stop-btn" style="display: none;">⏹️ Stop Recording</button>
+                        <div id="recording-timer" class="timer" style="display: none;">00:00</div>
+                    </div>
+                </div>
+                
+                <div id="playback-area" class="playback-area" style="display: none;">
+                    <h4>📺 Your Recording</h4>
+                    <video id="recorded-video" controls playsinline></video>
+                    <div class="playback-controls">
+                        <button id="re-record" class="video-btn">🔄 Record Again</button>
+                        <button id="send-video" class="video-btn send-btn">✅ Send to Creator</button>
+                    </div>
+                </div>
+                
+                <div id="upload-progress" class="upload-progress" style="display: none;">
+                    <h4>📤 Uploading your video...</h4>
+                    <div class="upload-progress-bar">
+                        <div id="upload-progress-fill" class="upload-progress-fill" style="width: 0%"></div>
+                    </div>
+                    <p id="upload-status">Preparing upload...</p>
+                </div>
+                
+                <div id="video-sent" class="video-sent" style="display: none;">
+                    <h4>🎉 Video Sent!</h4>
+                    <p>Your hilarious reading has been uploaded successfully!</p>
+                    <p>Share the link below so the creator can watch your performance:</p>
+                    <div class="link-box">
+                        <input type="text" id="playback-link" class="link-input" readonly>
+                        <button id="copy-playback-link" class="copy-btn">Copy Link</button>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="create-new" class="create-new-btn">Create Your Own Chortle!</button>
+        </div>
+
+        <!-- Video Playback View (for creators to watch recordings) -->
+        <div id="video-playback-view" class="page reading-view">
+            <h2 style="text-align: center; color: #667eea; margin-bottom: 20px;">🎉 Your Chortle Performance!</h2>
+            <p style="text-align: center; margin-bottom: 30px;">Here's how your friend read your Mad Lib:</p>
+            
+            <div class="video-playback-container">
+                <div id="playback-video-area" class="playback-video-area">
+                    <div id="api-video-player"></div>
+                </div>
+                
+                <div id="original-chortle-text" class="completed-madlib">
+                    <!-- Original Mad Lib text will be inserted here -->
+                </div>
+            </div>
+            
+            <button id="create-another" class="create-new-btn">Create Another Chortle!</button>
+        </div>
+    </div>
+
+    <script>
+        // api.video configuration
+        const API_VIDEO_CONFIG = {
+            apiKey: '5KgKV3AkcCXrvHhs2FnSZrTVyrvwyC5K11qNnNvC70Z',
+            environment: 'sandbox',
+            uploadEndpoint: 'https://ws.api.video/upload'
+        };
+
+        // Mad Lib templates
+        const templates = {
+            'silly-story': {
+                title: 'Silly Zoo Adventure',
+                category: 'funny',
+                description: 'A wacky day at the zoo with unexpected animals',
+                template: `Yesterday, <span class="filled-word">{name}</span> went to the <span class="filled-word">{adjective1}</span> zoo. They saw a <span class="filled-word">{animal}</span> that <span class="filled-word">{verb1}</span> all the way to <span class="filled-word">{place}</span>. It was so <span class="filled-word">{adjective2}</span> that <span class="filled-word">{name}</span> watched it for <span class="filled-word">{number}</span> hours straight! The <span class="filled-word">{animal}</span> even waved goodbye when they left.`,
+                fields: [
+                    { name: 'name', label: "A person's name", type: 'text' },
+                    { name: 'adjective1', label: 'An adjective', type: 'text' },
+                    { name: 'animal', label: 'An animal', type: 'text' },
+                    { name: 'verb1', label: 'A verb (past tense)', type: 'text' },
+                    { name: 'place', label: 'A place', type: 'text' },
+                    { name: 'adjective2', label: 'Another adjective', type: 'text' },
+                    { name: 'number', label: 'A number', type: 'number' }
+                ]
+            },
+            'job-interview': {
+                title: 'Awkward Job Interview',
+                category: 'funny',
+                description: 'The most ridiculous job interview ever',
+                template: `"So, <span class="filled-word">{yourname}</span>, tell us about yourself." "Well, I'm really good at <span class="filled-word">{skill}</span> and I'm very <span class="filled-word">{adjective1}</span>. I want to be your next <span class="filled-word">{jobtitle}</span>!" The interviewer picked up a <span class="filled-word">{object}</span> and started <span class="filled-word">{verb1}</span> while scratching their <span class="filled-word">{bodypart}</span>. "You're hired!" they said.`,
+                fields: [
+                    { name: 'yourname', label: 'Your name', type: 'text' },
+                    { name: 'skill', label: 'A weird skill', type: 'text' },
+                    { name: 'adjective1', label: 'An adjective', type: 'text' },
+                    { name: 'jobtitle', label: 'A silly job title', type: 'text' },
+                    { name: 'object', label: 'An object', type: 'text' },
+                    { name: 'verb1', label: 'A verb ending in -ing', type: 'text' },
+                    { name: 'bodypart', label: 'A body part', type: 'text' }
+                ]
+            },
+            'vacation': {
+                title: 'Dream Vacation Gone Wrong',
+                category: 'adventure',
+                description: 'A vacation that takes an unexpected turn',
+                template: `Last summer, I took a trip to <span class="filled-word">{place}</span> by <span class="filled-word">{transport}</span>. The weather was <span class="filled-word">{adjective1}</span> and I ate <span class="filled-word">{food}</span> for breakfast every day. I spent most of my time <span class="filled-word">{activity}</span> with <span class="filled-word">{celebrity}</span>. It made me feel so <span class="filled-word">{feeling}</span> that I never wanted to come home!`,
+                fields: [
+                    { name: 'place', label: 'A strange place', type: 'text' },
+                    { name: 'transport', label: 'A mode of transportation', type: 'text' },
+                    { name: 'adjective1', label: 'An adjective', type: 'text' },
+                    { name: 'food', label: 'A food', type: 'text' },
+                    { name: 'activity', label: 'An activity', type: 'text' },
+                    { name: 'celebrity', label: 'A celebrity', type: 'text' },
+                    { name: 'feeling', label: 'A feeling', type: 'text' }
+                ]
+            },
+            'superhero': {
+                title: 'Superhero Origin Story',
+                category: 'adventure',
+                description: 'How an ordinary person became extraordinary',
+                template: `Meet <span class="filled-word">{heroname}</span>, the <span class="filled-word">{adjective1}</span> superhero! After being bitten by a radioactive <span class="filled-word">{object}</span>, they gained the power of <span class="filled-word">{power}</span>. Now they protect <span class="filled-word">{city}</span> from the evil villain <span class="filled-word">{villain}</span>. But beware - their one weakness is <span class="filled-word">{weakness}</span>!`,
+                fields: [
+                    { name: 'heroname', label: 'A superhero name', type: 'text' },
+                    { name: 'power', label: 'A superpower', type: 'text' },
+                    { name: 'object', label: 'An ordinary object', type: 'text' },
+                    { name: 'villain', label: 'A villain name', type: 'text' },
+                    { name: 'weakness', label: 'A weakness', type: 'text' },
+                    { name: 'city', label: 'A city', type: 'text' },
+                    { name: 'adjective1', label: 'An adjective', type: 'text' }
+                ]
+            },
+            'love-letter': {
+                title: 'Romantic Love Letter',
+                category: 'romance',
+                description: 'A heartfelt (and hilarious) declaration of love',
+                template: `My dearest <span class="filled-word">{crushname}</span>, you are more <span class="filled-word">{adjective1}</span> than a <span class="filled-word">{animal}</span> in <span class="filled-word">{season}</span>. When I first saw you <span class="filled-word">{verb1}</span> in the <span class="filled-word">{place}</span>, my heart started <span class="filled-word">{verb2}</span> like a <span class="filled-word">{machine}</span>. Will you <span class="filled-word">{romanticact}</span> with me under the <span class="filled-word">{adjective2}</span> moon? Forever yours, <span class="filled-word">{yourname}</span>`,
+                fields: [
+                    { name: 'crushname', label: "Your crush's name", type: 'text' },
+                    { name: 'adjective1', label: 'A romantic adjective', type: 'text' },
+                    { name: 'animal', label: 'A graceful animal', type: 'text' },
+                    { name: 'season', label: 'A season', type: 'text' },
+                    { name: 'verb1', label: 'A verb ending in -ing', type: 'text' },
+                    { name: 'place', label: 'A romantic place', type: 'text' },
+                    { name: 'verb2', label: 'A verb ending in -ing', type: 'text' },
+                    { name: 'machine', label: 'A machine or appliance', type: 'text' },
+                    { name: 'romanticact', label: 'A romantic activity', type: 'text' },
+                    { name: 'adjective2', label: 'Another adjective', type: 'text' },
+                    { name: 'yourname', label: 'Your name', type: 'text' }
+                ]
+            },
+            'first-date': {
+                title: 'Disastrous First Date',
+                category: 'romance',
+                description: 'When romance goes hilariously wrong',
+                template: `I picked up <span class="filled-word">{datename}</span> in my <span class="filled-word">{adjective1}</span> <span class="filled-word">{vehicle}</span>. We went to a <span class="filled-word">{adjective2}</span> restaurant where I accidentally <span class="filled-word">{verb1}</span> the <span class="filled-word">{food}</span> all over their <span class="filled-word">{clothing}</span>. Then we went <span class="filled-word">{activity}</span>, but I was so nervous I kept <span class="filled-word">{verb2}</span> every <span class="filled-word">{timeperiod}</span>. Surprisingly, they said yes to a second date!`,
+                fields: [
+                    { name: 'datename', label: "Your date's name", type: 'text' },
+                    { name: 'adjective1', label: 'An adjective', type: 'text' },
+                    { name: 'vehicle', label: 'A vehicle', type: 'text' },
+                    { name: 'adjective2', label: 'Another adjective', type: 'text' },
+                    { name: 'verb1', label: 'A clumsy verb (past tense)', type: 'text' },
+                    { name: 'food', label: 'A messy food', type: 'text' },
+                    { name: 'clothing', label: 'An article of clothing', type: 'text' },
+                    { name: 'activity', label: 'A date activity', type: 'text' },
+                    { name: 'verb2', label: 'An embarrassing verb', type: 'text' },
+                    { name: 'timeperiod', label: 'A time period', type: 'text' }
+                ]
+            }
+        };
+
+        // App state
+        let currentTemplate = null;
+        let currentCategory = 'all';
+        let searchTerm = '';
+        let currentStep = 0;
+        let wizardData = {};
+
+        // Video recording variables
+        let mediaRecorder;
+        let recordedChunks = [];
+        let stream;
+        let recordingTimer;
+        let recordingSeconds = 0;
+
+        // Navigation functions
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        // Template filtering and search
+        function filterTemplates() {
+            const container = document.getElementById('template-container');
+            const emptyState = document.getElementById('templates-empty');
+            container.innerHTML = '';
+            
+            const filteredTemplates = Object.entries(templates).filter(([key, template]) => {
+                const matchesCategory = currentCategory === 'all' || template.category === currentCategory;
+                const matchesSearch = searchTerm === '' || 
+                    template.title.toLowerCase().includes(searchTerm) ||
+                    template.description.toLowerCase().includes(searchTerm);
+                return matchesCategory && matchesSearch;
+            });
+            
+            if (filteredTemplates.length === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+                
+                filteredTemplates.forEach(([key, template]) => {
+                    const button = document.createElement('button');
+                    button.className = 'template-btn';
+                    button.dataset.template = key;
+                    button.innerHTML = `
+                        <div class="template-btn-title">${template.title}</div>
+                        <div class="template-btn-desc">${template.description}</div>
+                    `;
+                    button.addEventListener('click', () => selectTemplate(key));
+                    container.appendChild(button);
+                });
+            }
+        }
+
+        // Template selection
+        function selectTemplate(templateKey) {
+            currentTemplate = templateKey;
+            const template = templates[templateKey];
+            
+            // Set up wizard
+            setupWizard(template);
+            showPage('wizard-page');
+        }
+
+        // Wizard setup and navigation
+        function setupWizard(template) {
+            currentStep = 0;
+            wizardData = { template: currentTemplate };
+            
+            // Update header
+            document.getElementById('wizard-template-name').textContent = template.title;
+            
+            // Create wizard steps
+            const stepsContainer = document.getElementById('wizard-steps');
+            stepsContainer.innerHTML = '';
+            
+            template.fields.forEach((field, index) => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = 'wizard-step';
+                stepDiv.dataset.step = index;
+                
+                stepDiv.innerHTML = `
+                    <div class="step-content">
+                        <div class="step-question">${field.label}:</div>
+                        <input type="${field.type}" class="step-input" data-field="${field.name}" placeholder="Enter your answer..." required>
+                    </div>
+                    <div class="step-navigation">
+                        <button class="nav-btn btn-back" ${index === 0 ? 'style="visibility: hidden;"' : ''}>← Back</button>
+                        <button class="nav-btn btn-next" disabled>${index === template.fields.length - 1 ? 'Finish' : 'Next →'}</button>
+                    </div>
+                `;
+                
+                stepsContainer.appendChild(stepDiv);
+            });
+            
+            // Add event listeners
+            setupWizardEventListeners(template);
+            showWizardStep(0);
+        }
+
+        function setupWizardEventListeners(template) {
+            // Input validation
+            document.querySelectorAll('.step-input').forEach(input => {
+                input.addEventListener('input', () => validateStep());
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        const nextBtn = input.closest('.wizard-step').querySelector('.btn-next');
+                        if (!nextBtn.disabled) {
+                            nextBtn.click();
+                        }
+                    }
+                });
+            });
+            
+            // Navigation buttons
+            document.querySelectorAll('.btn-back').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (currentStep > 0) {
+                        showWizardStep(currentStep - 1);
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.btn-next').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const input = btn.closest('.wizard-step').querySelector('.step-input');
+                    const fieldName = input.dataset.field;
+                    wizardData[fieldName] = input.value.trim();
+                    
+                    console.log('Collected field:', fieldName, '=', input.value.trim()); // Debug log
+                    console.log('Current wizard data:', wizardData); // Debug log
+                    
+                    if (currentStep < template.fields.length - 1) {
+                        showWizardStep(currentStep + 1);
+                    } else {
+                        // Wizard complete - go to share page
+                        console.log('Wizard complete, final data:', wizardData); // Debug log
+                        showPage('share-page');
+                    }
+                });
+            });
+        }
+
+        function showWizardStep(stepIndex) {
+            // Hide all steps
+            document.querySelectorAll('.wizard-step').forEach(step => step.classList.remove('active'));
+            
+            // Show current step
+            const currentStepElement = document.querySelector(`[data-step="${stepIndex}"]`);
+            currentStepElement.classList.add('active');
+            
+            currentStep = stepIndex;
+            
+            // Update progress
+            const template = templates[currentTemplate];
+            const progress = ((stepIndex + 1) / template.fields.length) * 100;
+            document.getElementById('wizard-progress-fill').style.width = `${progress}%`;
+            document.getElementById('wizard-progress-text').textContent = 
+                `Step ${stepIndex + 1} of ${template.fields.length}`;
+            
+            // Focus input
+            const input = currentStepElement.querySelector('.step-input');
+            setTimeout(() => input.focus(), 100);
+            
+            // Set existing value if any
+            const fieldName = input.dataset.field;
+            if (wizardData[fieldName]) {
+                input.value = wizardData[fieldName];
+                validateStep();
+            }
+        }
+
+        function validateStep() {
+            const currentStepElement = document.querySelector(`[data-step="${currentStep}"]`);
+            const input = currentStepElement.querySelector('.step-input');
+            const nextBtn = currentStepElement.querySelector('.btn-next');
+            
+            const isValid = input.value.trim().length > 0;
+            nextBtn.disabled = !isValid;
+        }
+
+        // Share page functionality
+        function setupSharePage() {
+            document.getElementById('share-btn').addEventListener('click', () => {
+                const shareBtn = document.getElementById('share-btn');
+                shareBtn.classList.add('btn-loading');
+                shareBtn.disabled = true;
+                
+                setTimeout(() => {
+                    try {
+                        console.log('Generating link with wizard data:', wizardData); // Debug log
+                        
+                        const encodedData = btoa(JSON.stringify(wizardData));
+                        console.log('Encoded data:', encodedData); // Debug log
+                        
+                        // Fix URL generation for iframe context
+                        let baseUrl;
+                        if (window.location.origin === 'null' || window.location.origin.includes('srcdoc')) {
+                            // We're in an iframe/artifact context, use a relative URL
+                            baseUrl = window.location.href.split('#')[0];
+                        } else {
+                            // Normal context
+                            baseUrl = window.location.origin + window.location.pathname;
+                        }
+                        
+                        const shareableUrl = baseUrl + '#chortle=' + encodedData;
+                        console.log('Generated URL:', shareableUrl); // Debug log
+                        
+                        document.getElementById('generated-link').value = shareableUrl;
+                        document.getElementById('link-section').classList.add('active');
+                        
+                        // Auto-scroll to link on mobile
+                        if (window.innerWidth <= 768) {
+                            setTimeout(() => {
+                                document.getElementById('link-section').scrollIntoView({ 
+                                    behavior: 'smooth', 
+                                    block: 'start' 
+                                });
+                            }, 300);
+                        }
+                        
+                    } catch (error) {
+                        showError('Failed to generate link. Please try again.');
+                        console.error('Link generation error:', error);
+                    } finally {
+                        shareBtn.classList.remove('btn-loading');
+                        shareBtn.disabled = false;
+                    }
+                }, 800);
+            });
+            
+            // Copy functionality
+            document.getElementById('copy-link').addEventListener('click', () => {
+                copyToClipboard('generated-link');
+            });
+            
+            // Create new Chortle
+            document.getElementById('create-new-chortle').addEventListener('click', () => {
+                window.location.hash = '';
+                window.location.reload();
+            });
+        }
+
+        // Copy functionality
+        function copyToClipboard(inputId) {
+            const linkInput = document.getElementById(inputId);
+            const copyBtn = event.target;
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(linkInput.value).then(() => {
+                    showCopySuccess(copyBtn);
+                }).catch(() => {
+                    fallbackCopy(linkInput, copyBtn);
+                });
+            } else {
+                fallbackCopy(linkInput, copyBtn);
+            }
+        }
+        
+        function fallbackCopy(linkInput, copyBtn) {
+            linkInput.select();
+            linkInput.setSelectionRange(0, 99999);
+            
+            try {
+                document.execCommand('copy');
+                showCopySuccess(copyBtn);
+            } catch (err) {
+                alert('Copy failed. Please manually copy this link:\n\n' + linkInput.value);
+            }
+        }
+        
+        function showCopySuccess(copyBtn) {
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = '✅ Copied!';
+            copyBtn.style.background = '#28a745';
+            
+            setTimeout(() => {
+                copyBtn.textContent = originalText;
+                copyBtn.style.background = '';
+            }, 2000);
+        }
+
+        // Category filtering
+        function setupCategoryFilters() {
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    currentCategory = btn.dataset.category;
+                    filterTemplates();
+                });
+            });
+        }
+
+        // Search functionality
+        function setupSearch() {
+            const searchInput = document.getElementById('template-search');
+            searchInput.addEventListener('input', (e) => {
+                searchTerm = e.target.value.toLowerCase();
+                filterTemplates();
+            });
+        }
+
+        // Error handling
+        function showError(message) {
+            document.querySelectorAll('.error-message').forEach(el => el.remove());
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+            
+            const activePage = document.querySelector('.page.active');
+            activePage.appendChild(errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 8000);
+        }
+
+        // Check for Chortle links
+        function checkForChortle() {
+            const hash = window.location.hash;
+            console.log('Checking for Chortle, hash:', hash); // Debug log
+            
+            if (hash.startsWith('#chortle=')) {
+                try {
+                    const chortleData = hash.substring(9);
+                    console.log('Found chortle data:', chortleData); // Debug log
+                    const data = JSON.parse(atob(chortleData));
+                    console.log('Decoded chortle:', data); // Debug log
+                    showCompletedChortle(data);
+                } catch (e) {
+                    console.error('Invalid chortle data:', e);
+                    showError('Invalid Chortle link. Please check the link and try again.');
+                }
+            } else if (hash.startsWith('#video=')) {
+                try {
+                    const videoData = hash.substring(7);
+                    console.log('Found video data:', videoData); // Debug log
+                    showVideoPlayback(videoData);
+                } catch (e) {
+                    console.error('Invalid video data:', e);
+                    showError('Invalid video link. Please check the link and try again.');
+                }
+            }
+        }
+
+        function showCompletedChortle(data) {
+            console.log('Showing completed chortle with data:', data); // Debug log
+            
+            const template = data.template;
+            const templateData = { ...data };
+            delete templateData.template;
+            
+            console.log('Looking for template:', template); // Debug log
+            console.log('Available templates:', Object.keys(templates)); // Debug log
+            
+            if (!templates[template]) {
+                console.error('Template not found:', template); // Debug log
+                showError('Unknown template. This Chortle may be from a newer version.');
+                return;
+            }
+            
+            console.log('Template found, showing reading view'); // Debug log
+            showPage('reading-view');
+            
+            let story = templates[template].template;
+            Object.keys(templateData).forEach(key => {
+                story = story.replace(new RegExp(`{${key}}`, 'g'), templateData[key]);
+            });
+            
+            console.log('Generated story:', story); // Debug log
+            document.getElementById('completed-story').innerHTML = story;
+        }
+
+        function getCurrentChortleData() {
+            const hash = window.location.hash;
+            if (hash.startsWith('#chortle=')) {
+                try {
+                    const chortleData = hash.substring(9);
+                    return JSON.parse(atob(chortleData));
+                } catch (e) {
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        // Video functions (keeping existing api.video integration)
+        async function createVideoContainer() {
+            try {
+                const response = await fetch('https://ws.api.video/videos', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_VIDEO_CONFIG.apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: `Chortle Reading - ${Date.now()}`,
+                        description: 'A hilarious Mad Lib reading created with Chortle!',
+                        public: true,
+                        mp4Support: true
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to create video container: ${response.status}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('Error creating video container:', error);
+                throw error;
+            }
+        }
+
+        async function uploadVideoToApiVideo(videoBlob, videoId) {
+            try {
+                const formData = new FormData();
+                formData.append('file', videoBlob, 'chortle-recording.webm');
+
+                const uploadUrl = `https://ws.api.video/videos/${videoId}/source`;
+                
+                return new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    
+                    xhr.upload.addEventListener('progress', (event) => {
+                        if (event.lengthComputable) {
+                            const percentComplete = (event.loaded / event.total) * 100;
+                            updateUploadProgress(percentComplete);
+                        }
+                    });
+                    
+                    xhr.addEventListener('load', () => {
+                        if (xhr.status === 201) {
+                            resolve(JSON.parse(xhr.responseText));
+                        } else {
+                            reject(new Error(`Upload failed: ${xhr.status}`));
+                        }
+                    });
+                    
+                    xhr.addEventListener('error', () => {
+                        reject(new Error('Upload failed due to network error'));
+                    });
+                    
+                    xhr.open('POST', uploadUrl);
+                    xhr.setRequestHeader('Authorization', `Bearer ${API_VIDEO_CONFIG.apiKey}`);
+                    xhr.send(formData);
+                });
+            } catch (error) {
+                console.error('Error uploading video:', error);
+                throw error;
+            }
+        }
+
+        function updateUploadProgress(percent) {
+            const progressFill = document.getElementById('upload-progress-fill');
+            const uploadStatus = document.getElementById('upload-status');
+            
+            progressFill.style.width = `${percent}%`;
+            
+            if (percent < 100) {
+                uploadStatus.textContent = `Uploading... ${Math.round(percent)}%`;
+            } else {
+                uploadStatus.textContent = 'Processing video... This may take a moment.';
+            }
+        }
+
+        async function sendVideo() {
+            const recordedVideo = document.getElementById('recorded-video');
+            const videoBlob = recordedVideo.videoBlob;
+            
+            if (!videoBlob) {
+                showError('No video to send!');
+                return;
+            }
+            
+            document.getElementById('playback-area').style.display = 'none';
+            document.getElementById('upload-progress').style.display = 'block';
+            
+            try {
+                updateUploadProgress(10);
+                document.getElementById('upload-status').textContent = 'Creating video container...';
+                
+                const videoContainer = await createVideoContainer();
+                const videoId = videoContainer.videoId;
+                
+                updateUploadProgress(20);
+                document.getElementById('upload-status').textContent = 'Starting upload...';
+                
+                await uploadVideoToApiVideo(videoBlob, videoId);
+                
+                updateUploadProgress(95);
+                document.getElementById('upload-status').textContent = 'Finalizing upload...';
+                
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                const chortleData = getCurrentChortleData();
+                const linkData = {
+                    videoId: videoId,
+                    chortle: chortleData,
+                    uploadTime: Date.now()
+                };
+                
+                const encodedLinkData = btoa(JSON.stringify(linkData));
+                
+                // Fix URL generation for iframe context
+                let baseUrl;
+                if (window.location.origin === 'null' || window.location.origin.includes('srcdoc')) {
+                    // We're in an iframe/artifact context, use a relative URL
+                    baseUrl = window.location.href.split('#')[0];
+                } else {
+                    // Normal context
+                    baseUrl = window.location.origin + window.location.pathname;
+                }
+                
+                const playbackUrl = baseUrl + '#video=' + encodedLinkData;
+                
+                updateUploadProgress(100);
+                document.getElementById('upload-status').textContent = 'Upload complete!';
+                document.getElementById('playback-link').value = playbackUrl;
+                document.getElementById('upload-progress').style.display = 'none';
+                document.getElementById('video-sent').style.display = 'block';
+                
+                if (window.innerWidth <= 768) {
+                    setTimeout(() => {
+                        document.getElementById('video-sent').scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start' 
+                        });
+                    }, 300);
+                }
+                
+                if ('vibrate' in navigator) {
+                    navigator.vibrate([200, 100, 200]);
+                }
+                
+            } catch (error) {
+                console.error('Video upload failed:', error);
+                document.getElementById('upload-progress').style.display = 'none';
+                document.getElementById('playback-area').style.display = 'block';
+                
+                let errorMessage = 'Failed to upload video. ';
+                if (error.message.includes('network')) {
+                    errorMessage += 'Please check your internet connection and try again.';
+                } else if (error.message.includes('413')) {
+                    errorMessage += 'Video file is too large. Try recording a shorter video.';
+                } else {
+                    errorMessage += `Error details: ${error.message}`;
+                }
+                
+                showError(errorMessage);
+            }
+        }
+
+        function showVideoPlayback(encodedData) {
+            showPage('video-playback-view');
+            
+            try {
+                const linkData = JSON.parse(atob(encodedData));
+                const videoId = linkData.videoId;
+                const chortleData = linkData.chortle;
+                
+                const playerContainer = document.getElementById('api-video-player');
+                
+                // Try multiple embed formats
+                const embedUrl = `https://embed.api.video/vod/${videoId}`;
+                playerContainer.innerHTML = `
+                    <iframe
+                        src="${embedUrl}"
+                        width="100%"
+                        height="400"
+                        frameborder="0"
+                        scrolling="no"
+                        allowfullscreen="true"
+                        style="border-radius: 10px;">
+                    </iframe>
+                `;
+                
+                // Show original Mad Lib text
+                if (chortleData && chortleData.template) {
+                    const template = chortleData.template;
+                    const data = { ...chortleData };
+                    delete data.template;
+                    
+                    if (templates[template]) {
+                        let story = templates[template].template;
+                        Object.keys(data).forEach(key => {
+                            story = story.replace(new RegExp(`{${key}}`, 'g'), data[key]);
+                        });
+                        
+                        document.getElementById('original-chortle-text').innerHTML = story;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading video:', error);
+                showError(`Video not found or link is invalid.`);
+            }
+        }
+
+        // Video recording functions (keeping existing)
+        function setupVideoRecording() {
+            document.getElementById('start-camera').addEventListener('click', async () => {
+                const button = document.getElementById('start-camera');
+                button.classList.add('btn-loading');
+                button.disabled = true;
+                
+                try {
+                    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                    
+                    const constraints = {
+                        video: {
+                            width: isMobile ? { ideal: 720 } : { ideal: 1280 },
+                            height: isMobile ? { ideal: 1280 } : { ideal: 720 },
+                            facingMode: 'user',
+                            frameRate: { ideal: 30 }
+                        },
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true
+                        }
+                    };
+                    
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    
+                    const preview = document.getElementById('camera-preview');
+                    preview.srcObject = stream;
+                    preview.play().catch(e => console.log('Autoplay prevented:', e));
+                    
+                    document.getElementById('camera-setup').style.display = 'none';
+                    document.getElementById('recording-area').style.display = 'block';
+                    
+                } catch (err) {
+                    let errorMessage = 'Camera access is required to record your Chortle reading. ';
+                    
+                    if (err.name === 'NotAllowedError') {
+                        errorMessage += 'Please allow camera access and try again.';
+                    } else if (err.name === 'NotFoundError') {
+                        errorMessage += 'No camera found on this device.';
+                    } else {
+                        errorMessage += 'Please check your camera settings and try again.';
+                    }
+                    
+                    showError(errorMessage);
+                } finally {
+                    button.classList.remove('btn-loading');
+                    button.disabled = false;
+                }
+            });
+            
+            document.getElementById('start-recording').addEventListener('click', startRecording);
+            document.getElementById('stop-recording').addEventListener('click', stopRecording);
+            document.getElementById('re-record').addEventListener('click', () => {
+                document.getElementById('playback-area').style.display = 'none';
+                document.getElementById('recording-area').style.display = 'block';
+                recordedChunks = [];
+            });
+            document.getElementById('send-video').addEventListener('click', sendVideo);
+            document.getElementById('copy-playback-link').addEventListener('click', () => {
+                copyToClipboard('playback-link');
+            });
+        }
+        
+        function startRecording() {
+            recordedChunks = [];
+            recordingSeconds = 0;
+            
+            mediaRecorder = new MediaRecorder(stream, {
+                mimeType: MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4'
+            });
+            
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+            
+            mediaRecorder.onstop = () => {
+                const mimeType = mediaRecorder.mimeType || 'video/webm';
+                const blob = new Blob(recordedChunks, { type: mimeType });
+                const videoUrl = URL.createObjectURL(blob);
+                
+                const recordedVideo = document.getElementById('recorded-video');
+                recordedVideo.src = videoUrl;
+                recordedVideo.videoBlob = blob;
+                
+                document.getElementById('recording-area').style.display = 'none';
+                document.getElementById('playback-area').style.display = 'block';
+                
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+            };
+            
+            mediaRecorder.start();
+            
+            document.getElementById('start-recording').style.display = 'none';
+            document.getElementById('stop-recording').style.display = 'inline-block';
+            document.getElementById('recording-timer').style.display = 'inline-block';
+            
+            recordingTimer = setInterval(() => {
+                recordingSeconds++;
+                const minutes = Math.floor(recordingSeconds / 60);
+                const seconds = recordingSeconds % 60;
+                document.getElementById('recording-timer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (recordingSeconds >= 30) {
+                    stopRecording();
+                }
+            }, 1000);
+            
+            if ('vibrate' in navigator) {
+                navigator.vibrate(100);
+            }
+        }
+        
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+            
+            if (recordingTimer) {
+                clearInterval(recordingTimer);
+            }
+            
+            document.getElementById('start-recording').style.display = 'inline-block';
+            document.getElementById('stop-recording').style.display = 'none';
+            document.getElementById('recording-timer').style.display = 'none';
+            
+            if ('vibrate' in navigator) {
+                navigator.vibrate([100, 50, 100]);
+            }
+        }
+
+        // Create new buttons
+        document.getElementById('create-new').addEventListener('click', () => {
+            window.location.hash = '';
+            window.location.reload();
+        });
+        
+        document.getElementById('create-another').addEventListener('click', () => {
+            window.location.hash = '';
+            window.location.reload();
+        });
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing Chortle'); // Debug log
+            
+            // Test link generation functionality
+            function testLinkGeneration() {
+                console.log('Testing link generation...');
+                
+                const testData = {
+                    template: 'silly-story',
+                    name: 'Bob',
+                    adjective1: 'sparkly',
+                    animal: 'giraffe',
+                    verb1: 'danced',
+                    place: 'Mars',
+                    adjective2: 'magnificent',
+                    number: 47
+                };
+                
+                const encodedData = btoa(JSON.stringify(testData));
+                
+                // Fix URL generation for iframe context
+                let baseUrl;
+                if (window.location.origin === 'null' || window.location.origin.includes('srcdoc')) {
+                    // We're in an iframe/artifact context, use a relative URL
+                    baseUrl = window.location.href.split('#')[0];
+                } else {
+                    // Normal context
+                    baseUrl = window.location.origin + window.location.pathname;
+                }
+                
+                const testUrl = baseUrl + '#chortle=' + encodedData;
+                
+                console.log('Generated test URL:', testUrl);
+                console.log('You can copy this URL to test: ' + testUrl);
+                
+                // Test the decode process
+                const hash = '#chortle=' + encodedData;
+                if (hash.startsWith('#chortle=')) {
+                    try {
+                        const chortleData = hash.substring(9);
+                        const decoded = JSON.parse(atob(chortleData));
+                        console.log('✅ Decoding test passed:', decoded);
+                    } catch (e) {
+                        console.error('❌ Decoding test failed:', e);
+                    }
+                }
+            }
+            
+            // Run test
+            testLinkGeneration();
+            
+            // Check for incoming Chortle links first
+            checkForChortle();
+            
+            // Only set up creation interface if we're not viewing a Chortle
+            const hash = window.location.hash;
+            if (!hash.startsWith('#chortle=') && !hash.startsWith('#video=')) {
+                filterTemplates();
+                setupSearch();
+                setupCategoryFilters();
+                setupSharePage();
+            }
+            
+            setupVideoRecording();
+        });
+    </script>
+</body>
+</html>
