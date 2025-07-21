@@ -1,4 +1,4 @@
-/* Chortle v5.1 - App Initialization with Conditional History */
+/* Chortle v5.2 - App Initialization with New Features */
 
 // Main initialization function
 function initializeChortle() {
@@ -16,7 +16,17 @@ function initializeChortle() {
             showBrowserWarning();
         }
 
-        // History feature disabled in this version
+        // Show localStorage warning if not supported
+        if (!browserSupport.localStorage) {
+            showLocalStorageWarning();
+        }
+
+        // NEW: Show sharing capability info
+        if (browserSupport.webShare) {
+            console.log('✅ Native sharing supported - users can share directly to apps');
+        } else {
+            console.log('ℹ️ Native sharing not supported - will use clipboard fallback');
+        }
         
         // Initialize modules in order
         initializeModules();
@@ -39,6 +49,7 @@ function initializeChortle() {
         window.ChortleUtils.endTimer('app-init');
         
         console.log('✅ Chortle initialization complete');
+        console.log('🆕 New in v5.2: 60s videos, example words, native sharing, caption overlay');
         
         // Debug information
         if (window.ChortleDebug) {
@@ -60,18 +71,23 @@ function initializeModules() {
     // Config and Utils are already loaded (no init needed)
     
     // Templates (no init needed - just data)
-    console.log('✓ Templates loaded:', Object.keys(window.ChortleTemplates.templates).length, 'templates');
+    console.log('✓ Templates loaded:', Object.keys(window.ChortleTemplates.templates).length, 'templates with example words');
     
-    // History feature disabled in this version
-    console.log('⚠️ History feature disabled in this version');
+    // History system (must be before App initialization)
+    if (window.ChortleHistory) {
+        window.ChortleHistory.initialize();
+        console.log('✓ History module initialized');
+    } else {
+        console.warn('⚠️ History module not loaded - history features disabled');
+    }
     
     // App (main logic)
     window.ChortleApp.initialize();
-    console.log('✓ App module initialized');
+    console.log('✓ App module initialized with native sharing');
     
     // Video system
     window.ChortleVideo.initialize();
-    console.log('✓ Video module initialized');
+    console.log('✓ Video module initialized with caption overlay support');
     
     // Wizard (no separate init - setup on demand)
     console.log('✓ Wizard module ready');
@@ -169,10 +185,13 @@ function handleWindowResize() {
         window.ChortleApp.renderTemplates();
     }
     
-    // Adjust video elements if active
+    // Adjust caption overlay if recording is active
     if (window.ChortleState.stream) {
-        // Video is active - might need adjustments
-        console.log('Video active during resize');
+        const overlay = document.getElementById('caption-overlay');
+        if (overlay) {
+            console.log('Adjusting caption overlay for resize');
+            // Caption overlay will automatically adjust due to CSS responsive design
+        }
     }
 }
 
@@ -209,6 +228,40 @@ function showBrowserWarning() {
             warningDiv.remove();
         }
     }, 10000);
+}
+
+// Show localStorage warning
+function showLocalStorageWarning() {
+    const warningDiv = document.createElement('div');
+    warningDiv.className = 'localStorage-warning';
+    warningDiv.style.cssText = `
+        position: fixed;
+        top: 40px;
+        left: 0;
+        right: 0;
+        background: #17a2b8;
+        color: white;
+        padding: 10px;
+        text-align: center;
+        z-index: 9998;
+        font-size: 0.9em;
+    `;
+    
+    warningDiv.innerHTML = `
+        💾 History features disabled: Your browser doesn't support local storage.
+        <button onclick="this.parentElement.remove()" style="margin-left: 10px; background: none; border: 1px solid white; color: white; padding: 5px 10px; cursor: pointer;">
+            Dismiss
+        </button>
+    `;
+    
+    document.body.appendChild(warningDiv);
+    
+    // Auto-remove after 8 seconds
+    setTimeout(() => {
+        if (warningDiv.parentElement) {
+            warningDiv.remove();
+        }
+    }, 8000);
 }
 
 // Show initialization error
@@ -263,7 +316,22 @@ function setupDevelopmentHelpers() {
                 console.log('Current state:', window.ChortleState);
                 console.log('Browser support:', window.ChortleApp.checkBrowserSupport());
                 console.log('Performance timings:', window.performance.getEntriesByType('measure'));
-                console.log('History: disabled in this version');
+                
+                // History info
+                if (window.ChortleHistory) {
+                    console.log('History stats:', window.ChortleHistory.getStats());
+                    console.log('Recent history:', window.ChortleHistory.getHistory().slice(0, 3));
+                } else {
+                    console.log('History module not available');
+                }
+
+                // NEW: v5.2 feature status
+                console.log('🆕 v5.2 Features:');
+                console.log('  - Video length: 60 seconds');
+                console.log('  - Example words: ✅ Added to all templates');
+                console.log('  - Native sharing: ✅ Available');
+                console.log('  - Caption overlay: ✅ Implemented');
+                
                 console.groupEnd();
             },
             
@@ -289,36 +357,126 @@ function setupDevelopmentHelpers() {
                 return testUrl;
             },
             
+            // NEW: Test caption overlay
+            testCaptionOverlay: function() {
+                if (window.ChortleVideo && window.ChortleVideo.createCaptionOverlay) {
+                    const testText = "Yesterday, Bob went to the sparkly zoo. They saw a unicorn that danced all the way to Mars. It was so spectacular that Bob watched it for 42 hours straight!";
+                    window.ChortleVideo.createCaptionOverlay(testText);
+                    
+                    setTimeout(() => {
+                        const overlay = document.getElementById('caption-overlay');
+                        if (overlay) {
+                            overlay.style.display = 'block';
+                            overlay.style.opacity = '1';
+                            console.log('Caption overlay test displayed');
+                        }
+                    }, 100);
+                } else {
+                    console.log('Caption overlay functionality not available');
+                }
+            },
+            
+            // NEW: Test native sharing
+            testNativeSharing: async function() {
+                const testUrl = this.testTemplate();
+                
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: 'Test Chortle Share',
+                            text: 'Testing native sharing functionality',
+                            url: testUrl
+                        });
+                        console.log('Native sharing test successful');
+                    } catch (err) {
+                        console.log('Native sharing test cancelled or failed:', err);
+                    }
+                } else {
+                    console.log('Native sharing not supported on this device');
+                    // Test clipboard fallback
+                    const copySuccess = await window.ChortleUtils.copyToClipboard(testUrl);
+                    console.log('Clipboard fallback test:', copySuccess ? 'Success' : 'Failed');
+                }
+            },
+            
             // Reset everything
             reset: function() {
                 window.ChortleApp.resetApp();
                 console.log('App reset complete');
             },
             
-            // History debugging (disabled)
+            // History debugging
             showHistory: function() {
-                console.log('History feature is disabled in this version');
+                if (window.ChortleHistory) {
+                    const history = window.ChortleHistory.getHistory();
+                    console.table(history.map(entry => ({
+                        id: entry.id,
+                        template: entry.templateTitle,
+                        status: entry.status,
+                        created: window.ChortleHistory.formatDate(entry.createdAt)
+                    })));
+                } else {
+                    console.log('History module not available');
+                }
             },
             
             clearHistory: function() {
-                console.log('History feature is disabled in this version');
+                if (window.ChortleHistory) {
+                    window.ChortleHistory.clearHistory();
+                    console.log('History cleared');
+                } else {
+                    console.log('History module not available');
+                }
             },
             
-            // Export history (disabled)
+            // Export history for backup
             exportHistory: function() {
-                console.log('History feature is disabled in this version');
+                if (window.ChortleHistory) {
+                    window.ChortleHistory.exportHistory();
+                } else {
+                    console.log('History module not available');
+                }
             },
             
-            // Get detailed statistics (disabled)
+            // Get detailed statistics
             getHistoryStats: function() {
-                console.log('History feature is disabled in this version');
-                return null;
+                if (window.ChortleHistory) {
+                    const stats = window.ChortleHistory.getStats();
+                    console.log('History Statistics:', stats);
+                    return stats;
+                } else {
+                    console.log('History module not available');
+                    return null;
+                }
             },
             
-            // Generate test chortle (no history)
+            // Generate test chortle and save to history
             testWithHistory: function(templateKey = 'silly-story') {
-                console.log('History feature is disabled - using regular test instead');
-                return this.testTemplate(templateKey);
+                const testData = {
+                    template: templateKey,
+                    name: 'Debug User',
+                    adjective1: 'fantastic',
+                    animal: 'dragon',
+                    verb1: 'flew',
+                    place: 'Jupiter',
+                    adjective2: 'incredible',
+                    number: 99
+                };
+                
+                const encodedData = window.ChortleUtils.encodeChortleData(testData);
+                const testUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
+                
+                // Save to history
+                if (window.ChortleHistory) {
+                    const chortleId = window.ChortleHistory.saveChortle(testData, testUrl);
+                    console.log('Test chortle saved to history with ID:', chortleId);
+                    console.log('Test URL:', testUrl);
+                } else {
+                    console.log('History not available - only generating URL');
+                    console.log('Test URL:', testUrl);
+                }
+                
+                return testUrl;
             },
             
             // Show all available debug functions
@@ -326,9 +484,15 @@ function setupDevelopmentHelpers() {
                 console.group('🛠️ Chortle Debug Commands');
                 console.log('ChortleDebug.logInitialization() - Show initialization info');
                 console.log('ChortleDebug.testTemplate() - Generate test chortle');
+                console.log('ChortleDebug.testCaptionOverlay() - Test caption overlay');
+                console.log('ChortleDebug.testNativeSharing() - Test sharing functionality');
                 console.log('ChortleDebug.reset() - Reset app state');
                 console.log('ChortleDebug.getState() - Get current app state');
-                console.log('Note: History features disabled in this version');
+                console.log('ChortleDebug.showHistory() - Display history table');
+                console.log('ChortleDebug.clearHistory() - Clear all history');
+                console.log('ChortleDebug.exportHistory() - Export history as JSON');
+                console.log('ChortleDebug.getHistoryStats() - Get detailed statistics');
+                console.log('ChortleDebug.testWithHistory() - Generate test with history');
                 console.groupEnd();
             },
             
@@ -336,6 +500,7 @@ function setupDevelopmentHelpers() {
         });
         
         console.log('🛠️ Development helpers loaded. Use ChortleDebug.help() for commands.');
+        console.log('🆕 New debug commands: testCaptionOverlay(), testNativeSharing()');
     }
 }
 
