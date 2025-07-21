@@ -1,4 +1,4 @@
-/* Chortle v5.1 - Configuration & Global State */
+/* Chortle v5.2 - Updated Configuration */
 
 // API Configuration
 window.ChortleConfig = {
@@ -11,8 +11,8 @@ window.ChortleConfig = {
     
     // App Settings
     APP: {
-        maxRecordingTime: 30, // seconds
-        version: '5.1',
+        maxRecordingTime: 60, // UPDATED: Extended to 60 seconds
+        version: '5.2',
         maxFileSize: 50 * 1024 * 1024, // 50MB
         supportedVideoTypes: ['video/webm', 'video/mp4']
     },
@@ -22,7 +22,17 @@ window.ChortleConfig = {
         animationDuration: 300,
         autoScrollDelay: 300,
         copySuccessTimeout: 2000,
-        errorDisplayTimeout: 8000
+        errorDisplayTimeout: 8000,
+        // NEW: Caption overlay settings
+        captionOverlay: {
+            enabled: true,
+            fontSize: '1.1em',
+            lineHeight: '1.4',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            textColor: 'white',
+            padding: '15px',
+            maxLines: 3
+        }
     }
 };
 
@@ -75,6 +85,31 @@ window.ChortleUtils = {
             // Normal context
             return window.location.origin + window.location.pathname;
         }
+    },
+    
+    // NEW: Native sharing with fallback to copy
+    shareUrl: async function(url, title = 'Check out my Chortle!') {
+        // Try native Web Share API first (mobile browsers)
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: title,
+                    text: 'I created a hilarious Mad Lib for you to read! 🎭',
+                    url: url
+                });
+                return { success: true, method: 'native' };
+            } catch (err) {
+                // User cancelled or error - fall back to copy
+                console.log('Native share cancelled or failed:', err);
+            }
+        }
+        
+        // Fallback to clipboard
+        const copySuccess = await this.copyToClipboard(url);
+        return { 
+            success: copySuccess, 
+            method: copySuccess ? 'clipboard' : 'failed' 
+        };
     },
     
     // Copy to clipboard with fallback
@@ -199,6 +234,34 @@ window.ChortleUtils = {
             this.logError(error, 'decoding chortle data');
             return null;
         }
+    },
+    
+    // NEW: Format Mad Lib text for caption overlay
+    formatTextForCaptions: function(text) {
+        // Remove HTML tags and convert to plain text for caption display
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = text;
+        return tempDiv.textContent || tempDiv.innerText || '';
+    },
+    
+    // NEW: Split text into caption chunks
+    splitIntoChunks: function(text, maxChunkLength = 150) {
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim());
+        const chunks = [];
+        let currentChunk = '';
+        
+        sentences.forEach(sentence => {
+            const trimmed = sentence.trim();
+            if ((currentChunk + ' ' + trimmed).length <= maxChunkLength) {
+                currentChunk += (currentChunk ? ' ' : '') + trimmed;
+            } else {
+                if (currentChunk) chunks.push(currentChunk + '.');
+                currentChunk = trimmed;
+            }
+        });
+        
+        if (currentChunk) chunks.push(currentChunk + '.');
+        return chunks;
     }
 };
 
