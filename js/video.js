@@ -1,10 +1,10 @@
-/* Chortle v5.1 - Video Recording & Playback (History Disabled) */
+/* Chortle v5.2 - Video Recording & Playback with Caption Overlay */
 
 window.ChortleVideo = {
     // Initialize video system
     initialize: function() {
         this.setupEventListeners();
-        console.log('Video system initialized');
+        console.log('Video system initialized with caption overlay support');
     },
 
     // Setup all video-related event listeners
@@ -78,6 +78,9 @@ window.ChortleVideo = {
             document.getElementById('camera-setup').style.display = 'none';
             document.getElementById('recording-area').style.display = 'block';
 
+            // NEW: Setup caption overlay
+            this.setupCaptionOverlay();
+
             // Auto-scroll to recording controls on mobile
             setTimeout(() => {
                 window.ChortleUtils.scrollToElement('recording-area');
@@ -88,6 +91,129 @@ window.ChortleVideo = {
         } finally {
             button.classList.remove('btn-loading');
             button.disabled = false;
+        }
+    },
+
+    // NEW: Setup caption overlay for the current chortle
+    setupCaptionOverlay: function() {
+        const chortleData = this.getCurrentChortleData();
+        if (!chortleData) {
+            console.log('No chortle data found for caption overlay');
+            return;
+        }
+
+        // Get the rendered Mad Lib text
+        const template = chortleData.template;
+        const templateData = { ...chortleData };
+        delete templateData.template;
+
+        const templateObj = window.ChortleTemplates.getTemplate(template);
+        if (!templateObj) {
+            console.log('Template not found for caption overlay');
+            return;
+        }
+
+        const story = window.ChortleTemplates.renderTemplate(template, templateData);
+        
+        // Convert to plain text for captions
+        const plainText = window.ChortleUtils.formatTextForCaptions(story);
+        
+        // Create caption overlay element
+        this.createCaptionOverlay(plainText);
+    },
+
+    // NEW: Create caption overlay element
+    createCaptionOverlay: function(text) {
+        // Remove existing overlay if any
+        const existingOverlay = document.getElementById('caption-overlay');
+        if (existingOverlay) {
+            existingOverlay.remove();
+        }
+
+        // Create overlay container
+        const overlay = document.createElement('div');
+        overlay.id = 'caption-overlay';
+        overlay.className = 'caption-overlay';
+        
+        // Split text into manageable chunks
+        const chunks = window.ChortleUtils.splitIntoChunks(text, 120);
+        
+        // Create caption text element
+        const captionText = document.createElement('div');
+        captionText.className = 'caption-text';
+        captionText.textContent = chunks.join(' ');
+        
+        overlay.appendChild(captionText);
+        
+        // Insert overlay into recording area
+        const recordingArea = document.getElementById('recording-area');
+        const videoElement = document.getElementById('camera-preview');
+        
+        if (recordingArea && videoElement) {
+            // Position overlay relative to video
+            recordingArea.style.position = 'relative';
+            overlay.style.position = 'absolute';
+            overlay.style.top = '10px';
+            overlay.style.left = '10px';
+            overlay.style.right = '10px';
+            overlay.style.zIndex = '10';
+            overlay.style.pointerEvents = 'none'; // Don't block video interactions
+            
+            // Apply caption styling from config
+            const captionConfig = window.ChortleConfig.UI.captionOverlay;
+            overlay.style.backgroundColor = captionConfig.backgroundColor;
+            overlay.style.color = captionConfig.textColor;
+            overlay.style.padding = captionConfig.padding;
+            overlay.style.borderRadius = '8px';
+            overlay.style.fontSize = captionConfig.fontSize;
+            overlay.style.lineHeight = captionConfig.lineHeight;
+            overlay.style.textAlign = 'center';
+            overlay.style.maxHeight = '150px';
+            overlay.style.overflow = 'hidden';
+            overlay.style.display = 'none'; // Hidden by default
+            
+            recordingArea.appendChild(overlay);
+            
+            console.log('Caption overlay created and positioned');
+        }
+    },
+
+    // NEW: Show caption overlay during recording
+    showCaptionOverlay: function() {
+        const overlay = document.getElementById('caption-overlay');
+        if (overlay) {
+            overlay.style.display = 'block';
+            // Add fade-in animation
+            overlay.style.opacity = '0';
+            overlay.style.transition = 'opacity 0.3s ease';
+            
+            setTimeout(() => {
+                overlay.style.opacity = '1';
+            }, 100);
+            
+            console.log('Caption overlay shown');
+        }
+    },
+
+    // NEW: Hide caption overlay
+    hideCaptionOverlay: function() {
+        const overlay = document.getElementById('caption-overlay');
+        if (overlay) {
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 300);
+            
+            console.log('Caption overlay hidden');
+        }
+    },
+
+    // NEW: Remove caption overlay
+    removeCaptionOverlay: function() {
+        const overlay = document.getElementById('caption-overlay');
+        if (overlay) {
+            overlay.remove();
+            console.log('Caption overlay removed');
         }
     },
 
@@ -145,11 +271,16 @@ window.ChortleVideo = {
         document.getElementById('stop-recording').style.display = 'inline-block';
         document.getElementById('recording-timer').style.display = 'inline-block';
 
+        // NEW: Show caption overlay during recording
+        this.showCaptionOverlay();
+
         // Start timer
         this.startTimer();
 
         // Haptic feedback
         window.ChortleUtils.vibrate(100);
+
+        console.log('Recording started with caption overlay');
     },
 
     // Start recording timer
@@ -186,8 +317,13 @@ window.ChortleVideo = {
         document.getElementById('stop-recording').style.display = 'none';
         document.getElementById('recording-timer').style.display = 'none';
 
+        // NEW: Hide caption overlay
+        this.hideCaptionOverlay();
+
         // Haptic feedback
         window.ChortleUtils.vibrate([100, 50, 100]);
+
+        console.log('Recording stopped, caption overlay hidden');
     },
 
     // Handle recording stop event
@@ -214,6 +350,9 @@ window.ChortleVideo = {
         if (window.ChortleState.stream) {
             window.ChortleState.stream.getTracks().forEach(track => track.stop());
         }
+
+        // NEW: Remove caption overlay
+        this.removeCaptionOverlay();
     },
 
     // Re-record video
@@ -221,6 +360,9 @@ window.ChortleVideo = {
         document.getElementById('playback-area').style.display = 'none';
         document.getElementById('recording-area').style.display = 'block';
         window.ChortleState.recordedChunks = [];
+
+        // NEW: Recreate caption overlay for re-recording
+        this.setupCaptionOverlay();
 
         // Auto-scroll on mobile
         window.ChortleUtils.scrollToElement('recording-area');
@@ -265,7 +407,12 @@ window.ChortleVideo = {
             const encodedLinkData = window.ChortleUtils.encodeChortleData(linkData);
             const playbackUrl = window.ChortleUtils.getBaseUrl() + '#video=' + encodedLinkData;
 
-            // Show success (no history update in this version)
+            // Update chortle status in history
+            if (chortleData && window.ChortleApp.updateChortleStatus) {
+                window.ChortleApp.updateChortleStatus(chortleData, playbackUrl);
+            }
+
+            // Show success
             this.updateUploadProgress(100, 'Upload complete!');
             document.getElementById('playback-link').value = playbackUrl;
             document.getElementById('upload-progress').style.display = 'none';
@@ -557,10 +704,15 @@ window.ChortleVideo = {
             window.ChortleState.recordingTimer = null;
         }
 
+        // NEW: Remove caption overlay
+        this.removeCaptionOverlay();
+
         // Reset state
         window.ChortleState.mediaRecorder = null;
         window.ChortleState.recordedChunks = [];
         window.ChortleState.recordingSeconds = 0;
+
+        console.log('Video cleanup complete');
     }
 };
 
