@@ -1,4 +1,4 @@
-/* Chortle v5.1 - Main App Logic (History Disabled) */
+/* Chortle v5.2 - App Logic with Native Sharing */
 
 window.ChortleApp = {
     // Initialize the main app
@@ -11,6 +11,11 @@ window.ChortleApp = {
         this.setupCategoryFilters();
         this.setupSharePage();
         this.setupNavigation();
+        
+        // Initialize history system
+        if (window.ChortleHistory) {
+            window.ChortleHistory.initialize();
+        }
         
         console.log('App initialization complete');
     },
@@ -158,13 +163,13 @@ window.ChortleApp = {
 
     // Setup share page functionality
     setupSharePage: function() {
-        // Share button
+        // UPDATED: Share button with native sharing
         const shareBtn = document.getElementById('share-btn');
         if (shareBtn) {
-            shareBtn.addEventListener('click', () => this.generateShareLink());
+            shareBtn.addEventListener('click', () => this.generateAndShareLink());
         }
 
-        // Copy link button
+        // UPDATED: Copy link button (fallback)
         const copyBtn = document.getElementById('copy-link');
         if (copyBtn) {
             copyBtn.addEventListener('click', () => this.copyShareLink());
@@ -177,49 +182,108 @@ window.ChortleApp = {
         }
     },
 
-    // Generate shareable link
-    generateShareLink: function() {
+    // UPDATED: Generate and immediately share link with native sharing
+    generateAndShareLink: async function() {
         const shareBtn = document.getElementById('share-btn');
+        const originalText = shareBtn.textContent;
         shareBtn.classList.add('btn-loading');
         shareBtn.disabled = true;
 
-        // Add delay for better UX perception
-        setTimeout(() => {
+        try {
+            const wizardData = window.ChortleWizard.getWizardData();
+            
+            if (!wizardData || !wizardData.template) {
+                throw new Error('No wizard data available');
+            }
+
+            console.log('Generating link with data:', wizardData);
+
+            const encodedData = window.ChortleUtils.encodeChortleData(wizardData);
+            if (!encodedData) {
+                throw new Error('Failed to encode chortle data');
+            }
+
+            const shareableUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
+            console.log('Generated URL:', shareableUrl);
+
+            // Save to history
+            if (window.ChortleHistory) {
+                const chortleId = window.ChortleHistory.saveChortle(wizardData, shareableUrl);
+                if (chortleId) {
+                    console.log('Chortle saved to history with ID:', chortleId);
+                    window.ChortleState.currentChortleId = chortleId;
+                }
+            }
+
+            // Try native sharing first
+            const shareResult = await window.ChortleUtils.shareUrl(
+                shareableUrl, 
+                'Check out my hilarious Chortle!'
+            );
+
+            if (shareResult.success) {
+                if (shareResult.method === 'native') {
+                    // Native sharing succeeded
+                    shareBtn.textContent = '✅ Shared!';
+                    shareBtn.style.background = '#28a745';
+                    
+                    setTimeout(() => {
+                        shareBtn.textContent = originalText;
+                        shareBtn.style.background = '';
+                    }, 3000);
+                } else if (shareResult.method === 'clipboard') {
+                    // Fallback to clipboard succeeded
+                    shareBtn.textContent = '📋 Copied to Clipboard!';
+                    shareBtn.style.background = '#17a2b8';
+                    
+                    // Also show the link section for manual sharing
+                    document.getElementById('generated-link').value = shareableUrl;
+                    document.getElementById('link-section').classList.add('active');
+                    window.ChortleUtils.scrollToElement('link-section');
+                    
+                    setTimeout(() => {
+                        shareBtn.textContent = originalText;
+                        shareBtn.style.background = '';
+                    }, 3000);
+                }
+            } else {
+                // Both native and clipboard failed - show link manually
+                throw new Error('Sharing and clipboard access failed');
+            }
+
+        } catch (error) {
+            console.error('Share error:', error);
+            
+            // Fallback: show link section for manual copying
             try {
                 const wizardData = window.ChortleWizard.getWizardData();
-                
-                if (!wizardData || !wizardData.template) {
-                    throw new Error('No wizard data available');
-                }
-
-                console.log('Generating link with data:', wizardData);
-
                 const encodedData = window.ChortleUtils.encodeChortleData(wizardData);
-                if (!encodedData) {
-                    throw new Error('Failed to encode chortle data');
-                }
-
                 const shareableUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
-                console.log('Generated URL:', shareableUrl);
-
-                // Display the link (no history saving in this version)
+                
                 document.getElementById('generated-link').value = shareableUrl;
                 document.getElementById('link-section').classList.add('active');
-
-                // Auto-scroll on mobile
                 window.ChortleUtils.scrollToElement('link-section');
-
-            } catch (error) {
-                console.error('Link generation error:', error);
-                this.showError('Failed to generate link. Please try again.');
-            } finally {
-                shareBtn.classList.remove('btn-loading');
-                shareBtn.disabled = false;
+                
+                shareBtn.textContent = '📱 Link Ready Below';
+                shareBtn.style.background = '#ffc107';
+                shareBtn.style.color = '#000';
+                
+                setTimeout(() => {
+                    shareBtn.textContent = originalText;
+                    shareBtn.style.background = '';
+                    shareBtn.style.color = '';
+                }, 3000);
+                
+            } catch (fallbackError) {
+                this.showError('Failed to generate sharing link. Please try again.');
             }
-        }, 800);
+        } finally {
+            shareBtn.classList.remove('btn-loading');
+            shareBtn.disabled = false;
+        }
     },
 
-    // Copy share link
+    // UPDATED: Copy share link (now used as fallback)
     copyShareLink: function() {
         const linkInput = document.getElementById('generated-link');
         const copyBtn = document.getElementById('copy-link');
@@ -270,7 +334,8 @@ window.ChortleApp = {
             searchTerm: '',
             currentStep: 0,
             wizardData: {},
-            currentPage: 'template-selection-page'
+            currentPage: 'template-selection-page',
+            currentChortleId: null
         });
 
         // Reset search
@@ -296,7 +361,9 @@ window.ChortleApp = {
         }
 
         // Clean up video resources
-        window.ChortleVideo.cleanup();
+        if (window.ChortleVideo) {
+            window.ChortleVideo.cleanup();
+        }
 
         // Re-render templates
         this.renderTemplates();
@@ -334,10 +401,38 @@ window.ChortleApp = {
         const story = window.ChortleTemplates.renderTemplate(template, templateData);
         document.getElementById('completed-story').innerHTML = story;
 
-        // Store the chortle data for reference
+        // Store the chortle data for potential history updates
         window.ChortleState.currentChortleData = data;
 
         console.log('Generated story displayed');
+    },
+
+    // Update chortle status when video is completed
+    updateChortleStatus: function(chortleData, videoUrl) {
+        if (!chortleData || !window.ChortleHistory) return;
+
+        // Try to find the chortle in history by matching the data
+        const history = window.ChortleHistory.getHistory();
+        const matchingChortle = history.find(entry => {
+            // Match by template and key fields
+            if (entry.template !== chortleData.template) return false;
+            
+            // Check if all fields match
+            const entryFields = entry.fields || {};
+            const chortleFields = { ...chortleData };
+            delete chortleFields.template;
+            
+            return Object.keys(chortleFields).every(key => {
+                return entryFields[key] === chortleFields[key];
+            });
+        });
+
+        if (matchingChortle) {
+            window.ChortleHistory.markCompleted(matchingChortle.id, videoUrl);
+            console.log('Updated chortle status to completed:', matchingChortle.id);
+        } else {
+            console.log('Could not find matching chortle in history for status update');
+        }
     },
 
     // Show error message
@@ -389,7 +484,9 @@ window.ChortleApp = {
             try {
                 const videoData = hash.substring(7);
                 console.log('Found video data:', videoData);
-                window.ChortleVideo.showVideoPlayback(videoData);
+                if (window.ChortleVideo) {
+                    window.ChortleVideo.showVideoPlayback(videoData);
+                }
                 return true;
             } catch (e) {
                 console.error('Invalid video data:', e);
@@ -408,7 +505,7 @@ window.ChortleApp = {
             currentPage: window.ChortleState.currentPage,
             templateStats: window.ChortleTemplates.getStats(),
             wizardState: window.ChortleWizard ? window.ChortleWizard.debug() : null,
-            historyNote: 'History feature disabled in this version'
+            historyStats: window.ChortleHistory ? window.ChortleHistory.getStats() : null
         };
     },
 
@@ -439,7 +536,9 @@ window.ChortleApp = {
                 } catch (e) {
                     return false;
                 }
-            })()
+            })(),
+            // NEW: Check for native sharing support
+            webShare: !!(navigator.share)
         };
 
         console.log('Browser support check:', features);
@@ -449,9 +548,14 @@ window.ChortleApp = {
             console.warn('Video recording not supported in this browser');
         }
 
-        // Note: localStorage check kept for compatibility but no warning shown
         if (!features.localStorage) {
-            console.log('localStorage not supported - history feature already disabled');
+            console.warn('localStorage not supported - history will not be saved');
+        }
+
+        if (features.webShare) {
+            console.log('✅ Native sharing supported');
+        } else {
+            console.log('ℹ️ Native sharing not supported - will use clipboard fallback');
         }
 
         return features;
@@ -470,7 +574,9 @@ window.ChortleApp = {
 
     // Handle window beforeunload (cleanup)
     handleBeforeUnload: function() {
-        window.ChortleVideo.cleanup();
+        if (window.ChortleVideo) {
+            window.ChortleVideo.cleanup();
+        }
     }
 };
 
