@@ -1,4 +1,4 @@
-/* Chortle v5.1 - Clean Modern Styles with Orange Accents */
+/* Chortle v5.2 - Core Styles with Caption Overlay */
 
 * {
     margin: 0;
@@ -8,9 +8,17 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: linear-gradient(135deg, #FDF6F0 0%, #FAF0E6 50%, #F5F0EA 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
     min-height: 100vh;
-    color: #2D3748;
+    color: #333;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 /* Layout */
@@ -27,7 +35,7 @@ body {
 .header {
     text-align: center;
     margin-bottom: 30px;
-    color: #2D3748;
+    color: white;
     animation: fadeInDown 0.8s ease-out;
 }
 
@@ -45,33 +53,32 @@ body {
 .header h1 {
     font-size: 2.8em;
     margin-bottom: 10px;
+    text-shadow: 0 4px 8px rgba(0,0,0,0.3);
     font-weight: 700;
-    color: #1A202C;
 }
 
 .header p {
     font-size: 1.1em;
-    opacity: 0.8;
-    font-weight: 400;
-    color: #4A5568;
+    opacity: 0.95;
+    font-weight: 300;
 }
 
 .simple-intro {
     text-align: center;
-    color: #4A5568;
+    color: white;
     font-size: 1em;
+    opacity: 0.9;
     margin-bottom: 30px;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 12px;
 }
 
 /* Page System */
 .page {
-    background: white;
-    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
     padding: 40px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     animation: fadeInUp 0.8s ease-out;
     flex: 1;
     display: none;
@@ -103,7 +110,7 @@ body {
 /* Template Selection */
 .template-selector h2 {
     margin-bottom: 25px;
-    color: #1A202C;
+    color: #4a5568;
     font-size: 1.8em;
     font-weight: 600;
     text-align: center;
@@ -116,96 +123,95 @@ body {
 .search-input {
     width: 100%;
     padding: 15px 20px;
-    border: 1px solid #E2E8F0;
-    border-radius: 12px;
+    border: 2px solid rgba(102, 126, 234, 0.3);
+    border-radius: 15px;
     font-size: 1em;
-    background: #F7FAFC;
+    background: rgba(255, 255, 255, 0.8);
     transition: all 0.3s ease;
-    color: #2D3748;
 }
 
 .search-input:focus {
     outline: none;
-    border-color: #E85A4F;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(232, 90, 79, 0.1);
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .template-categories {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     margin-bottom: 25px;
     flex-wrap: wrap;
     justify-content: center;
 }
 
 .category-btn {
-    padding: 10px 16px;
-    border: 1px solid #E2E8F0;
-    background: white;
+    padding: 8px 16px;
+    border: 2px solid rgba(102, 126, 234, 0.3);
+    background: rgba(102, 126, 234, 0.1);
     border-radius: 20px;
     cursor: pointer;
     transition: all 0.3s ease;
     font-family: inherit;
     font-size: 0.9em;
-    color: #4A5568;
+    color: #667eea;
     font-weight: 500;
 }
 
 .category-btn:hover {
-    border-color: #E85A4F;
-    color: #E85A4F;
-    transform: translateY(-1px);
+    background: rgba(102, 126, 234, 0.2);
+    transform: translateY(-2px);
 }
 
 .category-btn.active {
-    background: #E85A4F;
+    background: #667eea;
     color: white;
-    border-color: #E85A4F;
+    transform: translateY(-2px);
 }
 
 .template-buttons {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 15px;
 }
 
 .template-btn {
     padding: 20px;
-    border: 1px solid #E2E8F0;
-    background: white;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
     border-radius: 16px;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-family: inherit;
     font-size: 1em;
     text-align: left;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    position: relative;
+    overflow: hidden;
 }
 
 .template-btn:hover {
-    border-color: #E85A4F;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    background: rgba(102, 126, 234, 0.05);
+    border-color: #667eea;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
 }
 
 .template-btn-title {
     font-weight: 600;
     font-size: 1.1em;
-    margin-bottom: 6px;
-    color: #1A202C;
+    margin-bottom: 5px;
 }
 
 .template-btn-desc {
     font-size: 0.9em;
-    color: #718096;
+    opacity: 0.8;
     line-height: 1.4;
 }
 
 .templates-empty {
     text-align: center;
     padding: 40px 20px;
-    color: #718096;
+    color: #666;
 }
 
 /* Wizard */
@@ -215,28 +221,27 @@ body {
 }
 
 .wizard-header h2 {
-    color: #1A202C;
+    color: #4a5568;
     font-size: 1.6em;
     margin-bottom: 10px;
-    font-weight: 600;
 }
 
 .wizard-header .template-name {
-    color: #E85A4F;
+    color: #667eea;
     font-weight: 600;
     font-size: 1.1em;
 }
 
 .progress-bar {
-    background: #F7FAFC;
+    background: #f0f0f0;
     border-radius: 10px;
-    height: 6px;
+    height: 8px;
     margin: 20px 0;
     overflow: hidden;
 }
 
 .progress-fill {
-    background: #E85A4F;
+    background: linear-gradient(90deg, #667eea, #764ba2);
     height: 100%;
     border-radius: 10px;
     transition: width 0.3s ease;
@@ -247,7 +252,7 @@ body {
     text-align: center;
     margin-top: 10px;
     font-size: 0.9em;
-    color: #718096;
+    color: #666;
 }
 
 .wizard-step {
@@ -277,7 +282,7 @@ body {
 
 .step-question {
     font-size: 1.4em;
-    color: #1A202C;
+    color: #4a5568;
     margin-bottom: 25px;
     font-weight: 600;
 }
@@ -285,23 +290,24 @@ body {
 .step-input {
     width: 100%;
     max-width: 400px;
-    padding: 16px 20px;
-    border: 1px solid #E2E8F0;
-    border-radius: 12px;
+    padding: 20px;
+    border: 3px solid rgba(102, 126, 234, 0.3);
+    border-radius: 15px;
     font-size: 1.2em;
     font-family: inherit;
     text-align: center;
     transition: all 0.3s ease;
-    background: white;
+    background: rgba(255, 255, 255, 0.9);
 }
 
 .step-input:focus {
     outline: none;
-    border-color: #E85A4F;
-    box-shadow: 0 0 0 3px rgba(232, 90, 79, 0.1);
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
 }
 
-.step-input.valid {
+.step-input:valid {
     border-color: #48bb78;
 }
 
@@ -314,46 +320,43 @@ body {
 }
 
 .nav-btn {
-    padding: 12px 24px;
-    border: 1px solid #E2E8F0;
-    border-radius: 10px;
-    font-size: 1em;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1em;
     cursor: pointer;
     transition: all 0.3s ease;
     font-family: inherit;
-    font-weight: 500;
+    font-weight: 600;
     min-width: 120px;
 }
 
 .nav-btn:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
 }
 
 .btn-back {
-    background: white;
-    color: #4A5568;
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 2px solid #e9ecef;
 }
 
 .btn-back:hover {
-    background: #F7FAFC;
-    border-color: #CBD5E0;
+    background: #e9ecef;
+    border-color: #adb5bd;
 }
 
 .btn-next {
-    background: #E85A4F;
+    background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
-    border-color: #E85A4F;
 }
 
 .btn-next:hover {
-    background: #D44A3A;
-    box-shadow: 0 4px 12px rgba(232, 90, 79, 0.2);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
 }
 
 .btn-next:disabled {
-    background: #CBD5E0;
-    color: #A0AEC0;
-    border-color: #CBD5E0;
+    background: #cbd5e0;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
@@ -365,10 +368,9 @@ body {
 }
 
 .ready-content h2 {
-    color: #1A202C;
+    color: #28a745;
     font-size: 1.8em;
     margin-bottom: 20px;
-    font-weight: 600;
 }
 
 .success-icon {
@@ -384,11 +386,11 @@ body {
 }
 
 .share-instructions {
-    background: #F7FAFC;
+    background: #e3f2fd;
     border-radius: 15px;
     padding: 25px;
     margin: 25px 0;
-    border-left: 4px solid #E85A4F;
+    border-left: 4px solid #2196f3;
 }
 
 .share-step {
@@ -396,11 +398,10 @@ body {
     align-items: center;
     margin: 15px 0;
     font-size: 1em;
-    color: #2D3748;
 }
 
 .share-step-number {
-    background: #E85A4F;
+    background: #2196f3;
     color: white;
     width: 28px;
     height: 28px;
@@ -414,31 +415,29 @@ body {
 }
 
 .share-btn {
-    background: #E85A4F;
+    background: linear-gradient(135deg, #28a745, #20c997);
     color: white;
     border: none;
-    padding: 16px 32px;
-    border-radius: 12px;
-    font-size: 1.2em;
+    padding: 20px 40px;
+    border-radius: 15px;
+    font-size: 1.3em;
     cursor: pointer;
     transition: all 0.3s ease;
     font-family: inherit;
     font-weight: 600;
     width: 100%;
-    margin: 15px 0;
-    box-shadow: 0 4px 12px rgba(232, 90, 79, 0.2);
+    margin: 20px 0;
 }
 
 .share-btn:hover {
-    background: #D44A3A;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(232, 90, 79, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(40, 167, 69, 0.3);
 }
 
 .link-section {
     margin-top: 20px;
     padding: 20px;
-    background: #F7FAFC;
+    background: #f8f9fa;
     border-radius: 15px;
     display: none;
 }
@@ -456,28 +455,27 @@ body {
 
 .link-input {
     flex: 1;
-    padding: 12px 15px;
-    border: 1px solid #E2E8F0;
+    padding: 15px;
+    border: 1px solid #ddd;
     border-radius: 8px;
     font-family: monospace;
     font-size: 0.9em;
     background: white;
-    color: #2D3748;
 }
 
 .copy-btn {
-    padding: 12px 20px;
-    background: #E85A4F;
+    padding: 15px 20px;
+    background: #28a745;
     color: white;
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 500;
+    transition: background 0.3s ease;
+    font-weight: 600;
 }
 
 .copy-btn:hover {
-    background: #D44A3A;
+    background: #218838;
 }
 
 /* Loading States */
@@ -510,17 +508,16 @@ body {
     font-size: 1.3em;
     line-height: 1.6;
     padding: 30px;
-    background: #F7FAFC;
+    background: #f8f9fa;
     border-radius: 15px;
-    border-left: 4px solid #E85A4F;
+    border-left: 4px solid #667eea;
     margin: 20px 0;
-    color: #2D3748;
 }
 
 .filled-word {
-    color: #E85A4F;
+    color: #764ba2;
     font-weight: bold;
-    background: #FDF2F0;
+    background: #e7e3ff;
     padding: 2px 6px;
     border-radius: 4px;
 }
@@ -528,9 +525,9 @@ body {
 .video-section {
     margin: 30px 0;
     padding: 20px;
-    background: #F7FAFC;
+    background: #f8f9fa;
     border-radius: 15px;
-    border-left: 4px solid #E85A4F;
+    border-left: 4px solid #764ba2;
 }
 
 .camera-setup, .recording-area, .playback-area {
@@ -538,7 +535,7 @@ body {
 }
 
 .camera-setup h4, .playback-area h4 {
-    color: #1A202C;
+    color: #764ba2;
     margin-bottom: 10px;
 }
 
@@ -548,6 +545,77 @@ body {
     border-radius: 10px;
     margin: 20px 0;
     background: #000;
+}
+
+/* NEW: Caption Overlay Styles */
+.caption-overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    z-index: 10;
+    pointer-events: none;
+    
+    /* Default styling - overridden by JavaScript config */
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 1.1em;
+    line-height: 1.4;
+    text-align: center;
+    
+    /* Smooth transitions */
+    transition: opacity 0.3s ease;
+    
+    /* Typography optimizations for caption reading */
+    font-weight: 500;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    
+    /* Mobile optimizations */
+    max-height: 150px;
+    overflow: hidden;
+    word-wrap: break-word;
+    
+    /* Ensure good contrast */
+    backdrop-filter: blur(5px);
+}
+
+.caption-text {
+    /* Add subtle animation for better readability */
+    animation: captionFadeIn 0.5s ease-out;
+}
+
+@keyframes captionFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile caption overlay adjustments */
+@media (max-width: 768px) {
+    .caption-overlay {
+        font-size: 1rem;
+        padding: 12px;
+        max-height: 120px;
+        top: 5px;
+        left: 5px;
+        right: 5px;
+    }
+}
+
+/* Very small mobile screens */
+@media (max-width: 480px) {
+    .caption-overlay {
+        font-size: 0.9rem;
+        padding: 10px;
+        max-height: 100px;
+    }
 }
 
 .recording-controls, .playback-controls {
@@ -561,48 +629,42 @@ body {
 
 .video-btn {
     padding: 12px 20px;
-    border: 1px solid #E2E8F0;
+    border: none;
     border-radius: 8px;
     font-size: 1em;
     font-family: inherit;
     cursor: pointer;
     transition: all 0.3s ease;
     min-width: 140px;
-    font-weight: 500;
 }
 
 .video-btn:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
 }
 
 #start-camera {
-    background: #E85A4F;
+    background: #667eea;
     color: white;
-    border-color: #E85A4F;
 }
 
 .record-btn {
     background: #dc3545;
     color: white;
-    border-color: #dc3545;
 }
 
 .stop-btn {
     background: #6c757d;
     color: white;
-    border-color: #6c757d;
 }
 
 .send-btn {
     background: #28a745;
     color: white;
-    border-color: #28a745;
 }
 
 #re-record {
     background: #ffc107;
     color: #000;
-    border-color: #ffc107;
 }
 
 .timer {
@@ -616,8 +678,8 @@ body {
 }
 
 .watermark-notice {
-    background: #FFF3CD;
-    border: 1px solid #FFEAA7;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
     border-radius: 8px;
     padding: 15px;
     margin: 15px 0;
@@ -632,9 +694,9 @@ body {
 .upload-progress {
     margin: 20px 0;
     padding: 15px;
-    background: #E3F2FD;
+    background: #e3f2fd;
     border-radius: 10px;
-    border-left: 4px solid #2196F3;
+    border-left: 4px solid #2196f3;
 }
 
 .upload-progress-bar {
@@ -655,8 +717,8 @@ body {
 .video-sent {
     text-align: center;
     padding: 20px;
-    background: #D4EDDA;
-    border: 1px solid #C3E6CB;
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
     border-radius: 10px;
     color: #155724;
 }
@@ -667,7 +729,7 @@ body {
 
 .create-new-btn {
     margin-top: 20px;
-    background: #E85A4F;
+    background: #667eea;
     color: white;
     border: none;
     padding: 15px 30px;
@@ -676,17 +738,16 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     font-family: inherit;
-    font-weight: 500;
 }
 
 .create-new-btn:hover {
-    background: #D44A3A;
+    background: #5a6c7d;
     transform: translateY(-2px);
 }
 
 .error-message {
-    background: #F8D7DA;
-    border: 1px solid #F5C6CB;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
     border-radius: 8px;
     padding: 15px;
     margin: 15px 0;
@@ -699,4 +760,22 @@ body {
 
 .playback-video-area {
     margin: 20px 0;
+}
+
+/* NEW: Recording area improvements for caption overlay */
+.recording-area {
+    position: relative; /* Ensure proper positioning context for caption overlay */
+}
+
+/* Improve video preview positioning for caption overlay */
+#camera-preview {
+    position: relative;
+    z-index: 1;
+}
+
+/* Ensure recording controls don't interfere with caption overlay */
+.recording-controls {
+    position: relative;
+    z-index: 11; /* Higher than caption overlay */
+    margin-top: 10px;
 }
