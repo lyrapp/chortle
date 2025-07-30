@@ -57,11 +57,10 @@ window.ChortleVideo = {
             // Mobile-optimized camera constraints
             const constraints = {
                 video: {
-                    width: window.ChortleUtils.isMobile() ? { ideal: 480, min: 320 } : { ideal: 1280, min: 640 },
-                    height: window.ChortleUtils.isMobile() ? { ideal: 640, min: 480 } : { ideal: 720, min: 360 },
+                    width: { ideal: 720, min: 480 },
+                    height: { ideal: 1280, min: 720 },
                     facingMode: 'user',
-                    frameRate: { ideal: 30 },
-                    aspectRatio: window.ChortleUtils.isMobile() ? { ideal: 3/4 } : { ideal: 16/9 }
+                    frameRate: { ideal: 30 }
                 },
                 audio: {
                     echoCancellation: true,
@@ -72,15 +71,29 @@ window.ChortleVideo = {
 
             window.ChortleState.stream = await navigator.mediaDevices.getUserMedia(constraints);
 
-            const preview = document.getElementById('camera-preview');
+           const preview = document.getElementById('camera-preview');
             preview.srcObject = window.ChortleState.stream;
             preview.play().catch(e => console.log('Autoplay prevented:', e));
-
-            // Show recording area
+            
+            // Show recording area and make it full-screen
             document.getElementById('camera-setup').style.display = 'none';
             document.getElementById('recording-area').style.display = 'block';
+            
+            // Make recording area full-screen like Snapchat
+            const recordingArea = document.getElementById('recording-area');
+            recordingArea.classList.add('fullscreen-recording');
+            
+            // Hide other page elements during recording
+            document.querySelector('.header').style.display = 'block';
+            document.querySelector('.simple-intro').style.display = 'block';
+            const completedStory = document.getElementById('completed-story');
+            if (completedStory) {
+                completedStory.style.display = 'block';
+            }
+            const recordingArea = document.getElementById('recording-area');
+            recordingArea.classList.remove('fullscreen-recording');
 
-            // NEW: Setup caption overlay
+            // Setup caption overlay
             this.setupCaptionOverlay();
 
             // Auto-scroll to recording controls on mobile
