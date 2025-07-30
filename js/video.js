@@ -84,15 +84,13 @@ window.ChortleVideo = {
             recordingArea.classList.add('fullscreen-recording');
             
             // Hide other page elements during recording
-            document.querySelector('.header').style.display = 'block';
-            document.querySelector('.simple-intro').style.display = 'block';
+            document.querySelector('.header').style.display = 'none';
+            document.querySelector('.simple-intro').style.display = 'none';
             const completedStory = document.getElementById('completed-story');
             if (completedStory) {
-                completedStory.style.display = 'block';
+                completedStory.style.display = 'none';
             }
-            const recordingArea = document.getElementById('recording-area');
-            recordingArea.classList.remove('fullscreen-recording');
-
+            
             // Setup caption overlay
             this.setupCaptionOverlay();
 
@@ -391,7 +389,17 @@ window.ChortleVideo = {
         if (window.ChortleState.stream) {
             window.ChortleState.stream.getTracks().forEach(track => track.stop());
         }
-
+        
+        // Restore normal layout
+        document.querySelector('.header').style.display = 'block';
+        document.querySelector('.simple-intro').style.display = 'block';
+        const completedStory = document.getElementById('completed-story');
+        if (completedStory) {
+            completedStory.style.display = 'block';
+        }
+        const recordingArea = document.getElementById('recording-area');
+        recordingArea.classList.remove('fullscreen-recording');
+        
         // NEW: Remove caption overlay
         this.removeCaptionOverlay();
     },
