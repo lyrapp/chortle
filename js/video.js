@@ -57,14 +57,16 @@ window.ChortleVideo = {
             // Mobile-optimized camera constraints
             const constraints = {
                 video: {
-                    width: window.ChortleUtils.isMobile() ? { ideal: 720 } : { ideal: 1280 },
-                    height: window.ChortleUtils.isMobile() ? { ideal: 1280 } : { ideal: 720 },
+                    width: { ideal: 1280, min: 640 },
+                    height: { ideal: 720, min: 360 },
                     facingMode: 'user',
-                    frameRate: { ideal: 30 }
+                    frameRate: { ideal: 30 },
+                    aspectRatio: { ideal: 16/9 }
                 },
                 audio: {
                     echoCancellation: true,
-                    noiseSuppression: true
+                    noiseSuppression: true,
+                    autoGainControl: true
                 }
             };
 
