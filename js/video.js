@@ -126,59 +126,82 @@ window.ChortleVideo = {
 
     // NEW: Create caption overlay element
     createCaptionOverlay: function(text) {
-        // Remove existing overlay if any
-        const existingOverlay = document.getElementById('caption-overlay');
-        if (existingOverlay) {
-            existingOverlay.remove();
-        }
+    // Remove existing overlay if any
+    const existingOverlay = document.getElementById('caption-overlay');
+    if (existingOverlay) {
+        existingOverlay.remove();
+    }
 
-        // Create overlay container
-        const overlay = document.createElement('div');
-        overlay.id = 'caption-overlay';
-        overlay.className = 'caption-overlay';
+    // Create overlay container
+    const overlay = document.createElement('div');
+    overlay.id = 'caption-overlay';
+    overlay.className = 'caption-overlay';
+    
+    // Split text into manageable chunks for mobile
+    const maxLength = window.ChortleUtils.isMobile() ? 100 : 120;
+    const chunks = window.ChortleUtils.splitIntoChunks(text, maxLength);
+    
+    // Create caption text element
+    const captionText = document.createElement('div');
+    captionText.className = 'caption-text';
+    captionText.textContent = chunks.join(' ');
+    
+    overlay.appendChild(captionText);
+    
+    // Insert overlay into recording area with better mobile positioning
+    const recordingArea = document.getElementById('recording-area');
+    const videoElement = document.getElementById('camera-preview');
+    
+    if (recordingArea && videoElement) {
+        // Ensure recording area is positioned
+        recordingArea.style.position = 'relative';
         
-        // Split text into manageable chunks
-        const chunks = window.ChortleUtils.splitIntoChunks(text, 120);
+        // UPDATED: Better mobile caption positioning
+        overlay.style.position = 'absolute';
+        overlay.style.zIndex = '10';
+        overlay.style.pointerEvents = 'none';
         
-        // Create caption text element
-        const captionText = document.createElement('div');
-        captionText.className = 'caption-text';
-        captionText.textContent = chunks.join(' ');
-        
-        overlay.appendChild(captionText);
-        
-        // Insert overlay into recording area
-        const recordingArea = document.getElementById('recording-area');
-        const videoElement = document.getElementById('camera-preview');
-        
-        if (recordingArea && videoElement) {
-            // Position overlay relative to video
-            recordingArea.style.position = 'relative';
-            overlay.style.position = 'absolute';
+        // Apply responsive positioning
+        if (window.ChortleUtils.isMobile()) {
+            overlay.style.top = '5px';
+            overlay.style.left = '5px';
+            overlay.style.right = '5px';
+            overlay.style.maxHeight = '80px';
+        } else {
             overlay.style.top = '10px';
             overlay.style.left = '10px';
             overlay.style.right = '10px';
-            overlay.style.zIndex = '10';
-            overlay.style.pointerEvents = 'none'; // Don't block video interactions
-            
-            // Apply caption styling from config
-            const captionConfig = window.ChortleConfig.UI.captionOverlay;
-            overlay.style.backgroundColor = captionConfig.backgroundColor;
-            overlay.style.color = captionConfig.textColor;
+            overlay.style.maxHeight = '120px';
+        }
+        
+        // Apply caption styling from config with mobile optimizations
+        const captionConfig = window.ChortleConfig.UI.captionOverlay;
+        overlay.style.backgroundColor = captionConfig.backgroundColor;
+        overlay.style.color = captionConfig.textColor;
+        overlay.style.borderRadius = '8px';
+        overlay.style.textAlign = 'center';
+        overlay.style.overflow = 'hidden';
+        overlay.style.display = 'none';
+        overlay.style.wordWrap = 'break-word';
+        overlay.style.backdropFilter = 'blur(3px)';
+        
+        // Mobile-specific styling
+        if (window.ChortleUtils.isMobile()) {
+            overlay.style.padding = '8px 10px';
+            overlay.style.fontSize = '0.85rem';
+            overlay.style.lineHeight = '1.2';
+            overlay.style.borderRadius = '6px';
+        } else {
             overlay.style.padding = captionConfig.padding;
-            overlay.style.borderRadius = '8px';
             overlay.style.fontSize = captionConfig.fontSize;
             overlay.style.lineHeight = captionConfig.lineHeight;
-            overlay.style.textAlign = 'center';
-            overlay.style.maxHeight = '150px';
-            overlay.style.overflow = 'hidden';
-            overlay.style.display = 'none'; // Hidden by default
-            
-            recordingArea.appendChild(overlay);
-            
-            console.log('Caption overlay created and positioned');
         }
-    },
+        
+        recordingArea.appendChild(overlay);
+        
+        console.log('Caption overlay created with mobile optimizations');
+    }
+},
 
     // NEW: Show caption overlay during recording
     showCaptionOverlay: function() {
