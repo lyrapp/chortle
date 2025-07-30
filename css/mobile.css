@@ -476,3 +476,30 @@
         line-height: 1.5;
     }
 }
+
+/* Mobile fullscreen recording */
+@media (max-width: 768px) {
+    .fullscreen-recording .recording-controls {
+        bottom: 40px !important;
+        padding: 15px !important;
+    }
+    
+    .fullscreen-recording .timer {
+        top: 40px !important;
+        right: 15px !important;
+        font-size: 1rem !important;
+    }
+    
+    .fullscreen-recording .caption-overlay {
+        bottom: 120px !important;
+        left: 15px !important;
+        right: 15px !important;
+        font-size: 0.9rem !important;
+        padding: 12px !important;
+    }
+    
+    .primary-btn {
+        padding: 18px 35px !important;
+        font-size: 1.2em !important;
+    }
+}
