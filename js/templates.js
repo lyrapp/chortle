@@ -4,7 +4,6 @@ window.ChortleTemplates = {
     // All Chortle templates
     templates: {
         'silly-story': {
-            'silly-story': {
             title: 'Silly Zoo Adventure',
             category: 'funny',
             description: 'A wacky day at the zoo with unexpected animals',
