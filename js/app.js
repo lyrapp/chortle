@@ -216,10 +216,11 @@ window.ChortleApp = {
             }
 
             // Try native sharing first
-            const shareResult = await window.ChortleUtils.shareUrl(
+           const shareResult = await window.ChortleUtils.shareUrl(
                 shareableUrl, 
                 'Check out my hilarious Chortle!'
             );
+
 
             if (shareResult.success) {
                 if (shareResult.method === 'native') {
