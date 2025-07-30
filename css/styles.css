@@ -541,10 +541,12 @@ body {
 
 #camera-preview, #recorded-video {
     width: 100%;
-    max-width: 500px;
+    max-width: 600px;
+    aspect-ratio: 16/9;
     border-radius: 10px;
     margin: 20px 0;
     background: #000;
+    object-fit: cover;
 }
 
 /* NEW: Caption Overlay Styles */
@@ -600,21 +602,22 @@ body {
 /* Mobile caption overlay adjustments */
 @media (max-width: 768px) {
     .caption-overlay {
-        font-size: 1rem;
-        padding: 12px;
-        max-height: 120px;
-        top: 5px;
-        left: 5px;
-        right: 5px;
+        font-size: 0.85rem !important;
+        padding: 8px 10px !important;
+        max-height: 80px !important;
+        top: 5px !important;
+        left: 5px !important;
+        right: 5px !important;
+        line-height: 1.2 !important;
     }
 }
 
 /* Very small mobile screens */
 @media (max-width: 480px) {
     .caption-overlay {
-        font-size: 0.9rem;
-        padding: 10px;
-        max-height: 100px;
+        font-size: 0.8rem !important;
+        padding: 6px 8px !important;
+        max-height: 70px !important;
     }
 }
 
