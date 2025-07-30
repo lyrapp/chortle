@@ -57,11 +57,11 @@ window.ChortleVideo = {
             // Mobile-optimized camera constraints
             const constraints = {
                 video: {
-                    width: { ideal: 1280, min: 640 },
-                    height: { ideal: 720, min: 360 },
+                    width: window.ChortleUtils.isMobile() ? { ideal: 480, min: 320 } : { ideal: 1280, min: 640 },
+                    height: window.ChortleUtils.isMobile() ? { ideal: 640, min: 480 } : { ideal: 720, min: 360 },
                     facingMode: 'user',
                     frameRate: { ideal: 30 },
-                    aspectRatio: { ideal: 16/9 }
+                    aspectRatio: window.ChortleUtils.isMobile() ? { ideal: 3/4 } : { ideal: 16/9 }
                 },
                 audio: {
                     echoCancellation: true,
@@ -310,16 +310,19 @@ window.ChortleVideo = {
 
     // Start recording timer
     startTimer: function() {
+        // Start countdown from max recording time
+        window.ChortleState.recordingSeconds = window.ChortleConfig.APP.maxRecordingTime;
+        
         window.ChortleState.recordingTimer = setInterval(() => {
-            window.ChortleState.recordingSeconds++;
+            window.ChortleState.recordingSeconds--;
             const minutes = Math.floor(window.ChortleState.recordingSeconds / 60);
             const seconds = window.ChortleState.recordingSeconds % 60;
             
             document.getElementById('recording-timer').textContent = 
                 `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
-            // Auto-stop at max recording time
-            if (window.ChortleState.recordingSeconds >= window.ChortleConfig.APP.maxRecordingTime) {
+    
+            // Auto-stop when countdown reaches 0
+            if (window.ChortleState.recordingSeconds <= 0) {
                 this.stopRecording();
             }
         }, 1000);
