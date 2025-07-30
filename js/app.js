@@ -115,32 +115,6 @@ window.ChortleApp = {
         }
     },
 
-    // Setup search functionality
-    setupSearch: function() {
-        const searchInput = document.getElementById('template-search');
-        if (!searchInput) return;
-
-        // Debounced search to avoid excessive filtering
-        let searchTimeout;
-        
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                window.ChortleState.searchTerm = e.target.value.toLowerCase();
-                this.renderTemplates();
-            }, 300); // 300ms debounce
-        });
-
-        // Clear search on escape
-        searchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                searchInput.value = '';
-                window.ChortleState.searchTerm = '';
-                this.renderTemplates();
-            }
-        });
-    },
-
     // Setup category filtering
     setupCategoryFilters: function() {
         document.querySelectorAll('.category-btn').forEach(btn => {
@@ -337,12 +311,6 @@ window.ChortleApp = {
             currentPage: 'template-selection-page',
             currentChortleId: null
         });
-
-        // Reset search
-        const searchInput = document.getElementById('template-search');
-        if (searchInput) {
-            searchInput.value = '';
-        }
 
         // Reset category filter
         document.querySelectorAll('.category-btn').forEach(btn => {
