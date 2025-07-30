@@ -489,7 +489,7 @@ window.ChortleVideo = {
             },
             body: JSON.stringify({
                 title: `Chortle Reading - ${Date.now()}`,
-                description: 'A hilarious Mad Lib reading created with Chortle!',
+                description: 'A hilarious Chortle reading created with Chortle!',
                 public: true,
                 mp4Support: true
             })
