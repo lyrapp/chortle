@@ -541,12 +541,28 @@ body {
 
 #camera-preview, #recorded-video {
     width: 100%;
-    max-width: 600px;
-    aspect-ratio: 16/9;
+    max-width: 400px;
     border-radius: 10px;
     margin: 20px 0;
     background: #000;
     object-fit: cover;
+}
+
+/* Mobile-specific video sizing */
+@media (max-width: 768px) {
+    #camera-preview, #recorded-video {
+        max-width: 100%;
+        aspect-ratio: 3/4;
+        max-height: 70vh;
+    }
+}
+
+/* Desktop video sizing */
+@media (min-width: 769px) {
+    #camera-preview, #recorded-video {
+        aspect-ratio: 16/9;
+        max-width: 600px;
+    }
 }
 
 /* NEW: Caption Overlay Styles */
