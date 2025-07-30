@@ -1,9 +1,10 @@
 /* Chortle v5.2 - Templates with Example Words */
 
 window.ChortleTemplates = {
-    // All Mad Lib templates
+    // All Chortle templates
     templates: {
         'silly-story': {
+            'silly-story': {
             title: 'Silly Zoo Adventure',
             category: 'funny',
             description: 'A wacky day at the zoo with unexpected animals',
