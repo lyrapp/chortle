@@ -7,7 +7,6 @@ window.ChortleApp = {
         
         // Setup core functionality
         this.setupTemplateSelection();
-        this.setupSearch();
         this.setupCategoryFilters();
         this.setupSharePage();
         this.setupNavigation();
