@@ -10,7 +10,8 @@ window.ChortleApp = {
         this.setupCategoryFilters();
         this.setupSharePage();
         this.setupNavigation();
-        
+        this.setupIntroPage();
+
         // Initialize history system
         if (window.ChortleHistory) {
             window.ChortleHistory.initialize();
@@ -287,6 +288,19 @@ window.ChortleApp = {
         });
     },
 
+    // Setup intro page functionality
+    setupIntroPage: function() {
+        const getStartedBtn = document.getElementById('get-started-btn');
+        if (getStartedBtn) {
+            getStartedBtn.addEventListener('click', () => this.startChortle());
+        }
+    },
+
+    // Start chortle creation from intro
+    startChortle: function() {
+        this.showPage('template-selection-page');
+    },
+ 
     // Create new chortle (reset app)
     createNewChortle: function() {
         // Clear URL hash
