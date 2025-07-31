@@ -705,3 +705,23 @@
         font-family: 'JetBrains Mono', monospace;
     }
 }
+
+/* Intro page mobile styles */
+@media (max-width: 768px) {
+    .intro-content {
+        padding: 10px 0;
+        min-height: 300px;
+    }
+    
+    .intro-tagline h2 {
+        font-size: 1.8em;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+    }
+    
+    .illustration-placeholder {
+        padding: 40px 15px;
+        min-height: 150px;
+        font-size: 1em;
+    }
+}
