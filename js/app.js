@@ -288,7 +288,41 @@ window.ChortleApp = {
         });
     },
 
-    // Setup intro page functionality
+    // // Setup intro page functionality
+setupIntroPage: function() {
+    console.log('Setting up intro page...');
+    
+    const getStartedBtn = document.getElementById('get-started-btn');
+    if (getStartedBtn) {
+        console.log('✓ Get Started button found, adding event listener');
+        getStartedBtn.addEventListener('click', () => {
+            console.log('Get Started button clicked');
+            this.startChortle();
+        });
+    } else {
+        console.error('❌ Get Started button not found!');
+        // Try again after a short delay
+        setTimeout(() => {
+            console.log('Retrying to find Get Started button...');
+            const retryBtn = document.getElementById('get-started-btn');
+            if (retryBtn) {
+                console.log('✓ Get Started button found on retry');
+                retryBtn.addEventListener('click', () => {
+                    console.log('Get Started button clicked (retry)');
+                    this.startChortle();
+                });
+            } else {
+                console.error('❌ Get Started button still not found on retry');
+            }
+        }, 100);
+    }
+},
+
+// Start chortle creation from intro  
+startChortle: function() {
+    console.log('Starting chortle creation...');
+    this.showPage('template-selection-page');
+}, page functionality
     setupIntroPage: function() {
         const getStartedBtn = document.getElementById('get-started-btn');
         if (getStartedBtn) {
