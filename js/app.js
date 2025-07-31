@@ -288,42 +288,75 @@ window.ChortleApp = {
         });
     },
 
-    // Setup intro page functionality
+// Setup intro page functionality
     setupIntroPage: function() {
         console.log('Setting up intro page...');
-    
-    const getStartedBtn = document.getElementById('get-started-btn');
-    if (getStartedBtn) {
-        console.log('✓ Get Started button found, adding event listener');
-        getStartedBtn.addEventListener('click', () => {
-            console.log('Get Started button clicked');
-            this.startChortle();
-        });
-    } else {
-        console.error('❌ Get Started button not found!');
-        // Try again after a short delay
-        setTimeout(() => {
-            console.log('Retrying to find Get Started button...');
-            const retryBtn = document.getElementById('get-started-btn');
-            if (retryBtn) {
-                console.log('✓ Get Started button found on retry');
-                retryBtn.addEventListener('click', () => {
-                    console.log('Get Started button clicked (retry)');
-                    this.startChortle();
-                });
-            } else {
-                console.error('❌ Get Started button still not
-
-// Start chortle creation from intro  
-startChortle: function() {
-    console.log('Starting chortle creation...');
-    this.showPage('template-selection-page');
-}, page functionality
-    setupIntroPage: function() {
+        
         const getStartedBtn = document.getElementById('get-started-btn');
         if (getStartedBtn) {
-            getStartedBtn.addEventListener('click', () => this.startChortle());
+            console.log('✓ Get Started button found, adding event listener');
+            getStartedBtn.addEventListener('click', () => {
+                console.log('Get Started button clicked');
+                this.startChortle();
+            });
+        } else {
+            console.error('❌ Get Started button not found!');
+            // Try again after a short delay
+            setTimeout(() => {
+                console.log('Retrying to find Get Started button...');
+                const retryBtn = document.getElementById('get-started-btn');
+                if (retryBtn) {
+                    console.log('✓ Get Started button found on retry');
+                    retryBtn.addEventListener('click', () => {
+                        console.log('Get Started button clicked (retry)');
+                        this.startChortle();
+                    });
+                } else {
+                    console.error('❌ Get Started button still not found on retry');
+                }
+            }, 500);
         }
+
+        // Initialize Lottie animation
+        this.initializeLottieAnimation();
+    },
+
+    // Initialize Lottie animation on intro page
+    initializeLottieAnimation: function() {
+        console.log('Initializing Lottie animation...');
+        
+        const animationContainer = document.getElementById('lottie-animation');
+        if (!animationContainer) {
+            console.error('Lottie animation container not found');
+            return;
+        }
+
+        if (typeof lottie === 'undefined') {
+            console.error('Lottie library not loaded');
+            return;
+        }
+
+        try {
+            // Load the animation
+            lottie.loadAnimation({
+                container: animationContainer,
+                renderer: 'svg',
+                loop: true,
+                autoplay: true,
+                path: 'intro-animation.json' // Path to your animation file
+            });
+            console.log('✓ Lottie animation loaded successfully');
+        } catch (error) {
+            console.error('Failed to load Lottie animation:', error);
+            // Fallback: show placeholder text
+            animationContainer.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #00BBF9; font-size: 3em;">🎭</div>';
+        }
+    },
+
+    // Start chortle creation from intro
+    startChortle: function() {
+        console.log('Starting chortle creation...');
+        this.showPage('template-selection-page');
     },
 
     // Start chortle creation from intro
