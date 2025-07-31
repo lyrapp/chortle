@@ -141,17 +141,17 @@ function setupGlobalEventListeners() {
 }
 
 // Setup creation interface (for normal app usage)
-function setupCreationInterface() {
-    console.log('Setting up creation interface...');
-    
-    // Show template selection page
-    window.ChortleApp.showPage('template-selection-page');
-    
-    // Initial template render
-    window.ChortleApp.renderTemplates();
-    
-    console.log('✓ Creation interface ready');
-}
+    function setupCreationInterface() {
+        console.log('Setting up creation interface...');
+        
+        // Show intro page first
+        window.ChortleApp.showPage('intro-page');
+        
+        // Pre-render templates for faster transition
+        window.ChortleApp.renderTemplates();
+        
+        console.log('✓ Creation interface ready');
+    },
 
 // Setup error handling
 function setupErrorHandling() {
