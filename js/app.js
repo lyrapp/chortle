@@ -10,7 +10,7 @@ window.ChortleApp = {
         this.setupCategoryFilters();
         this.setupSharePage();
         this.setupNavigation();
-        this.setupIntroPage();
+        this.setupIntroPage(); // Make sure this is called
 
         // Initialize history system
         if (window.ChortleHistory) {
