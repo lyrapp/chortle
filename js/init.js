@@ -151,7 +151,7 @@ function setupGlobalEventListeners() {
         window.ChortleApp.renderTemplates();
         
         console.log('✓ Creation interface ready');
-    },
+    }
 
 // Setup error handling
 function setupErrorHandling() {
