@@ -288,9 +288,9 @@ window.ChortleApp = {
         });
     },
 
-    // // Setup intro page functionality
-setupIntroPage: function() {
-    console.log('Setting up intro page...');
+    // Setup intro page functionality
+    setupIntroPage: function() {
+        console.log('Setting up intro page...');
     
     const getStartedBtn = document.getElementById('get-started-btn');
     if (getStartedBtn) {
@@ -312,11 +312,7 @@ setupIntroPage: function() {
                     this.startChortle();
                 });
             } else {
-                console.error('❌ Get Started button still not found on retry');
-            }
-        }, 100);
-    }
-},
+                console.error('❌ Get Started button still not
 
 // Start chortle creation from intro  
 startChortle: function() {
