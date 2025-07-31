@@ -886,15 +886,6 @@ body {
     min-height: 400px;
 }
 
-.intro-logo {
-    margin-bottom: 30px;
-}
-
-.intro-wordmark {
-    max-height: 100px;
-    width: auto;
-}
-
 .intro-tagline {
     margin-bottom: 40px;
 }
