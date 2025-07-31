@@ -874,3 +874,77 @@ body {
     text-align: center;
     padding: 40px 20px;
 }
+
+/* Intro Page */
+.intro-content {
+    text-align: center;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+}
+
+.intro-logo {
+    margin-bottom: 30px;
+}
+
+.intro-wordmark {
+    max-height: 100px;
+    width: auto;
+}
+
+.intro-tagline {
+    margin-bottom: 40px;
+}
+
+.intro-tagline h2 {
+    font-size: 2.2em;
+    font-weight: 700;
+    color: #2D3748;
+    margin: 0;
+}
+
+.intro-illustration {
+    margin-bottom: 50px;
+    width: 100%;
+    max-width: 300px;
+}
+
+.illustration-placeholder {
+    background: rgba(0, 187, 249, 0.1);
+    border: 2px dashed rgba(0, 187, 249, 0.3);
+    border-radius: 20px;
+    padding: 60px 20px;
+    font-size: 1.2em;
+    color: #00BBF9;
+    font-weight: 500;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Mobile intro page adjustments */
+@media (max-width: 768px) {
+    .intro-content {
+        padding: 10px 0;
+        min-height: 300px;
+    }
+    
+    .intro-wordmark {
+        max-height: 70px;
+    }
+    
+    .intro-tagline h2 {
+        font-size: 1.8em;
+    }
+    
+    .illustration-placeholder {
+        padding: 40px 15px;
+        min-height: 150px;
+        font-size: 1em;
+    }
+}
