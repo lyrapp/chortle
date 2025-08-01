@@ -1,18 +1,27 @@
 /* Chortle v5.2 - Clean Modern Design with New Color Palette */
 
-/* Force light mode for form elements in Safari */
+/* Force light mode for form elements in Safari - aggressive approach */
 :root {
-    color-scheme: light;
+    color-scheme: light only;
 }
 
-/* Ensure form elements stay consistent */
-input, textarea, select, button {
-    color-scheme: light;
+/* Ensure form elements stay consistent - override everything */
+input, textarea, select, button, 
+.step-input, .search-input, .link-input {
+    color-scheme: light only !important;
+    -webkit-color-scheme: light !important;
 }
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+
+/* Disable automatic dark mode entirely */
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: light only;
+    }
+    
+    input, textarea, select, button {
+        color-scheme: light only !important;
+        -webkit-color-scheme: light !important;
+    }
 }
 
 body {
