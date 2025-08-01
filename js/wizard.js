@@ -159,6 +159,7 @@ setupEventListeners: function(template) {
         }
 
     // Auto-scroll disabled to prevent unwanted page movement
+        },
 
     // Update progress bar
     updateProgress: function() {
