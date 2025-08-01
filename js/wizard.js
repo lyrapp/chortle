@@ -79,17 +79,10 @@ window.ChortleWizard = {
             });
 
             // Mobile keyboard handling
-            input.addEventListener('focus', (e) => {
-                if (window.ChortleUtils.isSmallScreen()) {
-                    setTimeout(() => {
-                        e.target.scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'center' 
-                        });
-                    }, window.ChortleConfig.UI.autoScrollDelay);
-                }
+            // Mobile keyboard handling (disabled auto-scroll)
+                input.addEventListener('focus', (e) => {
+    // Auto-scroll disabled to prevent unwanted page jumps
             });
-        });
 
         // Back button navigation
         document.querySelectorAll('.btn-back').forEach(btn => {
