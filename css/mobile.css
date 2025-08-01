@@ -66,6 +66,24 @@
         line-height: 1.5;
     }
 
+@media (max-width: 768px) {
+    .template-btn-icon {
+        margin-bottom: 12px;
+    }
+    
+    .template-icon-img {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    .template-icon-img {
+        width: 36px;
+        height: 36px;
+    }
+}
+
     /* Wizard Mobile */
     .step-input {
         padding: 18px;
