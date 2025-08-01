@@ -12,8 +12,12 @@
     margin-bottom: 5px;
 }
 
+.header {
+    margin-bottom: 15px;
+}
+  
     .page {
-    padding: 15px;
+    padding: 8px 15px 15px 15px;
     border-radius: 20px;
     }
 
