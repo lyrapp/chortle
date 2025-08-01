@@ -32,8 +32,10 @@ window.ChortleApp = {
         if (targetPage) {
             targetPage.classList.add('active');
             window.ChortleState.currentPage = pageId;
-            
-            // Auto-scroll disabled to prevent unwanted page movement
+        } else {
+            console.error('Page not found:', pageId);
+        }
+    },
 
     // Setup template selection functionality
     setupTemplateSelection: function() {
