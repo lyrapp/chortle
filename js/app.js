@@ -103,21 +103,8 @@ window.ChortleApp = {
 
     // Setup category filtering
     setupCategoryFilters: function() {
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                // Remove active class from all buttons
-                document.querySelectorAll('.category-btn').forEach(b => {
-                    b.classList.remove('active');
-                });
-                
-                // Add active class to clicked button
-                btn.classList.add('active');
-
-                // Update state and re-render
-                window.ChortleState.currentCategory = btn.dataset.category;
-                this.renderTemplates();
-            });
-        });
+        // Category filtering disabled - always show all templates
+        console.log('Category filtering disabled');
     },
 
     // Setup share page functionality
@@ -325,11 +312,7 @@ window.ChortleApp = {
             currentChortleId: null
         });
 
-        // Reset category filter
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        document.querySelector('[data-category="all"]')?.classList.add('active');
+        // Category filtering disabled - no reset needed
 
         // Reset wizard
         window.ChortleWizard.reset();
