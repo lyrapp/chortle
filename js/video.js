@@ -456,11 +456,6 @@ window.ChortleVideo = {
             const encodedLinkData = window.ChortleUtils.encodeChortleData(linkData);
             const playbackUrl = window.ChortleUtils.getBaseUrl() + '#video=' + encodedLinkData;
 
-            // Update chortle status in history
-            if (chortleData && window.ChortleApp.updateChortleStatus) {
-                window.ChortleApp.updateChortleStatus(chortleData, playbackUrl);
-            }
-
             // Show success
             this.updateUploadProgress(100, 'Upload complete!');
             document.getElementById('playback-link').value = playbackUrl;
