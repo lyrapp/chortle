@@ -70,6 +70,9 @@ window.ChortleApp = {
                 button.className = 'template-btn';
                 button.dataset.template = key;
                 button.innerHTML = `
+                    <div class="template-btn-icon">
+                        <img src="${template.icon}" alt="${template.title}" class="template-icon-img">
+                    </div>
                     <div class="template-btn-title">${template.title}</div>
                     <div class="template-btn-desc">${template.description}</div>
                 `;
