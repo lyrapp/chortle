@@ -63,43 +63,44 @@ window.ChortleWizard = {
     },
 
     // Setup event listeners for wizard
-    setupEventListeners: function(template) {
-        // Input validation
-        document.querySelectorAll('.step-input').forEach(input => {
-            input.addEventListener('input', () => this.validateCurrentStep());
-            
-            // Enter key navigation
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    const nextBtn = input.closest('.wizard-step').querySelector('.btn-next');
-                    if (!nextBtn.disabled) {
-                        nextBtn.click();
-                    }
+    // Setup event listeners for wizard
+setupEventListeners: function(template) {
+    // Input validation
+    document.querySelectorAll('.step-input').forEach(input => {
+        input.addEventListener('input', () => this.validateCurrentStep());
+        
+        // Enter key navigation
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const nextBtn = input.closest('.wizard-step').querySelector('.btn-next');
+                if (!nextBtn.disabled) {
+                    nextBtn.click();
                 }
-            });
-
-            // Mobile keyboard handling
-            // Mobile keyboard handling (disabled auto-scroll)
-                input.addEventListener('focus', (e) => {
-    // Auto-scroll disabled to prevent unwanted page jumps
-            });
-
-        // Back button navigation
-        document.querySelectorAll('.btn-back').forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (window.ChortleState.currentStep > 0) {
-                    this.showStep(window.ChortleState.currentStep - 1);
-                }
-            });
+            }
         });
 
-        // Next button navigation
-        document.querySelectorAll('.btn-next').forEach(btn => {
-            btn.addEventListener('click', () => {
-                this.handleNext(template);
-            });
+        // Mobile keyboard handling (disabled auto-scroll)
+        input.addEventListener('focus', (e) => {
+            // Auto-scroll disabled to prevent unwanted page jumps
         });
-    },
+    });
+
+    // Back button navigation
+    document.querySelectorAll('.btn-back').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (window.ChortleState.currentStep > 0) {
+                this.showStep(window.ChortleState.currentStep - 1);
+            }
+        });
+    });
+
+    // Next button navigation
+    document.querySelectorAll('.btn-next').forEach(btn => {
+        btn.addEventListener('click', () => {
+            this.handleNext(template);
+        });
+    });
+},
 
     // Handle next button click
     handleNext: function(template) {
@@ -157,15 +158,7 @@ window.ChortleWizard = {
             this.validateCurrentStep();
         }
 
-        // Auto-scroll on mobile
-        if (window.ChortleUtils.isSmallScreen()) {
-            setTimeout(() => {
-        currentStepElement.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center' 
-                });
-            }, window.ChortleConfig.UI.autoScrollDelay);
-        }
+    // Auto-scroll disabled to prevent unwanted page movement
 
     // Update progress bar
     updateProgress: function() {
