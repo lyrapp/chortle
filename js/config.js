@@ -94,7 +94,7 @@ window.ChortleUtils = {
             try {
                 await navigator.share({
                     title: title,
-                    text: 'I created a hilarious Mad Lib for you to read! 🎭',
+                    text: 'I made a Chortle for you!',
                     url: url
                 });
                 return { success: true, method: 'native' };
@@ -226,7 +226,7 @@ window.ChortleUtils = {
         }
     },
     
-    // NEW: Format Mad Lib text for caption overlay
+    // NEW: Format Chortle text for caption overlay
     formatTextForCaptions: function(text) {
         // Remove HTML tags and convert to plain text for caption display
         const tempDiv = document.createElement('div');
