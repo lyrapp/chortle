@@ -11,11 +11,6 @@ window.ChortleApp = {
         this.setupSharePage();
         this.setupNavigation();
         this.setupIntroPage();
-
-        // Initialize history system
-        if (window.ChortleHistory) {
-            window.ChortleHistory.initialize();
-        }
         
         console.log('App initialization complete');
     },
@@ -169,15 +164,6 @@ window.ChortleApp = {
 
             const shareableUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
             console.log('Generated URL:', shareableUrl);
-
-            // Save to history
-            if (window.ChortleHistory) {
-                const chortleId = window.ChortleHistory.saveChortle(wizardData, shareableUrl);
-                if (chortleId) {
-                    console.log('Chortle saved to history with ID:', chortleId);
-                    window.ChortleState.currentChortleId = chortleId;
-                }
-            }
 
             // Try native sharing first
            const shareResult = await window.ChortleUtils.shareUrl(
@@ -406,29 +392,6 @@ window.ChortleApp = {
     updateChortleStatus: function(chortleData, videoUrl) {
         if (!chortleData || !window.ChortleHistory) return;
 
-        // Try to find the chortle in history by matching the data
-        const history = window.ChortleHistory.getHistory();
-        const matchingChortle = history.find(entry => {
-            // Match by template and key fields
-            if (entry.template !== chortleData.template) return false;
-            
-            // Check if all fields match
-            const entryFields = entry.fields || {};
-            const chortleFields = { ...chortleData };
-            delete chortleFields.template;
-            
-            return Object.keys(chortleFields).every(key => {
-                return entryFields[key] === chortleFields[key];
-            });
-        });
-
-        if (matchingChortle) {
-            window.ChortleHistory.markCompleted(matchingChortle.id, videoUrl);
-            console.log('Updated chortle status to completed:', matchingChortle.id);
-        } else {
-            console.log('Could not find matching chortle in history for status update');
-        }
-    },
 
     // Show error message
     showError: function(message) {
