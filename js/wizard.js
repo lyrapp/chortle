@@ -160,13 +160,12 @@ window.ChortleWizard = {
         // Auto-scroll on mobile
         if (window.ChortleUtils.isSmallScreen()) {
             setTimeout(() => {
-                currentStepElement.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'center' 
+        currentStepElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
                 });
             }, window.ChortleConfig.UI.autoScrollDelay);
         }
-    },
 
     // Update progress bar
     updateProgress: function() {
