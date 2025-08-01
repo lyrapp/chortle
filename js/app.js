@@ -33,19 +33,7 @@ window.ChortleApp = {
             targetPage.classList.add('active');
             window.ChortleState.currentPage = pageId;
             
-            // Auto-scroll on mobile
-           if (window.ChortleUtils.isSmallScreen() && pageId !== 'template-selection-page') {
-                setTimeout(() => {
-            targetPage.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-                });
-            }, 100);
-        }
-        } else {
-            console.error('Page not found:', pageId);
-        }
-    },
+            // Auto-scroll disabled to prevent unwanted page movement
 
     // Setup template selection functionality
     setupTemplateSelection: function() {
