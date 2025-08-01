@@ -148,19 +148,9 @@ window.ChortleUtils = {
         }
     },
     
-    // Auto-scroll for mobile
+    // Auto-scroll disabled
     scrollToElement: function(elementId, delay = 300) {
-        if (this.isSmallScreen()) {
-            setTimeout(() => {
-                const element = document.getElementById(elementId);
-                if (element) {
-                    element.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'start' 
-                    });
-                }
-            }, delay);
-        }
+        // Auto-scroll functionality disabled
     },
     
     // Haptic feedback
