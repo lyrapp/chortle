@@ -86,26 +86,52 @@
     }
 }
 
-    /* Wizard Mobile */
+/* Wizard Mobile */
 .step-input {
-    padding: 16px; /* Reduced from 18px */
-    font-size: 1em; /* Reduced from 1.1em */
-    max-width: 100%; /* Ensure it doesn't overflow */
-    margin: 0 auto; /* Center the input */
+    padding: 16px;
+    font-size: 1em;
+    max-width: 100%;
+    margin: 0 auto;
 }
 
 .step-question {
-    font-size: 1.1em; /* Reduced from 1.2em */
+    font-size: 1.1em;
 }
 
 .step-navigation {
-    gap: 12px; /* Reduced from 15px */
-    margin-top: 25px; /* Reduced from 30px */
+    gap: 12px;
+    margin-top: 25px;
 }
 
 .nav-btn {
-    padding: 14px 16px; /* Adjusted for mobile */
-    font-size: 0.95em; /* Slightly smaller on mobile */
+    padding: 14px 16px;
+    font-size: 0.95em;
+}
+
+/* Ultra-compact wizard for keyboard visibility */
+@media (max-width: 768px) {
+    .page {
+        padding: 20px; /* Reduced from 25px */
+        padding-top: 15px; /* Less top padding */
+    }
+    
+    .wizard-header {
+        margin-bottom: 8px; /* Tighter */
+    }
+    
+    .wizard-header .template-name {
+        font-size: 1em;
+    }
+    
+    .progress-bar {
+        height: 4px;
+        margin: 8px 0 5px 0;
+    }
+    
+    .progress-text {
+        font-size: 0.8em;
+        margin-top: 5px;
+    }
 }
 
     /* CTA buttons on mobile */
