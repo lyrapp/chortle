@@ -34,14 +34,14 @@ window.ChortleApp = {
             window.ChortleState.currentPage = pageId;
             
             // Auto-scroll on mobile
-            if (window.ChortleUtils.isSmallScreen()) {
+           if (window.ChortleUtils.isSmallScreen() && pageId !== 'template-selection-page') {
                 setTimeout(() => {
-                    targetPage.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'start' 
-                    });
-                }, 100);
-            }
+            targetPage.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+                });
+            }, 100);
+        }
         } else {
             console.error('Page not found:', pageId);
         }
