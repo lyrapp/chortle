@@ -197,8 +197,8 @@ body {
 
 .template-btn {
     padding: 25px;
-    border: 2px solid rgba(255, 221, 4, 0.3);
-    background: #FFDD04; /* Yellow accent color */
+    border: 2px solid #00BBF9;
+    background: rgba(0, 187, 249, 0.2); /* Sky blue with 20% opacity */
     border-radius: 16px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -210,9 +210,9 @@ body {
 }
 
 .template-btn:hover {
-    background: #FFE55A; /* Slightly lighter yellow on hover */
+    background: rgba(0, 187, 249, 0.3); /* Slightly more opaque on hover */
     transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 25px rgba(0, 187, 249, 0.15);
 }
 
 .template-btn-title {
