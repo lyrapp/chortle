@@ -50,7 +50,7 @@ window.ChortleWizard = {
                 </div>
                 <div class="step-navigation">
                     <button class="nav-btn btn-back" ${index === 0 ? 'style="visibility: hidden;"' : ''}>
-                        ← Back
+                        ← 
                     </button>
                     <button class="nav-btn btn-next" disabled>
                         ${index === template.fields.length - 1 ? 'Finish' : 'Next →'}
