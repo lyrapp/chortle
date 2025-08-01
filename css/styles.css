@@ -31,6 +31,14 @@ body {
     animation: fadeInDown 0.8s ease-out;
 }
 
+.header .logo {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 15px;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
 @keyframes fadeInDown {
     from {
         opacity: 0;
