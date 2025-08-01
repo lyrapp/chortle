@@ -414,11 +414,6 @@ body {
     transform: scale(1.05);
 }
 
-/* Remove old icon styling */
-.template-btn-icon {
-    display: none; /* Hide old top-centered icon container */
-}
-
 .btn-next:disabled {
     background: #cbd5e0 !important;
     cursor: not-allowed !important;
