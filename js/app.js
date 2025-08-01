@@ -388,10 +388,12 @@ window.ChortleApp = {
         console.log('Generated story displayed');
     },
 
-    // Update chortle status when video is completed
+    // Update chortle status when video is completed (placeholder - history disabled)
     updateChortleStatus: function(chortleData, videoUrl) {
-        if (!chortleData || !window.ChortleHistory) return;
-
+        // History system disabled - this is a placeholder function
+        console.log('History disabled: would update chortle status');
+        return;
+    },
 
     // Show error message
     showError: function(message) {
