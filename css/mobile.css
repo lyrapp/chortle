@@ -87,37 +87,26 @@
 }
 
     /* Wizard Mobile */
-    .step-input {
-        padding: 18px;
-        font-size: 1.1em;
-        border: 2px solid rgba(45, 55, 72, 0.2);
-        font-family: 'Outfit', sans-serif;
-    }
+.step-input {
+    padding: 16px; /* Reduced from 18px */
+    font-size: 1em; /* Reduced from 1.1em */
+    max-width: 100%; /* Ensure it doesn't overflow */
+    margin: 0 auto; /* Center the input */
+}
 
-    .step-input:focus {
-        border-color: #00BBF9;
-        box-shadow: 0 0 0 3px rgba(0, 187, 249, 0.1);
-    }
+.step-question {
+    font-size: 1.1em; /* Reduced from 1.2em */
+}
 
-    .step-question {
-        font-size: 1.2em;
-        font-weight: 600;
-        color: #2D3748;
-    }
+.step-navigation {
+    gap: 12px; /* Reduced from 15px */
+    margin-top: 25px; /* Reduced from 30px */
+}
 
-    .step-navigation {
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .nav-btn {
-        width: 100%;
-        min-width: auto;
-        padding: 16px 24px;
-        font-size: 1.1em;
-        font-family: 'Outfit', sans-serif;
-        font-weight: 600;
-    }
+.nav-btn {
+    padding: 14px 16px; /* Adjusted for mobile */
+    font-size: 0.95em; /* Slightly smaller on mobile */
+}
 
     /* CTA buttons on mobile */
     .btn-next,
