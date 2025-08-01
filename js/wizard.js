@@ -148,8 +148,14 @@ setupEventListeners: function(template) {
         // Focus input with delay for animation
         const input = currentStepElement.querySelector('.step-input');
         setTimeout(() => {
-            input.focus();
-        }, 100);
+            if (input) {
+                input.focus();
+                // For mobile browsers that need extra nudging
+                if (window.ChortleUtils.isMobile()) {
+                    input.click();
+                }
+            }
+        }, 200); // Slightly longer delay for better mobile experience
 
         // Restore existing value if any
         const fieldName = input.dataset.field;
