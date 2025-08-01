@@ -7,6 +7,7 @@ window.ChortleTemplates = {
             title: 'Silly Zoo Adventure',
             category: 'funny',
             description: 'A wacky day at the zoo with unexpected animals',
+            icon: 'icons/silly-story.png'
             template: `Yesterday, <span class="filled-word">{name}</span> went to the <span class="filled-word">{adjective1}</span> zoo. They saw a <span class="filled-word">{animal}</span> that <span class="filled-word">{verb1}</span> all the way to <span class="filled-word">{place}</span>. It was so <span class="filled-word">{adjective2}</span> that <span class="filled-word">{name}</span> watched it for <span class="filled-word">{number}</span> hours straight! The <span class="filled-word">{animal}</span> even waved goodbye when they left.`,
             fields: [
                 { name: 'name', label: "A person's name (examples: Alex, Sam, Taylor)", type: 'text' },
@@ -23,6 +24,7 @@ window.ChortleTemplates = {
             title: 'Awkward Job Interview',
             category: 'funny',
             description: 'The most ridiculous job interview ever',
+            icon: 'icons/job-interview.png'
             template: `"So, <span class="filled-word">{yourname}</span>, tell us about yourself." "Well, I'm really good at <span class="filled-word">{skill}</span> and I'm very <span class="filled-word">{adjective1}</span>. I want to be your next <span class="filled-word">{jobtitle}</span>!" The interviewer picked up a <span class="filled-word">{object}</span> and started <span class="filled-word">{verb1}</span> while scratching their <span class="filled-word">{bodypart}</span>. "You're hired!" they said.`,
             fields: [
                 { name: 'yourname', label: 'Your name (examples: Chris, Jordan, Casey)', type: 'text' },
@@ -39,6 +41,7 @@ window.ChortleTemplates = {
             title: 'Dream Vacation Gone Wrong',
             category: 'adventure',
             description: 'A vacation that takes an unexpected turn',
+            icon: 'vacation.png'
             template: `Last summer, I took a trip to <span class="filled-word">{place}</span> by <span class="filled-word">{transport}</span>. The weather was <span class="filled-word">{adjective1}</span> and I ate <span class="filled-word">{food}</span> for breakfast every day. I spent most of my time <span class="filled-word">{activity}</span> with <span class="filled-word">{celebrity}</span>. It made me feel so <span class="filled-word">{feeling}</span> that I never wanted to come home!`,
             fields: [
                 { name: 'place', label: 'A strange place (examples: the Moon, a giant shoe, underwater)', type: 'text' },
@@ -55,6 +58,7 @@ window.ChortleTemplates = {
             title: 'Superhero Origin Story',
             category: 'adventure',
             description: 'How an ordinary person became extraordinary',
+            icon: 'superhero.png'
             template: `Meet <span class="filled-word">{heroname}</span>, the <span class="filled-word">{adjective1}</span> superhero! After being bitten by a radioactive <span class="filled-word">{object}</span>, they gained the power of <span class="filled-word">{power}</span>. Now they protect <span class="filled-word">{city}</span> from the evil villain <span class="filled-word">{villain}</span>. But beware - their one weakness is <span class="filled-word">{weakness}</span>!`,
             fields: [
                 { name: 'heroname', label: 'A superhero name (examples: Captain Awesome, The Flying Burrito)', type: 'text' },
@@ -71,6 +75,7 @@ window.ChortleTemplates = {
             title: 'Romantic Love Letter',
             category: 'romance',
             description: 'A heartfelt (and hilarious) declaration of love',
+            icon: 'love-letter.png'
             template: `My dearest <span class="filled-word">{crushname}</span>, you are more <span class="filled-word">{adjective1}</span> than a <span class="filled-word">{animal}</span> in <span class="filled-word">{season}</span>. When I first saw you <span class="filled-word">{verb1}</span> in the <span class="filled-word">{place}</span>, my heart started <span class="filled-word">{verb2}</span> like a <span class="filled-word">{machine}</span>. Will you <span class="filled-word">{romanticact}</span> with me under the <span class="filled-word">{adjective2}</span> moon? Forever yours, <span class="filled-word">{yourname}</span>`,
             fields: [
                 { name: 'crushname', label: "Your crush's name (examples: Robin, Jamie, Pat)", type: 'text' },
@@ -91,6 +96,7 @@ window.ChortleTemplates = {
             title: 'Disastrous First Date',
             category: 'romance',
             description: 'When romance goes hilariously wrong',
+            icon: 'first-date.png'
             template: `I picked up <span class="filled-word">{datename}</span> in my <span class="filled-word">{adjective1}</span> <span class="filled-word">{vehicle}</span>. We went to a <span class="filled-word">{adjective2}</span> restaurant where I accidentally <span class="filled-word">{verb1}</span> the <span class="filled-word">{food}</span> all over their <span class="filled-word">{clothing}</span>. Then we went <span class="filled-word">{activity}</span>, but I was so nervous I kept <span class="filled-word">{verb2}</span> every <span class="filled-word">{timeperiod}</span>. Surprisingly, they said yes to a second date!`,
             fields: [
                 { name: 'datename', label: "Your date's name (examples: Morgan, Riley, Avery)", type: 'text' },
@@ -110,6 +116,7 @@ window.ChortleTemplates = {
             title: 'Alien Invasion Report',
             category: 'weird',
             description: 'Breaking news from outer space',
+            icon: 'alien-invasion.png'
             template: `BREAKING NEWS: Aliens have landed in <span class="filled-word">{city}</span>! The <span class="filled-word">{adjective1}</span> creatures are <span class="filled-word">{color}</span> and have <span class="filled-word">{number}</span> <span class="filled-word">{bodypart}</span>. They arrived in a giant <span class="filled-word">{object}</span> and immediately started <span class="filled-word">{verb1}</span> all the <span class="filled-word">{pluralnoun}</span>. Their leader, who speaks only in <span class="filled-word">{language}</span>, demands <span class="filled-word">{demand}</span>. The president is reportedly <span class="filled-word">{verb2}</span> in response.`,
             fields: [
                 { name: 'city', label: 'A city (examples: Miami, Tokyo, your town)', type: 'text' },
@@ -130,6 +137,7 @@ window.ChortleTemplates = {
             title: 'Cooking Show Catastrophe',
             category: 'funny',
             description: 'Gordon Ramsay would not approve',
+            icon: 'cooking-disaster.png'
             template: `Welcome to "<span class="filled-word">{showname}</span>" with Chef <span class="filled-word">{chefname}</span>! Today we're making <span class="filled-word">{adjective1}</span> <span class="filled-word">{dish}</span>. First, you take <span class="filled-word">{number}</span> cups of <span class="filled-word">{ingredient1}</span> and <span class="filled-word">{verb1}</span> it with a <span class="filled-word">{tool}</span>. Then add <span class="filled-word">{ingredient2}</span> until it turns <span class="filled-word">{color}</span>. Oh no! The kitchen is on fire! Quickly, <span class="filled-word">{verb2}</span> the <span class="filled-word">{ingredient3}</span>!`,
             fields: [
                 { name: 'showname', label: 'A cooking show name (examples: Kitchen Chaos, Cooking with Chaos)', type: 'text' },
