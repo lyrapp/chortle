@@ -15,7 +15,7 @@ window.ChortleWizard = {
         window.ChortleState.wizardData = { template: templateKey };
 
         // Update wizard header
-        document.getElementById('wizard-template-name').textContent = template.title;
+        document.getElementById('wizard-template-name').textContent = `Write: ${template.title}`;
 
         // Generate wizard steps
         this.generateSteps(template);
