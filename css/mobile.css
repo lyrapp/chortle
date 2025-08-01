@@ -506,47 +506,6 @@
     }
 }
 
-/* Dark mode support for mobile with new color palette */
-@media (prefers-color-scheme: dark) and (max-width: 768px) {
-    .page {
-        background: rgba(40, 40, 40, 0.95);
-        color: #e0e0e0;
-    }
-    
-    .step-input, .search-input {
-        background: rgba(60, 60, 60, 0.9);
-        color: #e0e0e0;
-        border-color: rgba(0, 187, 249, 0.5);
-    }
-    
-    .template-btn {
-        background: rgba(255, 221, 4, 0.8);
-        color: #2D3748;
-        border-color: rgba(255, 221, 4, 0.3);
-    }
-    
-    .completed-madlib {
-        background: rgba(50, 50, 50, 0.9);
-        color: #e0e0e0;
-        border-left-color: #00BBF9;
-    }
-
-    .filled-word {
-        color: #FE5946;
-        background: rgba(254, 89, 70, 0.2);
-    }
-
-    .category-btn {
-        background: rgba(0, 187, 249, 0.3);
-        color: #e0e0e0;
-    }
-
-    .category-btn.active {
-        background: #00BBF9;
-        color: white;
-    }
-}
-
 /* Reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
     .template-btn:hover,
