@@ -65,14 +65,6 @@ function initializeModules() {
     // Templates (no init needed - just data)
     console.log('✓ Templates loaded:', Object.keys(window.ChortleTemplates.templates).length, 'templates');
     
-    // History system (must be before App initialization)
-    if (window.ChortleHistory) {
-        window.ChortleHistory.initialize();
-        console.log('✓ History module initialized');
-    } else {
-        console.warn('⚠️ History module not loaded - history features disabled');
-    }
-    
     // App (main logic)
     window.ChortleApp.initialize();
     console.log('✓ App module initialized');
