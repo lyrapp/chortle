@@ -915,17 +915,14 @@ body {
     background: #0099CC !important;
 }
 
-/* Clean video section styling */
+/* Clean video section styling - no container styling */
 .video-section {
     margin: 20px 0;
-    padding: 0;
-    background: transparent;
-    border: none;
 }
 
 .camera-setup {
     text-align: center;
-    padding: 40px 20px;
+    padding: 20px 0;
 }
 
 /* Intro Page */
