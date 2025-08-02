@@ -191,26 +191,6 @@ setupLogoWatermark: function() {
         }
     },
 
-        // Get the rendered Mad Lib text
-        const template = chortleData.template;
-        const templateData = { ...chortleData };
-        delete templateData.template;
-
-        const templateObj = window.ChortleTemplates.getTemplate(template);
-        if (!templateObj) {
-            console.log('Template not found for caption overlay');
-            return;
-        }
-
-        const story = window.ChortleTemplates.renderTemplate(template, templateData);
-        
-        // UPDATED: Create scrollable chunks with filled word highlighting
-        this.createScrollingCaptionChunks(story, templateData);
-        
-        // Create caption overlay element
-        this.createCaptionOverlay();
-    },
-
  // NEW: Create scrollable text chunks with filled word detection - UPDATED for teleprompter style
     createScrollingCaptionChunks: function(htmlStory, templateData) {
         // Convert HTML to plain text but keep track of filled words
