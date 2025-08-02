@@ -98,6 +98,9 @@ window.ChortleVideo = {
             // UPDATED: Setup scrolling caption overlay system
                 this.setupScrollingCaptionOverlay();
 
+             // NEW: Setup canvas recording with watermark
+                this.setupCanvasRecording();
+
             console.log('Camera started with vertical recording format');
 
         } catch (err) {
@@ -258,6 +261,141 @@ setupScrollingCaptionOverlay: function() {
         }
     },
 
+// NEW: Setup canvas for recording with watermark
+    setupCanvasRecording: function() {
+        // Create canvas element
+        const canvas = document.createElement('canvas');
+        canvas.id = 'recording-canvas';
+        canvas.style.display = 'none'; // Hidden from user
+        document.body.appendChild(canvas);
+        
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas dimensions to match video
+        const preview = document.getElementById('camera-preview');
+        canvas.width = preview.videoWidth || 720;
+        canvas.height = preview.videoHeight || 1280;
+        
+        // Store canvas references
+        this.recordingCanvas = canvas;
+        this.canvasContext = ctx;
+        
+        // Load watermark image
+        this.loadWatermarkImage();
+        
+        console.log('Canvas recording setup complete');
+    },
+
+    // NEW: Load watermark image
+    loadWatermarkImage: function() {
+        const img = new Image();
+        img.onload = () => {
+            this.watermarkImage = img;
+            console.log('Watermark image loaded');
+        };
+        img.onerror = () => {
+            console.warn('Watermark image failed to load');
+            this.watermarkImage = null;
+        };
+        img.src = 'chortle-wordmark.png';
+    },
+
+    // NEW: Start canvas recording loop
+    startCanvasRecording: function() {
+        const preview = document.getElementById('camera-preview');
+        const canvas = this.recordingCanvas;
+        const ctx = this.canvasContext;
+        
+        if (!preview || !canvas || !ctx) {
+            console.error('Canvas recording setup incomplete');
+            return null;
+        }
+        
+        // Update canvas size to match video
+        canvas.width = preview.videoWidth || 720;
+        canvas.height = preview.videoHeight || 1280;
+        
+        // Start drawing loop
+        const drawFrame = () => {
+            if (!this.isRecording) return;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw video frame
+            ctx.drawImage(preview, 0, 0, canvas.width, canvas.height);
+            
+            // Draw watermark if loaded
+            if (this.watermarkImage) {
+                this.drawWatermark(ctx, canvas.width, canvas.height);
+            }
+            
+            // Continue drawing
+            requestAnimationFrame(drawFrame);
+        };
+        
+        this.isRecording = true;
+        drawFrame();
+        
+        // Get stream from canvas
+        const canvasStream = canvas.captureStream(30); // 30 FPS
+        
+        // Add audio from original stream
+        const audioTracks = window.ChortleState.stream.getAudioTracks();
+        audioTracks.forEach(track => {
+            canvasStream.addTrack(track);
+        });
+        
+        console.log('Canvas recording started with watermark');
+        return canvasStream;
+    },
+
+    // NEW: Draw watermark on canvas
+    drawWatermark: function(ctx, canvasWidth, canvasHeight) {
+        if (!this.watermarkImage) return;
+        
+        // Calculate watermark size (5% of video width)
+        const watermarkWidth = canvasWidth * 0.05;
+        const watermarkHeight = (this.watermarkImage.height / this.watermarkImage.width) * watermarkWidth;
+        
+        // Position watermark (bottom right with padding)
+        const x = canvasWidth - watermarkWidth - 20;
+        const y = canvasHeight - watermarkHeight - 20;
+        
+        // Draw semi-transparent background
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fillRect(x - 10, y - 10, watermarkWidth + 20, watermarkHeight + 20);
+        
+        // Draw watermark image
+        ctx.globalAlpha = 0.8;
+        ctx.drawImage(this.watermarkImage, x, y, watermarkWidth, watermarkHeight);
+        
+        // Reset alpha
+        ctx.globalAlpha = 1.0;
+    },
+
+    // NEW: Stop canvas recording
+    stopCanvasRecording: function() {
+        this.isRecording = false;
+        console.log('Canvas recording stopped');
+    },
+
+    // NEW: Cleanup canvas
+    cleanupCanvas: function() {
+        this.stopCanvasRecording();
+        
+        if (this.recordingCanvas) {
+            this.recordingCanvas.remove();
+            this.recordingCanvas = null;
+        }
+        
+        this.canvasContext = null;
+        this.watermarkImage = null;
+        
+        console.log('Canvas cleanup complete');
+    },
+
     // NEW: Show caption overlay with scrolling animation
     showCaptionOverlay: function() {
         const overlay = document.getElementById('caption-overlay');
@@ -412,9 +550,15 @@ showLogoWatermark: function() {
         // Request wake lock to prevent screen sleep
         window.ChortleUtils.requestWakeLock();
 
-        // Create MediaRecorder
+        // Create MediaRecorder with canvas stream (includes watermark)
+        const canvasStream = this.startCanvasRecording();
+        if (!canvasStream) {
+            window.ChortleApp.showError('Failed to setup video recording with watermark');
+            return;
+        }
+        
         const mimeType = MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4';
-        window.ChortleState.mediaRecorder = new MediaRecorder(window.ChortleState.stream, { 
+        window.ChortleState.mediaRecorder = new MediaRecorder(canvasStream, { 
             mimeType,
             videoBitsPerSecond: 2500000 // 2.5 Mbps for good quality
         });
@@ -506,6 +650,9 @@ showLogoWatermark: function() {
 
         // UPDATED: Hide scrolling caption overlay
         this.hideCaptionOverlay();
+
+        // Stop canvas recording
+        this.stopCanvasRecording();
 
         // Haptic feedback
         window.ChortleUtils.vibrate([100, 50, 100]);
@@ -918,6 +1065,9 @@ sendVideo: async function() {
 
         // UPDATED: Stop caption scrolling and remove overlay
         this.removeCaptionOverlay();
+        
+        // NEW: Cleanup canvas recording
+        this.cleanupCanvas();
 
         // Reset state
         window.ChortleState.mediaRecorder = null;
@@ -925,8 +1075,6 @@ sendVideo: async function() {
         window.ChortleState.recordingSeconds = 0;
 
         console.log('Video cleanup complete with caption system reset');
-    }
-};
 
 // Export for debugging
 if (window.ChortleDebug) {
