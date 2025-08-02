@@ -496,8 +496,8 @@ updateCaptionText: function() {
                 formattedText += wordObj.text;
             }
             
-            // Add space between words (except last word)
-            if (index < wordObj.length - 1) {
+            // Add space between words (except last word) - FIXED
+            if (index < chunk.words.length - 1) {
                 formattedText += ' ';
             }
         });
