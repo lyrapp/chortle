@@ -23,9 +23,15 @@
 
     @media (max-width: 768px) {
         .template-selector h2 {
-            margin-top: 0;
+            margin-top: 0 !important;
             margin-bottom: 20px;
             font-size: 1.6em;
+            padding-top: 0 !important;
+        }
+        
+        .page {
+            padding: 5px 15px 15px 15px !important; /* Reduce top padding even more */
+            border-radius: 20px;
         }
     }
 
