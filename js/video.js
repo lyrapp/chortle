@@ -485,40 +485,36 @@ window.ChortleVideo = {
         console.log('Recording stopped, scrolling caption overlay hidden');
     },
 
-    // UPDATED: Handle recording stop event
-    handleRecordingStop: function() {
-        const mimeType = window.ChortleState.mediaRecorder.mimeType || 'video/webm';
-        const blob = new Blob(window.ChortleState.recordedChunks, { type: mimeType });
-        const videoUrl = URL.createObjectURL(blob);
+// UPDATED: Handle recording stop event
+handleRecordingStop: function() {
+    const mimeType = window.ChortleState.mediaRecorder.mimeType || 'video/webm';
+    const blob = new Blob(window.ChortleState.recordedChunks, { type: mimeType });
+    const videoUrl = URL.createObjectURL(blob);
 
-        // Show recorded video
-        const recordedVideo = document.getElementById('recorded-video');
-        recordedVideo.src = videoUrl;
-        recordedVideo.videoBlob = blob; // Store blob for upload
+    // Show recorded video
+    const recordedVideo = document.getElementById('recorded-video');
+    recordedVideo.src = videoUrl;
+    recordedVideo.videoBlob = blob; // Store blob for upload
 
-        // Switch to playback view
-        document.getElementById('recording-area').style.display = 'none';
-        document.getElementById('playback-area').style.display = 'block';
+    // Switch to playback view
+    document.getElementById('recording-area').style.display = 'none';
+    document.getElementById('playback-area').style.display = 'block';
 
-        // Stop camera stream
-        if (window.ChortleState.stream) {
-            window.ChortleState.stream.getTracks().forEach(track => track.stop());
-        }
-        
-        // Restore normal layout
-        document.querySelector('.header').style.display = 'block';
-        const completedStory = document.getElementById('completed-story');
-        if (completedStory) {
-            completedStory.style.display = 'none';
-        }
-        const recordingArea = document.getElementById('recording-area');
-        recordingArea.classList.remove('fullscreen-recording');
-        
-        // UPDATED: Remove scrolling caption overlay
-        this.removeCaptionOverlay();
-        
-        console.log('Recording completed and processed');
-    },
+    // Stop camera stream
+    if (window.ChortleState.stream) {
+        window.ChortleState.stream.getTracks().forEach(track => track.stop());
+    }
+    
+    // Restore normal layout
+    document.querySelector('.header').style.display = 'block';
+    const recordingArea = document.getElementById('recording-area');
+    recordingArea.classList.remove('fullscreen-recording');
+    
+    // UPDATED: Remove scrolling caption overlay
+    this.removeCaptionOverlay();
+    
+    console.log('Recording completed and processed');
+},
 
     // UPDATED: Re-record video
     reRecord: function() {
