@@ -97,9 +97,6 @@ window.ChortleVideo = {
             
             // UPDATED: Setup scrolling caption overlay system
                 this.setupScrollingCaptionOverlay();
-                
-                // NEW: Setup logo watermark
-                this.setupLogoWatermark();
 
             console.log('Camera started with vertical recording format');
 
@@ -137,59 +134,6 @@ setupScrollingCaptionOverlay: function() {
     // Create caption overlay element
     this.createCaptionOverlay();
 },
-
-// NEW: Setup logo watermark overlay
-setupLogoWatermark: function() {
-    // Remove existing watermark if any
-    const existingWatermark = document.getElementById('logo-watermark');
-    if (existingWatermark) {
-        existingWatermark.remove();
-    }
-    
-        // Create watermark container
-        const watermark = document.createElement('div');
-        watermark.id = 'logo-watermark';
-        watermark.className = 'logo-watermark';
-        
-        // Create wordmark image
-        const wordmarkImg = document.createElement('img');
-        wordmarkImg.src = 'chortle-wordmark.png';
-        wordmarkImg.alt = 'Chortle';
-        wordmarkImg.style.cssText = `
-            height: 24px;
-            width: auto;
-            opacity: 0.8;
-            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));
-        `;
-        
-        watermark.appendChild(wordmarkImg);
-        
-        // Insert watermark into recording area
-        const recordingArea = document.getElementById('recording-area');
-        
-        if (recordingArea) {
-            // Ensure recording area is positioned
-            recordingArea.style.position = 'relative';
-            
-            // Style the watermark overlay
-            watermark.style.cssText = `
-                position: absolute;
-                top: 15px;
-                left: 15px;
-                z-index: 15;
-                pointer-events: none;
-                display: none;
-                background: rgba(255, 255, 255, 0.1);
-                padding: 8px 12px;
-                border-radius: 8px;
-                backdrop-filter: blur(5px);
-            `;
-            
-            recordingArea.appendChild(watermark);
-            
-            console.log('Logo watermark overlay created');
-        }
-    },
 
  // NEW: Create scrollable text chunks with filled word detection - UPDATED for teleprompter style
     createScrollingCaptionChunks: function(htmlStory, templateData) {
@@ -563,9 +507,6 @@ showLogoWatermark: function() {
         // UPDATED: Hide scrolling caption overlay
         this.hideCaptionOverlay();
 
-        // NEW: Hide logo watermark
-        this.hideLogoWatermark();
-
         // Haptic feedback
         window.ChortleUtils.vibrate([100, 50, 100]);
 
@@ -601,9 +542,6 @@ handleRecordingStop: function() {
     
     // UPDATED: Remove scrolling caption overlay
     this.removeCaptionOverlay();
-    
-    // NEW: Remove logo watermark
-    this.removeLogoWatermark();
 
     console.log('Recording completed and processed');
 },
@@ -980,9 +918,6 @@ sendVideo: async function() {
 
         // UPDATED: Stop caption scrolling and remove overlay
         this.removeCaptionOverlay();
-
-        // NEW: Remove logo watermark
-        this.removeLogoWatermark();
 
         // Reset state
         window.ChortleState.mediaRecorder = null;
