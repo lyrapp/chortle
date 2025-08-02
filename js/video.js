@@ -350,17 +350,17 @@ setupScrollingCaptionOverlay: function() {
         return canvasStream;
     },
 
-    // NEW: Draw watermark on canvas
+   // NEW: Draw watermark on canvas
     drawWatermark: function(ctx, canvasWidth, canvasHeight) {
         if (!this.watermarkImage) return;
         
-        // Calculate watermark size (5% of video width)
-        const watermarkWidth = canvasWidth * 0.05;
+        // Calculate watermark size (20% of video width - much larger)
+        const watermarkWidth = canvasWidth * 0.2;
         const watermarkHeight = (this.watermarkImage.height / this.watermarkImage.width) * watermarkWidth;
         
-        // Position watermark (bottom right with padding)
-        const x = canvasWidth - watermarkWidth - 20;
-        const y = canvasHeight - watermarkHeight - 20;
+        // Position watermark (top left with padding)
+        const x = 20;
+        const y = 20;
         
         // Draw semi-transparent background
         ctx.globalAlpha = 0.3;
