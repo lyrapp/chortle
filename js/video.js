@@ -136,7 +136,7 @@ window.ChortleVideo = {
         this.createCaptionOverlay();
     },
 
-    // NEW: Create scrollable text chunks with filled word detection
+ // NEW: Create scrollable text chunks with filled word detection - UPDATED for teleprompter style
     createScrollingCaptionChunks: function(htmlStory, templateData) {
         // Convert HTML to plain text but keep track of filled words
         const tempDiv = document.createElement('div');
@@ -154,9 +154,9 @@ window.ChortleVideo = {
         const plainText = tempDiv.textContent || tempDiv.innerText || '';
         const words = plainText.split(/\s+/).filter(word => word.length > 0);
         
-        // Create chunks of 3-4 words each
+        // UPDATED: Create larger chunks for more natural reading - 8-12 words per line
         this.captionChunks = [];
-        const chunkSize = window.ChortleUtils.isMobile() ? 3 : 4;
+        const chunkSize = window.ChortleUtils.isMobile() ? 8 : 12;
         
         for (let i = 0; i < words.length; i += chunkSize) {
             const chunkWords = words.slice(i, i + chunkSize);
@@ -182,7 +182,7 @@ window.ChortleVideo = {
         }
         
         this.currentChunkIndex = 0;
-        console.log(`Created ${this.captionChunks.length} caption chunks for scrolling`);
+        console.log(`Created ${this.captionChunks.length} caption chunks for teleprompter-style scrolling`);
     },
 
     // NEW: Create caption overlay container
