@@ -21,6 +21,14 @@
     border-radius: 20px;
     }
 
+    @media (max-width: 768px) {
+        .template-selector h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.6em;
+        }
+    }
+
     /* Template Selection Mobile */
     .template-categories {
         justify-content: flex-start;
