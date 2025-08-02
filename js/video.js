@@ -409,7 +409,7 @@ setupScrollingCaptionOverlay: function() {
             // Start scrolling through chunks every 3.5 seconds
             this.captionInterval = setInterval(() => {
                 this.nextCaptionChunk();
-            }, 3500);
+            }, 4500);
             
             console.log('Caption overlay shown - scrolling started');
         }
@@ -442,33 +442,67 @@ showLogoWatermark: function() {
             }
         },
     // NEW: Update caption text with current chunk
-    updateCaptionText: function() {
-        const captionTextEl = document.getElementById('caption-text');
-        if (!captionTextEl || !this.captionChunks[this.currentChunkIndex]) return;
+    // WITH THIS:
+updateCaptionText: function() {
+    const captionTextEl = document.getElementById('caption-text');
+    if (!captionTextEl || !this.captionChunks.length) return;
+    
+    // Get previous, current, and next chunks
+    const prevIndex = this.currentChunkIndex > 0 ? this.currentChunkIndex - 1 : null;
+    const currentIndex = this.currentChunkIndex;
+    const nextIndex = this.currentChunkIndex < this.captionChunks.length - 1 ? this.currentChunkIndex + 1 : null;
+    
+    // Create 3-line karaoke display
+    let karaokeHTML = '';
+    
+    // Previous line (dimmed)
+    if (prevIndex !== null) {
+        const prevChunk = this.captionChunks[prevIndex];
+        karaokeHTML += `<div class="caption-line caption-previous">${this.formatChunkText(prevChunk, false)}</div>`;
+    } else {
+        karaokeHTML += `<div class="caption-line caption-previous" style="opacity: 0;">&nbsp;</div>`;
+    }
+    
+    // Current line (highlighted)
+    const currentChunk = this.captionChunks[currentIndex];
+    karaokeHTML += `<div class="caption-line caption-current">${this.formatChunkText(currentChunk, true)}</div>`;
+    
+    // Next line (preview)
+    if (nextIndex !== null) {
+        const nextChunk = this.captionChunks[nextIndex];
+        karaokeHTML += `<div class="caption-line caption-next">${this.formatChunkText(nextChunk, false)}</div>`;
+    } else {
+        karaokeHTML += `<div class="caption-line caption-next" style="opacity: 0;">&nbsp;</div>`;
+    }
+    
+    // Apply with smooth transition
+    captionTextEl.style.opacity = '0';
+    setTimeout(() => {
+        captionTextEl.innerHTML = karaokeHTML;
+        captionTextEl.style.opacity = '1';
+    }, 150);
+},
+
+    // NEW: Format chunk text with filled word highlighting
+    formatChunkText: function(chunk, isCurrentLine) {
+        if (!chunk) return '';
         
-        const currentChunk = this.captionChunks[this.currentChunkIndex];
-        
-        // Create formatted text with highlighted filled words
         let formattedText = '';
-        currentChunk.words.forEach((wordObj, index) => {
-            if (wordObj.isFilled) {
+        chunk.words.forEach((wordObj, index) => {
+            if (wordObj.isFilled && isCurrentLine) {
+                // Highlight filled words only on current line
                 formattedText += `<span style="color: #FE5946; background: rgba(254, 89, 70, 0.3); padding: 2px 6px; border-radius: 4px; font-weight: 700;">${wordObj.text}</span>`;
             } else {
                 formattedText += wordObj.text;
             }
             
             // Add space between words (except last word)
-            if (index < currentChunk.words.length - 1) {
+            if (index < wordObj.length - 1) {
                 formattedText += ' ';
             }
         });
         
-        // Apply text with fade animation
-        captionTextEl.style.opacity = '0';
-        setTimeout(() => {
-            captionTextEl.innerHTML = formattedText;
-            captionTextEl.style.opacity = '1';
-        }, 150);
+        return formattedText;
     },
 
     // NEW: Move to next caption chunk
