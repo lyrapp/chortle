@@ -172,6 +172,22 @@
         box-shadow: 7px 7px 0px #000000 !important;
     }
 
+    .secondary-btn {
+        background: transparent !important;
+        color: #2D3748 !important;
+        border: 2px solid #e2e8f0 !important;
+        padding: 12px 24px !important;
+        font-size: 1em !important;
+        font-weight: 500 !important;
+        box-shadow: none !important;
+    }
+    
+    .secondary-btn:hover {
+        background: #f7fafc !important;
+        border-color: #cbd5e0 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    }
+
     /* Share Page Mobile */
     .share-btn {
         padding: 18px 35px;
@@ -187,9 +203,16 @@
     }
 
     .share-step {
+        display: flex;
+        align-items: center;
         margin: 12px 0;
         font-size: 0.95em;
         font-weight: 500;
+    }
+    
+    .share-step span {
+        flex: 1;
+        line-height: 1.4;
     }
 
     .share-step-number {
