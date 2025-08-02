@@ -127,10 +127,18 @@
                 
                 <div id="playback-area" class="playback-area" style="display: none;">
                     <h4>📺 Your Recording</h4>
+                    <!-- UPDATED: Video at top, script below -->
                     <video id="recorded-video" controls playsinline></video>
+                    
+                    <!-- UPDATED: Show the completed story below the video -->
+                    <div id="playback-story" class="completed-madlib">
+                        <!-- Chortle script will be inserted here -->
+                    </div>
+                    
                     <div class="playback-controls">
-                        <button id="re-record" class="video-btn">🔄 Record Again</button>
-                        <button id="send-video" class="video-btn send-btn">✅ Send to Creator</button>
+                        <!-- UPDATED: Record again as secondary, Send as primary -->
+                        <button id="re-record" class="video-btn secondary-btn">🔄 Record Again</button>
+                        <button id="send-video" class="video-btn primary-btn">✅ Send to Creator</button>
                     </div>
                 </div>
                 
