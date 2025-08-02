@@ -129,6 +129,7 @@ body {
 
 /* Template Selection */
 .template-selector h2 {
+    margin-top: 0;
     margin-bottom: 25px;
     color: #2D3748;
     font-size: 1.8em;
