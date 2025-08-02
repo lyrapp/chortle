@@ -23,7 +23,7 @@
 
     @media (max-width: 768px) {
         .template-selector h2 {
-            margin-top: 0 !important;
+            margin-top: 4 !important;
             margin-bottom: 20px;
             font-size: 1.6em;
             padding-top: 0 !important;
