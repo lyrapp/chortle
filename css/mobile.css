@@ -255,10 +255,11 @@
         font-weight: 600;
     }
 
-    /* Video Mobile */
+/* Video Mobile */
     .recording-controls, .playback-controls {
         flex-direction: column;
         gap: 15px;
+        align-items: center;
     }
 
     .video-btn {
@@ -269,6 +270,57 @@
         min-height: 60px;
         font-family: 'Outfit', sans-serif;
         font-weight: 600;
+    }
+
+    /* UPDATED: Playback controls with proper button styling */
+    .playback-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 20px;
+        width: 100%;
+    }
+
+    .playback-controls .primary-btn {
+        order: 1; /* Send button first */
+        width: 100%;
+        padding: 18px 25px;
+        font-size: 1.2em;
+        font-weight: 700;
+    }
+
+    .playback-controls .secondary-btn {
+        order: 2; /* Record again second */
+        width: 100%;
+        padding: 15px 25px;
+        font-size: 1.1em;
+        font-weight: 500;
+    }
+
+    /* UPDATED: Playback area layout for mobile */
+    .playback-area {
+        text-align: center;
+        padding: 0;
+    }
+
+    .playback-area h4 {
+        color: #00BBF9;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .playback-area #recorded-video {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        aspect-ratio: 3/4; /* Vertical video aspect ratio */
+    }
+
+    .playback-area .completed-madlib {
+        margin: 20px 0;
+        font-size: 1.2em;
+        text-align: left;
     }
 
     .video-section {
