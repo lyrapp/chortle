@@ -96,7 +96,10 @@ window.ChortleVideo = {
             }
             
             // UPDATED: Setup scrolling caption overlay system
-            this.setupScrollingCaptionOverlay();
+                this.setupScrollingCaptionOverlay();
+                
+                // NEW: Setup logo watermark
+                this.setupLogoWatermark();
 
             console.log('Camera started with vertical recording format');
 
@@ -115,6 +118,59 @@ window.ChortleVideo = {
             console.log('No chortle data found for caption overlay');
             return;
         }
+
+    // NEW: Setup logo watermark overlay
+    setupLogoWatermark: function() {
+        // Remove existing watermark if any
+        const existingWatermark = document.getElementById('logo-watermark');
+        if (existingWatermark) {
+            existingWatermark.remove();
+        }
+    
+        // Create watermark container
+        const watermark = document.createElement('div');
+        watermark.id = 'logo-watermark';
+        watermark.className = 'logo-watermark';
+        
+        // Create wordmark image
+        const wordmarkImg = document.createElement('img');
+        wordmarkImg.src = 'chortle-wordmark.png';
+        wordmarkImg.alt = 'Chortle';
+        wordmarkImg.style.cssText = `
+            height: 24px;
+            width: auto;
+            opacity: 0.8;
+            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));
+        `;
+        
+        watermark.appendChild(wordmarkImg);
+        
+        // Insert watermark into recording area
+        const recordingArea = document.getElementById('recording-area');
+        
+        if (recordingArea) {
+            // Ensure recording area is positioned
+            recordingArea.style.position = 'relative';
+            
+            // Style the watermark overlay
+            watermark.style.cssText = `
+                position: absolute;
+                top: 15px;
+                left: 15px;
+                z-index: 15;
+                pointer-events: none;
+                display: none;
+                background: rgba(255, 255, 255, 0.1);
+                padding: 8px 12px;
+                border-radius: 8px;
+                backdrop-filter: blur(5px);
+            `;
+            
+            recordingArea.appendChild(watermark);
+            
+            console.log('Logo watermark overlay created');
+        }
+    },
 
         // Get the rendered Mad Lib text
         const template = chortleData.template;
@@ -278,6 +334,32 @@ window.ChortleVideo = {
         }
     },
 
+// NEW: Show logo watermark during recording
+showLogoWatermark: function() {
+    const watermark = document.getElementById('logo-watermark');
+    if (watermark) {
+        watermark.style.display = 'block';
+        console.log('Logo watermark shown');
+    }
+},
+
+        // NEW: Hide logo watermark
+        hideLogoWatermark: function() {
+            const watermark = document.getElementById('logo-watermark');
+            if (watermark) {
+                watermark.style.display = 'none';
+                console.log('Logo watermark hidden');
+            }
+        },
+        
+        // NEW: Remove logo watermark
+        removeLogoWatermark: function() {
+            const watermark = document.getElementById('logo-watermark');
+            if (watermark) {
+                watermark.remove();
+                console.log('Logo watermark removed');
+            }
+        },
     // NEW: Update caption text with current chunk
     updateCaptionText: function() {
         const captionTextEl = document.getElementById('caption-text');
@@ -417,6 +499,9 @@ window.ChortleVideo = {
         // UPDATED: Show scrolling caption overlay during recording
         this.showCaptionOverlay();
 
+        // NEW: Show logo watermark during recording
+        this.showLogoWatermark();
+
         // FIXED: Start countdown timer
         this.startTimer();
 
@@ -479,6 +564,9 @@ window.ChortleVideo = {
         // UPDATED: Hide scrolling caption overlay
         this.hideCaptionOverlay();
 
+        // NEW: Hide logo watermark
+        this.hideLogoWatermark();
+
         // Haptic feedback
         window.ChortleUtils.vibrate([100, 50, 100]);
 
@@ -515,6 +603,9 @@ handleRecordingStop: function() {
     // UPDATED: Remove scrolling caption overlay
     this.removeCaptionOverlay();
     
+    // NEW: Remove logo watermark
+    this.removeLogoWatermark();
+
     console.log('Recording completed and processed');
 },
 
@@ -890,6 +981,9 @@ sendVideo: async function() {
 
         // UPDATED: Stop caption scrolling and remove overlay
         this.removeCaptionOverlay();
+
+        // NEW: Remove logo watermark
+        this.removeLogoWatermark();
 
         // Reset state
         window.ChortleState.mediaRecorder = null;
