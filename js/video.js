@@ -1,10 +1,15 @@
-/* Chortle v5.2 - Video Recording & Playback with Caption Overlay */
+/* Chortle v5.2 - Video Recording & Playback with Scrolling Caption Overlay */
 
 window.ChortleVideo = {
+    // Caption system state
+    captionChunks: [],
+    currentChunkIndex: 0,
+    captionInterval: null,
+
     // Initialize video system
     initialize: function() {
         this.setupEventListeners();
-        console.log('Video system initialized with caption overlay support');
+        console.log('Video system initialized with scrolling caption overlay support');
     },
 
     // Setup all video-related event listeners
@@ -44,34 +49,34 @@ window.ChortleVideo = {
         }
     },
 
-    // Start camera for recording
+    // Start camera for recording with vertical video support
     startCamera: async function() {
         const button = document.getElementById('start-camera');
         button.classList.add('btn-loading');
         button.disabled = true;
 
-        // Auto-scroll on mobile
-        window.ChortleUtils.scrollToElement('video-section');
-
         try {
-            // Mobile-optimized camera constraints
+            // UPDATED: Vertical video constraints optimized for mobile
             const constraints = {
                 video: {
-                    width: { ideal: 720, min: 480 },
-                    height: { ideal: 1280, min: 720 },
+                    // Prefer vertical aspect ratios
+                    width: { ideal: 720, min: 480, max: 1080 },
+                    height: { ideal: 1280, min: 720, max: 1920 },
+                    aspectRatio: { ideal: 9/16 }, // Vertical ratio
                     facingMode: 'user',
-                    frameRate: { ideal: 30 }
+                    frameRate: { ideal: 30, min: 24 }
                 },
                 audio: {
                     echoCancellation: true,
                     noiseSuppression: true,
-                    autoGainControl: true
+                    autoGainControl: true,
+                    sampleRate: 44100
                 }
             };
 
             window.ChortleState.stream = await navigator.mediaDevices.getUserMedia(constraints);
 
-           const preview = document.getElementById('camera-preview');
+            const preview = document.getElementById('camera-preview');
             preview.srcObject = window.ChortleState.stream;
             preview.play().catch(e => console.log('Autoplay prevented:', e));
             
@@ -79,25 +84,21 @@ window.ChortleVideo = {
             document.getElementById('camera-setup').style.display = 'none';
             document.getElementById('recording-area').style.display = 'block';
             
-            // Make recording area full-screen like Snapchat
+            // Make recording area full-screen like Snapchat/TikTok
             const recordingArea = document.getElementById('recording-area');
             recordingArea.classList.add('fullscreen-recording');
             
             // Hide other page elements during recording
             document.querySelector('.header').style.display = 'none';
-            document.querySelector('.simple-intro').style.display = 'none';
             const completedStory = document.getElementById('completed-story');
             if (completedStory) {
                 completedStory.style.display = 'none';
             }
             
-            // Setup caption overlay
-            this.setupCaptionOverlay();
+            // UPDATED: Setup scrolling caption overlay system
+            this.setupScrollingCaptionOverlay();
 
-            // Auto-scroll to recording controls on mobile
-            setTimeout(() => {
-                window.ChortleUtils.scrollToElement('recording-area');
-            }, 500);
+            console.log('Camera started with vertical recording format');
 
         } catch (err) {
             this.handleCameraError(err);
@@ -107,8 +108,8 @@ window.ChortleVideo = {
         }
     },
 
-    // NEW: Setup caption overlay for the current chortle
-    setupCaptionOverlay: function() {
+    // NEW: Setup scrolling caption overlay system
+    setupScrollingCaptionOverlay: function() {
         const chortleData = this.getCurrentChortleData();
         if (!chortleData) {
             console.log('No chortle data found for caption overlay');
@@ -128,111 +129,206 @@ window.ChortleVideo = {
 
         const story = window.ChortleTemplates.renderTemplate(template, templateData);
         
-        // Convert to plain text for captions
-        const plainText = window.ChortleUtils.formatTextForCaptions(story);
+        // UPDATED: Create scrollable chunks with filled word highlighting
+        this.createScrollingCaptionChunks(story, templateData);
         
         // Create caption overlay element
-        this.createCaptionOverlay(plainText);
+        this.createCaptionOverlay();
     },
 
-    // NEW: Create caption overlay element
-    createCaptionOverlay: function(text) {
-    // Remove existing overlay if any
-    const existingOverlay = document.getElementById('caption-overlay');
-    if (existingOverlay) {
-        existingOverlay.remove();
-    }
+    // NEW: Create scrollable text chunks with filled word detection
+    createScrollingCaptionChunks: function(htmlStory, templateData) {
+        // Convert HTML to plain text but keep track of filled words
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlStory;
+        
+        // Extract filled words for highlighting
+        const filledWords = new Set();
+        Object.values(templateData).forEach(value => {
+            if (typeof value === 'string' && value.trim()) {
+                filledWords.add(value.trim().toLowerCase());
+            }
+        });
 
-    // Create overlay container
-    const overlay = document.createElement('div');
-    overlay.id = 'caption-overlay';
-    overlay.className = 'caption-overlay';
-    
-    // Split text into manageable chunks for mobile
-    const maxLength = window.ChortleUtils.isMobile() ? 100 : 120;
-    const chunks = window.ChortleUtils.splitIntoChunks(text, maxLength);
-    
-    // Create caption text element
-    const captionText = document.createElement('div');
-    captionText.className = 'caption-text';
-    captionText.textContent = chunks.join(' ');
-    
-    overlay.appendChild(captionText);
-    
-    // Insert overlay into recording area with better mobile positioning
-    const recordingArea = document.getElementById('recording-area');
-    const videoElement = document.getElementById('camera-preview');
-    
-    if (recordingArea && videoElement) {
-        // Ensure recording area is positioned
-        recordingArea.style.position = 'relative';
+        // Get plain text and split into chunks
+        const plainText = tempDiv.textContent || tempDiv.innerText || '';
+        const words = plainText.split(/\s+/).filter(word => word.length > 0);
         
-        // UPDATED: Better mobile caption positioning
-        overlay.style.position = 'absolute';
-        overlay.style.zIndex = '10';
-        overlay.style.pointerEvents = 'none';
+        // Create chunks of 3-4 words each
+        this.captionChunks = [];
+        const chunkSize = window.ChortleUtils.isMobile() ? 3 : 4;
         
-        // Apply responsive positioning
-        if (window.ChortleUtils.isMobile()) {
-            overlay.style.top = '5px';
-            overlay.style.left = '5px';
-            overlay.style.right = '5px';
-            overlay.style.maxHeight = '80px';
-        } else {
-            overlay.style.top = '10px';
-            overlay.style.left = '10px';
-            overlay.style.right = '10px';
-            overlay.style.maxHeight = '120px';
+        for (let i = 0; i < words.length; i += chunkSize) {
+            const chunkWords = words.slice(i, i + chunkSize);
+            const chunkText = chunkWords.join(' ');
+            
+            // Check if any words in this chunk are filled words
+            const hasFilledWords = chunkWords.some(word => {
+                const cleanWord = word.replace(/[^\w]/g, '').toLowerCase();
+                return filledWords.has(cleanWord);
+            });
+            
+            this.captionChunks.push({
+                text: chunkText,
+                hasFilledWords: hasFilledWords,
+                words: chunkWords.map(word => {
+                    const cleanWord = word.replace(/[^\w]/g, '').toLowerCase();
+                    return {
+                        text: word,
+                        isFilled: filledWords.has(cleanWord)
+                    };
+                })
+            });
         }
         
-        // Apply caption styling from config with mobile optimizations
-        const captionConfig = window.ChortleConfig.UI.captionOverlay;
-        overlay.style.backgroundColor = captionConfig.backgroundColor;
-        overlay.style.color = captionConfig.textColor;
-        overlay.style.borderRadius = '8px';
-        overlay.style.textAlign = 'center';
-        overlay.style.overflow = 'hidden';
-        overlay.style.display = 'none';
-        overlay.style.wordWrap = 'break-word';
-        overlay.style.backdropFilter = 'blur(3px)';
-        
-        // Mobile-specific styling
-        if (window.ChortleUtils.isMobile()) {
-            overlay.style.padding = '8px 10px';
-            overlay.style.fontSize = '0.85rem';
-            overlay.style.lineHeight = '1.2';
-            overlay.style.borderRadius = '6px';
-        } else {
-            overlay.style.padding = captionConfig.padding;
-            overlay.style.fontSize = captionConfig.fontSize;
-            overlay.style.lineHeight = captionConfig.lineHeight;
-        }
-        
-        recordingArea.appendChild(overlay);
-        
-        console.log('Caption overlay created with mobile optimizations');
-    }
-},
+        this.currentChunkIndex = 0;
+        console.log(`Created ${this.captionChunks.length} caption chunks for scrolling`);
+    },
 
-    // NEW: Show caption overlay during recording
-    showCaptionOverlay: function() {
-        const overlay = document.getElementById('caption-overlay');
-        if (overlay) {
-            overlay.style.display = 'block';
-            // Add fade-in animation
-            overlay.style.opacity = '0';
+    // NEW: Create caption overlay container
+    createCaptionOverlay: function() {
+        // Remove existing overlay if any
+        const existingOverlay = document.getElementById('caption-overlay');
+        if (existingOverlay) {
+            existingOverlay.remove();
+        }
+
+        // Create overlay container
+        const overlay = document.createElement('div');
+        overlay.id = 'caption-overlay';
+        overlay.className = 'caption-overlay';
+        
+        // Create caption text element
+        const captionText = document.createElement('div');
+        captionText.id = 'caption-text';
+        captionText.className = 'caption-text';
+        
+        overlay.appendChild(captionText);
+        
+        // Insert overlay into recording area with mobile-optimized positioning
+        const recordingArea = document.getElementById('recording-area');
+        
+        if (recordingArea) {
+            // Ensure recording area is positioned
+            recordingArea.style.position = 'relative';
+            
+            // UPDATED: Better mobile caption positioning for vertical video
+            overlay.style.position = 'absolute';
+            overlay.style.zIndex = '10';
+            overlay.style.pointerEvents = 'none';
+            
+            // Apply responsive positioning for vertical video
+            if (window.ChortleUtils.isMobile()) {
+                overlay.style.bottom = '140px'; // Above controls
+                overlay.style.left = '10px';
+                overlay.style.right = '10px';
+                overlay.style.maxHeight = '100px';
+            } else {
+                overlay.style.bottom = '120px';
+                overlay.style.left = '20px';
+                overlay.style.right = '20px';
+                overlay.style.maxHeight = '120px';
+            }
+            
+            // Apply caption styling optimized for scrolling text
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+            overlay.style.color = 'white';
+            overlay.style.borderRadius = '12px';
+            overlay.style.textAlign = 'center';
+            overlay.style.overflow = 'hidden';
+            overlay.style.display = 'none';
+            overlay.style.backdropFilter = 'blur(5px)';
             overlay.style.transition = 'opacity 0.3s ease';
             
-            setTimeout(() => {
-                overlay.style.opacity = '1';
-            }, 100);
+            // Mobile-specific styling for vertical video
+            if (window.ChortleUtils.isMobile()) {
+                overlay.style.padding = '12px 15px';
+                overlay.style.fontSize = '1.1rem';
+                overlay.style.lineHeight = '1.3';
+                overlay.style.fontWeight = '600';
+            } else {
+                overlay.style.padding = '15px 20px';
+                overlay.style.fontSize = '1.2rem';
+                overlay.style.lineHeight = '1.4';
+                overlay.style.fontWeight = '600';
+            }
             
-            console.log('Caption overlay shown');
+            recordingArea.appendChild(overlay);
+            
+            console.log('Scrolling caption overlay created with vertical video optimization');
         }
     },
 
-    // NEW: Hide caption overlay
+    // NEW: Show caption overlay with scrolling animation
+    showCaptionOverlay: function() {
+        const overlay = document.getElementById('caption-overlay');
+        if (overlay && this.captionChunks.length > 0) {
+            overlay.style.display = 'block';
+            overlay.style.opacity = '1';
+            
+            // Start with first chunk
+            this.updateCaptionText();
+            
+            // Start scrolling through chunks every 3.5 seconds
+            this.captionInterval = setInterval(() => {
+                this.nextCaptionChunk();
+            }, 3500);
+            
+            console.log('Caption overlay shown - scrolling started');
+        }
+    },
+
+    // NEW: Update caption text with current chunk
+    updateCaptionText: function() {
+        const captionTextEl = document.getElementById('caption-text');
+        if (!captionTextEl || !this.captionChunks[this.currentChunkIndex]) return;
+        
+        const currentChunk = this.captionChunks[this.currentChunkIndex];
+        
+        // Create formatted text with highlighted filled words
+        let formattedText = '';
+        currentChunk.words.forEach((wordObj, index) => {
+            if (wordObj.isFilled) {
+                formattedText += `<span style="color: #FE5946; background: rgba(254, 89, 70, 0.3); padding: 2px 6px; border-radius: 4px; font-weight: 700;">${wordObj.text}</span>`;
+            } else {
+                formattedText += wordObj.text;
+            }
+            
+            // Add space between words (except last word)
+            if (index < currentChunk.words.length - 1) {
+                formattedText += ' ';
+            }
+        });
+        
+        // Apply text with fade animation
+        captionTextEl.style.opacity = '0';
+        setTimeout(() => {
+            captionTextEl.innerHTML = formattedText;
+            captionTextEl.style.opacity = '1';
+        }, 150);
+    },
+
+    // NEW: Move to next caption chunk
+    nextCaptionChunk: function() {
+        if (this.captionChunks.length === 0) return;
+        
+        this.currentChunkIndex = (this.currentChunkIndex + 1) % this.captionChunks.length;
+        this.updateCaptionText();
+    },
+
+    // NEW: Stop caption scrolling
+    stopCaptionScrolling: function() {
+        if (this.captionInterval) {
+            clearInterval(this.captionInterval);
+            this.captionInterval = null;
+            console.log('Caption scrolling stopped');
+        }
+    },
+
+    // UPDATED: Hide caption overlay
     hideCaptionOverlay: function() {
+        this.stopCaptionScrolling();
+        
         const overlay = document.getElementById('caption-overlay');
         if (overlay) {
             overlay.style.opacity = '0';
@@ -244,13 +340,19 @@ window.ChortleVideo = {
         }
     },
 
-    // NEW: Remove caption overlay
+    // UPDATED: Remove caption overlay
     removeCaptionOverlay: function() {
+        this.stopCaptionScrolling();
+        
         const overlay = document.getElementById('caption-overlay');
         if (overlay) {
             overlay.remove();
             console.log('Caption overlay removed');
         }
+        
+        // Reset caption state
+        this.captionChunks = [];
+        this.currentChunkIndex = 0;
     },
 
     // Handle camera access errors
@@ -275,17 +377,22 @@ window.ChortleVideo = {
         console.error('Camera error:', err);
     },
 
-    // Start recording video
+    // UPDATED: Start recording video with scrolling captions
     startRecording: function() {
         window.ChortleState.recordedChunks = [];
-        window.ChortleState.recordingSeconds = 0;
+        
+        // FIXED: Initialize countdown timer properly
+        window.ChortleState.recordingSeconds = window.ChortleConfig.APP.maxRecordingTime;
 
         // Request wake lock to prevent screen sleep
         window.ChortleUtils.requestWakeLock();
 
         // Create MediaRecorder
         const mimeType = MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4';
-        window.ChortleState.mediaRecorder = new MediaRecorder(window.ChortleState.stream, { mimeType });
+        window.ChortleState.mediaRecorder = new MediaRecorder(window.ChortleState.stream, { 
+            mimeType,
+            videoBitsPerSecond: 2500000 // 2.5 Mbps for good quality
+        });
 
         // Handle data availability
         window.ChortleState.mediaRecorder.ondataavailable = (event) => {
@@ -307,39 +414,51 @@ window.ChortleVideo = {
         document.getElementById('stop-recording').style.display = 'inline-block';
         document.getElementById('recording-timer').style.display = 'inline-block';
 
-        // NEW: Show caption overlay during recording
+        // UPDATED: Show scrolling caption overlay during recording
         this.showCaptionOverlay();
 
-        // Start timer
+        // FIXED: Start countdown timer
         this.startTimer();
 
         // Haptic feedback
         window.ChortleUtils.vibrate(100);
 
-        console.log('Recording started with caption overlay');
+        console.log('Recording started with scrolling caption overlay');
     },
 
-    // Start recording timer
+    // FIXED: Start recording timer with proper countdown
     startTimer: function() {
-        // Start countdown from max recording time
-        window.ChortleState.recordingSeconds = window.ChortleConfig.APP.maxRecordingTime;
-        
         window.ChortleState.recordingTimer = setInterval(() => {
             window.ChortleState.recordingSeconds--;
+            
             const minutes = Math.floor(window.ChortleState.recordingSeconds / 60);
             const seconds = window.ChortleState.recordingSeconds % 60;
             
-            document.getElementById('recording-timer').textContent = 
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            // Update timer display
+            const timerEl = document.getElementById('recording-timer');
+            if (timerEl) {
+                timerEl.textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Add warning color when under 10 seconds
+                if (window.ChortleState.recordingSeconds <= 10) {
+                    timerEl.style.color = '#ff4444';
+                    timerEl.style.borderColor = '#ff4444';
+                } else {
+                    timerEl.style.color = '#dc3545';
+                    timerEl.style.borderColor = '#dc3545';
+                }
+            }
     
-            // Auto-stop when countdown reaches 0
+            // FIXED: Auto-stop when countdown reaches 0
             if (window.ChortleState.recordingSeconds <= 0) {
+                console.log('Timer reached 0 - auto-stopping recording');
                 this.stopRecording();
             }
         }, 1000);
     },
 
-    // Stop recording
+    // UPDATED: Stop recording
     stopRecording: function() {
         if (window.ChortleState.mediaRecorder && 
             window.ChortleState.mediaRecorder.state === 'recording') {
@@ -349,6 +468,7 @@ window.ChortleVideo = {
         // Clear timer
         if (window.ChortleState.recordingTimer) {
             clearInterval(window.ChortleState.recordingTimer);
+            window.ChortleState.recordingTimer = null;
         }
 
         // Reset UI
@@ -356,16 +476,16 @@ window.ChortleVideo = {
         document.getElementById('stop-recording').style.display = 'none';
         document.getElementById('recording-timer').style.display = 'none';
 
-        // NEW: Hide caption overlay
+        // UPDATED: Hide scrolling caption overlay
         this.hideCaptionOverlay();
 
         // Haptic feedback
         window.ChortleUtils.vibrate([100, 50, 100]);
 
-        console.log('Recording stopped, caption overlay hidden');
+        console.log('Recording stopped, scrolling caption overlay hidden');
     },
 
-    // Handle recording stop event
+    // UPDATED: Handle recording stop event
     handleRecordingStop: function() {
         const mimeType = window.ChortleState.mediaRecorder.mimeType || 'video/webm';
         const blob = new Blob(window.ChortleState.recordedChunks, { type: mimeType });
@@ -380,11 +500,6 @@ window.ChortleVideo = {
         document.getElementById('recording-area').style.display = 'none';
         document.getElementById('playback-area').style.display = 'block';
 
-        // Auto-scroll on mobile
-        setTimeout(() => {
-            window.ChortleUtils.scrollToElement('playback-area');
-        }, 300);
-
         // Stop camera stream
         if (window.ChortleState.stream) {
             window.ChortleState.stream.getTracks().forEach(track => track.stop());
@@ -392,7 +507,6 @@ window.ChortleVideo = {
         
         // Restore normal layout
         document.querySelector('.header').style.display = 'block';
-        document.querySelector('.simple-intro').style.display = 'block';
         const completedStory = document.getElementById('completed-story');
         if (completedStory) {
             completedStory.style.display = 'block';
@@ -400,24 +514,25 @@ window.ChortleVideo = {
         const recordingArea = document.getElementById('recording-area');
         recordingArea.classList.remove('fullscreen-recording');
         
-        // NEW: Remove caption overlay
+        // UPDATED: Remove scrolling caption overlay
         this.removeCaptionOverlay();
+        
+        console.log('Recording completed and processed');
     },
 
-    // Re-record video
+    // UPDATED: Re-record video
     reRecord: function() {
         document.getElementById('playback-area').style.display = 'none';
         document.getElementById('recording-area').style.display = 'block';
         window.ChortleState.recordedChunks = [];
 
-        // NEW: Recreate caption overlay for re-recording
-        this.setupCaptionOverlay();
+        // UPDATED: Recreate scrolling caption overlay for re-recording
+        this.setupScrollingCaptionOverlay();
 
-        // Auto-scroll on mobile
-        window.ChortleUtils.scrollToElement('recording-area');
+        console.log('Re-recording setup with new caption overlay');
     },
 
-    // Send video to creator
+    // Send video to creator (unchanged)
     sendVideo: async function() {
         const recordedVideo = document.getElementById('recorded-video');
         const videoBlob = recordedVideo.videoBlob;
@@ -474,7 +589,7 @@ window.ChortleVideo = {
         }
     },
 
-    // Create video container in api.video
+    // Create video container in api.video (unchanged)
     createVideoContainer: async function() {
         const response = await fetch('https://ws.api.video/videos', {
             method: 'POST',
@@ -497,7 +612,7 @@ window.ChortleVideo = {
         return await response.json();
     },
 
-    // Upload video to api.video
+    // Upload video to api.video (unchanged)
     uploadVideoToApiVideo: function(videoBlob, videoId) {
         return new Promise((resolve, reject) => {
             const formData = new FormData();
@@ -532,7 +647,7 @@ window.ChortleVideo = {
         });
     },
 
-    // Update upload progress
+    // Update upload progress (unchanged)
     updateUploadProgress: function(percent, message) {
         const progressFill = document.getElementById('upload-progress-fill');
         const uploadStatus = document.getElementById('upload-status');
@@ -546,7 +661,7 @@ window.ChortleVideo = {
         }
     },
 
-    // Handle upload errors
+    // Handle upload errors (unchanged)
     handleUploadError: function(error) {
         console.error('Video upload failed:', error);
         
@@ -568,7 +683,7 @@ window.ChortleVideo = {
         window.ChortleApp.showError(errorMessage);
     },
 
-    // Get current chortle data from URL
+    // Get current chortle data from URL (unchanged)
     getCurrentChortleData: function() {
         const hash = window.location.hash;
         if (hash.startsWith('#chortle=')) {
@@ -582,7 +697,7 @@ window.ChortleVideo = {
         return null;
     },
 
-    // Add processing note to video sent section
+    // Add processing note to video sent section (unchanged)
     addProcessingNote: function() {
         const videoSentDiv = document.getElementById('video-sent');
         const existingNote = videoSentDiv.querySelector('.processing-note');
@@ -596,7 +711,7 @@ window.ChortleVideo = {
         }
     },
 
-    // Copy playback link
+    // Copy playback link (unchanged)
     copyPlaybackLink: function() {
         const linkInput = document.getElementById('playback-link');
         const copyBtn = document.getElementById('copy-playback-link');
@@ -617,7 +732,7 @@ window.ChortleVideo = {
         });
     },
 
-    // Show video playback for creators
+    // Show video playback for creators (unchanged)
     showVideoPlayback: function(encodedData) {
         window.ChortleApp.showPage('video-playback-view');
 
@@ -635,7 +750,7 @@ window.ChortleVideo = {
         }
     },
 
-    // Setup video player with multiple fallback options
+    // Setup video player with multiple fallback options (unchanged)
     setupVideoPlayer: function(videoId) {
         const playerContainer = document.getElementById('api-video-player');
 
@@ -663,7 +778,7 @@ window.ChortleVideo = {
         }, 2000);
     },
 
-    // Try iframe video embed
+    // Try iframe video embed (unchanged)
     tryVideoEmbed: function(videoId, container) {
         const embedUrl = `https://embed.api.video/vod/${videoId}`;
         
@@ -687,7 +802,7 @@ window.ChortleVideo = {
         }, 5000);
     },
 
-    // Load direct video if embed fails
+    // Load direct video if embed fails (unchanged)
     loadDirectVideo: function(videoId, container) {
         const directUrl = `https://vod.api.video/vod/${videoId}/mp4/source.mp4`;
         
@@ -700,7 +815,7 @@ window.ChortleVideo = {
         `;
     },
 
-    // Show fallback options if video loading fails
+    // Show fallback options if video loading fails (unchanged)
     showVideoFallback: function(videoId, container) {
         container.innerHTML = `
             <div style="text-align: center; padding: 20px; background: #fff3cd; border-radius: 10px; border: 1px solid #ffeaa7;">
@@ -719,7 +834,7 @@ window.ChortleVideo = {
         `;
     },
 
-    // Display original chortle text
+    // Display original chortle text (unchanged)
     displayOriginalChortle: function(chortleData) {
         if (chortleData && chortleData.template) {
             const template = chortleData.template;
@@ -734,7 +849,7 @@ window.ChortleVideo = {
         }
     },
 
-    // Cleanup video resources
+    // UPDATED: Cleanup video resources
     cleanup: function() {
         // Stop camera stream
         if (window.ChortleState.stream) {
@@ -748,7 +863,7 @@ window.ChortleVideo = {
             window.ChortleState.recordingTimer = null;
         }
 
-        // NEW: Remove caption overlay
+        // UPDATED: Stop caption scrolling and remove overlay
         this.removeCaptionOverlay();
 
         // Reset state
@@ -756,7 +871,7 @@ window.ChortleVideo = {
         window.ChortleState.recordedChunks = [];
         window.ChortleState.recordingSeconds = 0;
 
-        console.log('Video cleanup complete');
+        console.log('Video cleanup complete with caption system reset');
     }
 };
 
