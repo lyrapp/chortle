@@ -518,72 +518,99 @@ handleRecordingStop: function() {
 
     // UPDATED: Re-record video
     reRecord: function() {
+        // Hide playback area
         document.getElementById('playback-area').style.display = 'none';
-        document.getElementById('recording-area').style.display = 'block';
+        
+        // Reset to camera setup
+        document.getElementById('camera-setup').style.display = 'block';
+        document.getElementById('recording-area').style.display = 'none';
+        
+        // Reset recording state
         window.ChortleState.recordedChunks = [];
-
-        // UPDATED: Recreate scrolling caption overlay for re-recording
-        this.setupScrollingCaptionOverlay();
-
-        console.log('Re-recording setup with new caption overlay');
-    },
-
-    // Send video to creator (unchanged)
-    sendVideo: async function() {
+        
+        // Clean up previous video
         const recordedVideo = document.getElementById('recorded-video');
-        const videoBlob = recordedVideo.videoBlob;
-
-        if (!videoBlob) {
-            window.ChortleApp.showError('No video to send!');
-            return;
+        if (recordedVideo.src) {
+            URL.revokeObjectURL(recordedVideo.src);
+            recordedVideo.src = '';
+            recordedVideo.videoBlob = null;
         }
-
-        // Show upload progress
-        document.getElementById('playback-area').style.display = 'none';
-        document.getElementById('upload-progress').style.display = 'block';
-
-        try {
-            // Step 1: Create video container
-            this.updateUploadProgress(10, 'Creating video container...');
-            const videoContainer = await this.createVideoContainer();
-            const videoId = videoContainer.videoId;
-
-            // Step 2: Upload video
-            this.updateUploadProgress(20, 'Starting upload...');
-            await this.uploadVideoToApiVideo(videoBlob, videoId);
-
-            // Step 3: Finalize
-            this.updateUploadProgress(95, 'Finalizing upload...');
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            // Step 4: Create playback link
-            const chortleData = this.getCurrentChortleData();
-            const linkData = {
-                videoId: videoId,
-                chortle: chortleData,
-                uploadTime: Date.now()
-            };
-
-            const encodedLinkData = window.ChortleUtils.encodeChortleData(linkData);
-            const playbackUrl = window.ChortleUtils.getBaseUrl() + '#video=' + encodedLinkData;
-
-            // Show success
-            this.updateUploadProgress(100, 'Upload complete!');
-            document.getElementById('playback-link').value = playbackUrl;
-            document.getElementById('upload-progress').style.display = 'none';
-            document.getElementById('video-sent').style.display = 'block';
-
-            // Auto-scroll and haptic feedback
-            window.ChortleUtils.scrollToElement('video-sent');
-            window.ChortleUtils.vibrate([200, 100, 200]);
-
-            // Add processing note
-            this.addProcessingNote();
-
-        } catch (error) {
-            this.handleUploadError(error);
-        }
+    
+        console.log('Re-recording setup - returning to camera start');
     },
+
+// UPDATED: Send video to creator with native sharing
+sendVideo: async function() {
+    const recordedVideo = document.getElementById('recorded-video');
+    const videoBlob = recordedVideo.videoBlob;
+
+    if (!videoBlob) {
+        window.ChortleApp.showError('No video to send!');
+        return;
+    }
+
+    // Show upload progress
+    document.getElementById('playback-area').style.display = 'none';
+    document.getElementById('upload-progress').style.display = 'block';
+
+    try {
+        // Step 1: Create video container
+        this.updateUploadProgress(10, 'Creating video container...');
+        const videoContainer = await this.createVideoContainer();
+        const videoId = videoContainer.videoId;
+
+        // Step 2: Upload video
+        this.updateUploadProgress(20, 'Starting upload...');
+        await this.uploadVideoToApiVideo(videoBlob, videoId);
+
+        // Step 3: Finalize
+        this.updateUploadProgress(95, 'Finalizing upload...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Step 4: Create playback link
+        const chortleData = this.getCurrentChortleData();
+        const linkData = {
+            videoId: videoId,
+            chortle: chortleData,
+            uploadTime: Date.now()
+        };
+
+        const encodedLinkData = window.ChortleUtils.encodeChortleData(linkData);
+        const playbackUrl = window.ChortleUtils.getBaseUrl() + '#video=' + encodedLinkData;
+
+        // UPDATED: Try native sharing first, then fall back to copy link
+        this.updateUploadProgress(100, 'Upload complete!');
+        document.getElementById('upload-progress').style.display = 'none';
+        
+        // Try to share using native Web Share API
+        const shareResult = await window.ChortleUtils.shareUrl(
+            playbackUrl, 
+            'Watch my hilarious Chortle performance!'
+        );
+
+        if (shareResult.success && shareResult.method === 'native') {
+            // Native sharing succeeded - show simple success message
+            document.getElementById('video-sent').innerHTML = `
+                <h4>🎉 Video Shared!</h4>
+                <p>Your performance has been shared successfully!</p>
+            `;
+            document.getElementById('video-sent').style.display = 'block';
+        } else {
+            // Fall back to showing the copy link interface
+            document.getElementById('playback-link').value = playbackUrl;
+            document.getElementById('video-sent').style.display = 'block';
+        }
+
+        // Haptic feedback
+        window.ChortleUtils.vibrate([200, 100, 200]);
+
+        // Add processing note
+        this.addProcessingNote();
+
+    } catch (error) {
+        this.handleUploadError(error);
+    }
+},
 
     // Create video container in api.video (unchanged)
     createVideoContainer: async function() {
