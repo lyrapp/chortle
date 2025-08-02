@@ -597,7 +597,9 @@ body {
     }
 }
 
-/* Caption Overlay Styles - UPDATED for teleprompter */
+/* REPLACE THE EXISTING CAPTION OVERLAY STYLES WITH: */
+
+/* Caption Overlay Styles - UPDATED for karaoke/teleprompter */
 .caption-overlay {
     position: absolute;
     top: 10px;
@@ -608,55 +610,64 @@ body {
     
     background: rgba(0, 0, 0, 0.85);
     color: white;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 0.9em;
-    line-height: 1.3;
+    padding: 12px 15px;
+    border-radius: 12px;
+    font-size: 0.95em;
+    line-height: 1.2;
     text-align: center;
     font-family: 'Outfit', sans-serif;
     font-weight: 500;
     
     transition: opacity 0.3s ease;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-    max-height: 90px;
+    max-height: 120px;
     overflow: hidden;
     word-wrap: break-word;
     backdrop-filter: blur(5px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-/* Teleprompter line styles */
+/* Karaoke line styles */
 .caption-line {
-    padding: 2px 0;
+    padding: 3px 0;
     transition: all 0.3s ease;
-    font-size: 0.85em;
-    line-height: 1.2;
+    font-size: 0.9em;
+    line-height: 1.3;
+    margin: 1px 0;
+    word-wrap: break-word;
 }
 
 .caption-previous {
-    opacity: 0.4;
-    font-size: 0.75em;
+    opacity: 0.5;
+    font-size: 0.8em;
+    color: #ccc;
 }
 
 .caption-current {
     opacity: 1;
-    font-weight: 600;
-    transform: scale(1.02);
-    font-size: 0.9em;
+    font-weight: 700;
+    transform: scale(1.05);
+    font-size: 1em;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .caption-next {
-    opacity: 0.4;
-    font-size: 0.75em;
+    opacity: 0.5;
+    font-size: 0.8em;
+    color: #ccc;
 }
 
 .caption-text {
-    animation: captionFadeIn 0.5s ease-out;
+    animation: captionFadeIn 0.4s ease-out;
 }
 
 @keyframes captionFadeIn {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(-5px);
     }
     to {
         opacity: 1;
@@ -667,27 +678,28 @@ body {
 /* Mobile caption overlay adjustments */
 @media (max-width: 768px) {
     .caption-overlay {
-        font-size: 0.8rem !important;
-        padding: 6px 8px !important;
-        max-height: 75px !important;
-        top: 5px !important;
-        left: 5px !important;
-        right: 5px !important;
+        font-size: 0.85rem !important;
+        padding: 10px 12px !important;
+        max-height: 100px !important;
+        top: 8px !important;
+        left: 8px !important;
+        right: 8px !important;
         line-height: 1.2 !important;
     }
     
     .caption-line {
-        font-size: 0.8em;
-        line-height: 1.1;
+        font-size: 0.85em;
+        line-height: 1.2;
+        margin: 0.5px 0;
     }
     
     .caption-previous,
     .caption-next {
-        font-size: 0.7em;
+        font-size: 0.75em;
     }
     
     .caption-current {
-        font-size: 0.85em;
+        font-size: 0.9em;
     }
 }
 
