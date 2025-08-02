@@ -39,7 +39,7 @@ window.ChortleTemplates = {
         
         'vacation': {
             title: 'Dream Vacation Gone Wrong',
-            category: 'icons/adventure',
+            category: 'adventure',
             description: 'A vacation that takes an unexpected turn',
             icon: 'icons/vacation.png',
             template: `Last summer, I took a trip to <span class="filled-word">{place}</span> by <span class="filled-word">{transport}</span>. The weather was <span class="filled-word">{adjective1}</span> and I ate <span class="filled-word">{food}</span> for breakfast every day. I spent most of my time <span class="filled-word">{activity}</span> with <span class="filled-word">{celebrity}</span>. It made me feel so <span class="filled-word">{feeling}</span> that I never wanted to come home!`,
