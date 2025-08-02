@@ -909,6 +909,12 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
 }
 
+/* Center align secondary buttons in reading view */
+.reading-view .secondary-btn {
+    display: block !important;
+    margin: 20px auto !important;
+}
+
 .primary-btn:hover {
     transform: translateY(-3px) !important;
     box-shadow: 7px 7px 0px #000000 !important;
