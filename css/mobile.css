@@ -272,10 +272,10 @@
     }
 
     .video-section {
-        padding: 20px;
-        border-radius: 15px;
-        background: #f8f9fa;
-        border-left: 4px solid #00BBF9;
+        padding: 0;
+        background: transparent;
+        border: none;
+        margin: 20px 0;
     }
 
     .watermark-notice {
