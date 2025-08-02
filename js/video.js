@@ -509,7 +509,7 @@ window.ChortleVideo = {
         document.querySelector('.header').style.display = 'block';
         const completedStory = document.getElementById('completed-story');
         if (completedStory) {
-            completedStory.style.display = 'block';
+            completedStory.style.display = 'none';
         }
         const recordingArea = document.getElementById('recording-area');
         recordingArea.classList.remove('fullscreen-recording');
