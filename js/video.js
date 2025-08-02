@@ -111,21 +111,40 @@ window.ChortleVideo = {
         }
     },
 
-    // NEW: Setup scrolling caption overlay system
-    setupScrollingCaptionOverlay: function() {
-        const chortleData = this.getCurrentChortleData();
-        if (!chortleData) {
-            console.log('No chortle data found for caption overlay');
-            return;
-        }
+setupScrollingCaptionOverlay: function() {
+    const chortleData = this.getCurrentChortleData();
+    if (!chortleData) {
+        console.log('No chortle data found for caption overlay');
+        return;
+    }
 
-    // NEW: Setup logo watermark overlay
-    setupLogoWatermark: function() {
-        // Remove existing watermark if any
-        const existingWatermark = document.getElementById('logo-watermark');
-        if (existingWatermark) {
-            existingWatermark.remove();
-        }
+    // Get the rendered Mad Lib text
+    const template = chortleData.template;
+    const templateData = { ...chortleData };
+    delete templateData.template;
+
+    const templateObj = window.ChortleTemplates.getTemplate(template);
+    if (!templateObj) {
+        console.log('Template not found for caption overlay');
+        return;
+    }
+
+    const story = window.ChortleTemplates.renderTemplate(template, templateData);
+    
+    // UPDATED: Create scrollable chunks with filled word highlighting
+    this.createScrollingCaptionChunks(story, templateData);
+    
+    // Create caption overlay element
+    this.createCaptionOverlay();
+},
+
+// NEW: Setup logo watermark overlay
+setupLogoWatermark: function() {
+    // Remove existing watermark if any
+    const existingWatermark = document.getElementById('logo-watermark');
+    if (existingWatermark) {
+        existingWatermark.remove();
+    }
     
         // Create watermark container
         const watermark = document.createElement('div');
