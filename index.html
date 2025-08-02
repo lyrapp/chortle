@@ -105,9 +105,10 @@
         <!-- Reading View (for people who click Chortle links) -->
         <div id="reading-view" class="page reading-view">
             <h2 style="text-align: center; color: #667eea; margin-bottom: 20px;"> Someone made a Chortle for you!</h2>
-            <p style="text-align: center; margin-bottom: 30px; font-size: 1.1em;">Read this Chortle out loud and record your reaction:</p>
+            <p style="text-align: center; margin-bottom: 30px; font-size: 1.1em;">Read the Chortle that appears during recording:</p>
             
-            <div id="completed-story" class="completed-madlib"></div>
+            <!-- Hide the completed story - it will only show during recording -->
+            <div id="completed-story" class="completed-madlib" style="display: none;"></div>
             
             <!-- Video Recording Section -->
             <div id="video-section" class="video-section">
@@ -152,7 +153,7 @@
                 </div>
             </div>
             
-            <button id="create-new" class="create-new-btn">Create Your Own Chortle!</button>
+            <button id="create-new" class="secondary-btn">Create Your Own Chortle!</button>
         </div>
 
         <!-- Video Playback View (for creators to watch recordings) -->
