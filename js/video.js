@@ -498,7 +498,9 @@ handleRecordingStop: function() {
 
     // Switch to playback view
     document.getElementById('recording-area').style.display = 'none';
-    document.getElementById('playback-area').style.display = 'block';
+    const playbackArea = document.getElementById('playback-area');
+    playbackArea.style.display = 'block';
+    playbackArea.classList.add('active');
 
     // Stop camera stream
     if (window.ChortleState.stream) {
