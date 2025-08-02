@@ -1074,8 +1074,20 @@ sendVideo: async function() {
         window.ChortleState.recordedChunks = [];
         window.ChortleState.recordingSeconds = 0;
 
-        console.log('Video cleanup complete with caption system reset');
-
+        // Export for debugging
+        if (window.ChortleDebug) {
+            window.ChortleDebug.video = window.ChortleVideo;
+        }
+        
+        // WITH THIS (properly closed):
+                console.log('Video cleanup complete with caption system reset');
+            }
+        };
+        
+        // Export for debugging
+        if (window.ChortleDebug) {
+            window.ChortleDebug.video = window.ChortleVideo;
+        }
 // Export for debugging
 if (window.ChortleDebug) {
     window.ChortleDebug.video = window.ChortleVideo;
