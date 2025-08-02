@@ -204,10 +204,17 @@
 
     .share-step {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         margin: 12px 0;
         font-size: 0.95em;
         font-weight: 500;
+        gap: 12px;
+    }
+    
+    .share-step-text {
+        flex: 1;
+        line-height: 1.4;
+        padding-top: 1px; /* Align with smaller number circle on mobile */
     }
     
     .share-step span {
