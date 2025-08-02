@@ -3,7 +3,7 @@
 /* Mobile optimizations */
 @media (max-width: 768px) {
     .container {
-        padding: 10px;
+        padding: 5px 10px; /* Only 5px top/bottom padding */
     }
 
 .header .wordmark {
