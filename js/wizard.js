@@ -39,30 +39,36 @@ window.ChortleWizard = {
             stepDiv.className = 'wizard-step';
             stepDiv.dataset.step = index;
 
-            stepDiv.innerHTML = `
-                <div class="step-content">
-                    <div class="step-question">${field.label}:</div>
-                    <input type="${field.type}" 
-                           class="step-input" 
-                           data-field="${field.name}" 
-                           placeholder="Enter your answer..." 
-                           required>
+                stepDiv.innerHTML = `
+        <div class="step-content">
+            <div class="step-question">${field.label}:</div>
+            <input type="${field.type}" 
+                   class="step-input" 
+                   data-field="${field.name}" 
+                   placeholder="Enter your answer..." 
+                   required>
+            ${field.suggestions ? `
+                <div class="suggestion-pills">
+                    ${field.suggestions.map(suggestion => 
+                        `<button type="button" class="suggestion-pill" data-suggestion="${suggestion}">${suggestion}</button>`
+                    ).join('')}
                 </div>
-                <div class="step-navigation">
-                    <button class="nav-btn btn-back" ${index === 0 ? 'style="visibility: hidden;"' : ''}>
-                        ← 
-                    </button>
-                    <button class="nav-btn btn-next" disabled>
-                        ${index === template.fields.length - 1 ? 'Finish' : 'Next →'}
-                    </button>
-                </div>
-            `;
+            ` : ''}
+        </div>
+        <div class="step-navigation">
+            <button class="nav-btn btn-back" ${index === 0 ? 'style="visibility: hidden;"' : ''}>
+                ← 
+            </button>
+            <button class="nav-btn btn-next" disabled>
+                ${index === template.fields.length - 1 ? 'Finish' : 'Next →'}
+            </button>
+        </div>
+    `;
 
             stepsContainer.appendChild(stepDiv);
         });
     },
 
-    // Setup event listeners for wizard
     // Setup event listeners for wizard
 setupEventListeners: function(template) {
     // Input validation
@@ -78,6 +84,25 @@ setupEventListeners: function(template) {
                 }
             }
         });
+
+    // Suggestion pill click handlers
+    document.querySelectorAll('.suggestion-pill').forEach(pill => {
+        pill.addEventListener('click', (e) => {
+            const suggestion = e.target.dataset.suggestion;
+            const currentStepElement = document.querySelector(`[data-step="${window.ChortleState.currentStep}"]`);
+            const input = currentStepElement.querySelector('.step-input');
+            
+            if (input && suggestion) {
+                input.value = suggestion;
+                this.validateCurrentStep();
+                
+                // Haptic feedback
+                if (window.ChortleUtils) {
+                    window.ChortleUtils.vibrate(50);
+                }
+            }
+        });
+    });
 
         // Mobile keyboard handling (disabled auto-scroll)
         input.addEventListener('focus', (e) => {
