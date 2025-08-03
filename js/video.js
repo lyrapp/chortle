@@ -1051,19 +1051,37 @@ uploadVideoToApiVideo: function(videoBlob, videoId) {
         window.ChortleApp.showError(errorMessage);
     },
 
-    // Get current chortle data from URL (unchanged)
-    getCurrentChortleData: function() {
-        const hash = window.location.hash;
-        if (hash.startsWith('#chortle=')) {
-            try {
-                const chortleData = hash.substring(9);
-                return window.ChortleUtils.decodeChortleData(chortleData);
-            } catch (e) {
-                return null;
-            }
+// Get current chortle data from URL (FIXED to preserve data)
+getCurrentChortleData: function() {
+    // First try to get from stored state (if we've already processed it)
+    if (window.ChortleState.currentChortleData) {
+        console.log('Using stored chortle data:', window.ChortleState.currentChortleData);
+        return window.ChortleState.currentChortleData;
+    }
+    
+    // Otherwise, get from URL hash
+    const hash = window.location.hash;
+    console.log('Checking hash for chortle data:', hash);
+    
+    if (hash.startsWith('#chortle=')) {
+        try {
+            const chortleData = hash.substring(9);
+            const decodedData = window.ChortleUtils.decodeChortleData(chortleData);
+            console.log('Decoded chortle data from hash:', decodedData);
+            
+            // Store it for future use
+            window.ChortleState.currentChortleData = decodedData;
+            
+            return decodedData;
+        } catch (e) {
+            console.error('Failed to decode chortle data from hash:', e);
+            return null;
         }
-        return null;
-    },
+    }
+    
+    console.log('No chortle data found in hash or state');
+    return null;
+},
 
     // Add processing note to video sent section (unchanged)
     addProcessingNote: function() {
