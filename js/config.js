@@ -207,80 +207,46 @@ window.ChortleUtils = {
         return true;
     },
     
-// URL encoding/decoding
-encodeChortleData: function(data) {
-    try {
-        // Debug logging to identify the issue
-        console.log('Encoding chortle data:', data);
-        
-        if (!data || typeof data !== 'object') {
-            console.error('Invalid data for encoding:', data);
-            return null;
-        }
-        
-        if (!data.template) {
-            console.error('Missing template in data:', data);
-            return null;
-        }
-        
-        // Clean the data to remove any problematic values
-        const cleanData = {};
-        Object.keys(data).forEach(key => {
-            const value = data[key];
-            // Only include string and number values
-            if (typeof value === 'string' || typeof value === 'number') {
-                cleanData[key] = value;
-            } else {
-                console.warn('Skipping non-serializable value:', key, value);
+    // URL encoding/decoding
+    encodeChortleData: function(data) {
+        try {
+            // Debug logging to identify the issue
+            console.log('Encoding chortle data:', data);
+            
+            if (!data || typeof data !== 'object') {
+                console.error('Invalid data for encoding:', data);
+                return null;
             }
-        });
-        
-        const jsonString = JSON.stringify(cleanData);
-        console.log('JSON string:', jsonString);
-        
-        const encodedData = btoa(jsonString);
-        console.log('Encoded data:', encodedData);
-        
-        return encodedData;
-    } catch (error) {
-        console.error('Error encoding chortle data:', error);
-        console.error('Data that failed to encode:', data);
-        this.logError(error, 'encoding chortle data');
-        return null;
-    }
-},
-        
-        if (!data.template) {
-            console.error('Missing template in data:', data);
+            
+            if (!data.template) {
+                console.error('Missing template in data:', data);
+                return null;
+            }
+            
+            // Clean the data to remove any problematic values
+            const cleanData = {};
+            Object.keys(data).forEach(key => {
+                const value = data[key];
+                // Only include string and number values
+                if (typeof value === 'string' || typeof value === 'number') {
+                    cleanData[key] = value;
+                }
+            });
+            
+            const jsonString = JSON.stringify(cleanData);
+            console.log('JSON string:', jsonString);
+            
+            const encodedData = btoa(jsonString);
+            console.log('Encoded data:', encodedData);
+            
+            return encodedData;
+        } catch (error) {
+            console.error('Error encoding chortle data:', error);
+            console.error('Data that failed to encode:', data);
+            this.logError(error, 'encoding chortle data');
             return null;
         }
-        
-        // Clean the data to remove any problematic values
-        const cleanData = {};
-        Object.keys(data).forEach(key => {
-            const value = data[key];
-            // Only include string and number values
-            if (typeof value === 'string' || typeof value === 'number') {
-                cleanData[key] = value;
-            } else {
-                console.warn('Skipping non-serializable value:', key, value);
-            }
-        });
-        
-        const jsonString = JSON.stringify(cleanData);
-        console.log('JSON string:', jsonString);
-        
-        const encodedData = btoa(jsonString);
-        console.log('Encoded data:', encodedData);
-        
-        return encodedData;
-    } catch (error) {
-        console.error('Error encoding chortle data:', error);
-        console.error('Data that failed to encode:', data);
-        this.logError(error, 'encoding chortle data');
-        return null;
-    }
-},
+    },
     
     decodeChortleData: function(encodedData) {
         try {
