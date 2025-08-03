@@ -139,20 +139,48 @@ window.ChortleApp = {
         const originalText = shareBtn.textContent;
         shareBtn.classList.add('btn-loading');
         shareBtn.disabled = true;
-
+    
         try {
-            const wizardData = window.ChortleWizard.getWizardData();
+            // Debug current state
+            console.log('Share button clicked');
+            console.log('Current wizard state:', window.ChortleState);
+            console.log('Current template:', window.ChortleState.currentTemplate);
+            console.log('Current wizard data:', window.ChortleState.wizardData);
             
-            if (!wizardData || !wizardData.template) {
-                throw new Error('No wizard data available');
+            const wizardData = window.ChortleWizard.getWizardData();
+            console.log('Retrieved wizard data:', wizardData);
+            
+            if (!wizardData) {
+                throw new Error('getWizardData returned null - wizard may not be completed');
             }
-
-            console.log('Generating link with data:', wizardData);
-
+            
+            if (!wizardData.template) {
+                throw new Error('No template in wizard data - wizard setup may have failed');
+            }
+            
+            // Validate that we have all required fields
+            const template = window.ChortleTemplates.getTemplate(wizardData.template);
+            if (!template) {
+                throw new Error(`Template '${wizardData.template}' not found`);
+            }
+            
+            const missingFields = template.fields.filter(field => 
+                !wizardData[field.name] || wizardData[field.name].trim() === ''
+            );
+            
+            if (missingFields.length > 0) {
+                throw new Error(`Missing required fields: ${missingFields.map(f => f.name).join(', ')}`);
+            }
+    
+            console.log('Generating link with validated data:', wizardData);
+    
             const encodedData = window.ChortleUtils.encodeChortleData(wizardData);
+            console.log('Encoded result:', encodedData);
+            
             if (!encodedData) {
-                throw new Error('Failed to encode chortle data');
+                throw new Error('Failed to encode chortle data - check console for encoding errors');
             }
+
 
             const shareableUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
             console.log('Generated URL:', shareableUrl);
