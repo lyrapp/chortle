@@ -479,6 +479,20 @@
     }
 }
 
+/* Mobile camera setup spacing */
+@media (max-width: 768px) {
+    .camera-setup {
+        padding: 20px 15px !important;
+        min-height: 250px !important;
+        gap: 15px !important;
+    }
+    
+    .camera-setup img {
+        width: 180px !important;
+        margin-bottom: 25px !important;
+    }
+}
+
 /* Very small phones */
 @media (max-width: 480px) {
     .header h1 {
