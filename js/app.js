@@ -368,41 +368,41 @@ window.ChortleApp = {
         console.log('App reset complete');
     },
 
-    // Show completed chortle (when someone clicks a link)
-    showCompletedChortle: function(data) {
-        console.log('Showing completed chortle with data:', data);
+// Show completed chortle (when someone clicks a link) - FIXED to store data
+showCompletedChortle: function(data) {
+    console.log('Showing completed chortle with data:', data);
 
-        // Validate data
-        if (!window.ChortleUtils.validateChortleData(data)) {
-            this.showError('Invalid Chortle data. This link may be corrupted.');
-            return;
-        }
+    // Validate data
+    if (!window.ChortleUtils.validateChortleData(data)) {
+        this.showError('Invalid Chortle data. This link may be corrupted.');
+        return;
+    }
 
-        const template = data.template;
-        const templateData = { ...data };
-        delete templateData.template;
+    const template = data.template;
+    const templateData = { ...data };
+    delete templateData.template;
 
-        console.log('Looking for template:', template);
+    console.log('Looking for template:', template);
 
-        const templateObj = window.ChortleTemplates.getTemplate(template);
-        if (!templateObj) {
-            console.error('Template not found:', template);
-            this.showError('Unknown template. This Chortle may be from a newer version.');
-            return;
-        }
+    const templateObj = window.ChortleTemplates.getTemplate(template);
+    if (!templateObj) {
+        console.error('Template not found:', template);
+        this.showError('Unknown template. This Chortle may be from a newer version.');
+        return;
+    }
 
-        console.log('Template found, showing reading view');
-        this.showPage('reading-view');
+    console.log('Template found, showing reading view');
+    this.showPage('reading-view');
 
-        // Render the completed story
-        const story = window.ChortleTemplates.renderTemplate(template, templateData);
-        document.getElementById('completed-story').innerHTML = story;
+    // Render the completed story
+    const story = window.ChortleTemplates.renderTemplate(template, templateData);
+    document.getElementById('completed-story').innerHTML = story;
 
-        // Store the chortle data for potential history updates
-        window.ChortleState.currentChortleData = data;
+    // FIXED: Store the complete chortle data (including template) for video recording
+    window.ChortleState.currentChortleData = data; // Store the FULL data including template
 
-        console.log('Generated story displayed');
-    },
+    console.log('Generated story displayed and chortle data stored');
+},
 
     // Update chortle status when video is completed (placeholder - history disabled)
     updateChortleStatus: function(chortleData, videoUrl) {
