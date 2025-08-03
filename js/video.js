@@ -581,7 +581,18 @@ formatChunkText: function(chunk, isCurrentLine) {
     nextCaptionChunk: function() {
         if (this.captionChunks.length === 0) return;
         
-        this.currentChunkIndex = (this.currentChunkIndex + 1) % this.captionChunks.length;
+        // Move to next chunk
+        this.currentChunkIndex++;
+        
+        // Check if we've reached the end
+        if (this.currentChunkIndex >= this.captionChunks.length) {
+            // Stop the caption scrolling - we've completed one full cycle
+            this.stopCaptionScrolling();
+            console.log('Caption overlay completed one full cycle - stopping');
+            return;
+        }
+        
+        // Update to show the next chunk
         this.updateCaptionText();
     },
 
