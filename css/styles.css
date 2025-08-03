@@ -36,9 +36,9 @@ body {
     max-width: 600px;
     margin: 0 auto;
     padding: 20px;
-    min-height: 100vh;
     display: flex;
     flex-direction: column;
+    gap: 0;
 }
 
 /* Header */
