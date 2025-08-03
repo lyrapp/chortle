@@ -116,29 +116,22 @@
 }
 
 /* Ultra-compact wizard for keyboard visibility */
-@media (max-width: 768px) {
-    .page {
-        padding: 20px; /* Reduced from 25px */
-        padding-top: 15px; /* Less top padding */
-    }
-    
-    .wizard-header {
-        margin-bottom: 8px; /* Tighter */
-    }
-    
-    .wizard-header .template-name {
-        font-size: 1em;
-    }
-    
-    .progress-bar {
-        height: 4px;
-        margin: 8px 0 5px 0;
-    }
-    
-    .progress-text {
-        font-size: 0.8em;
-        margin-top: 5px;
-    }
+.wizard-header {
+    margin-bottom: 8px; /* Tighter */
+}
+
+.wizard-header .template-name {
+    font-size: 1em;
+}
+
+.progress-bar {
+    height: 4px;
+    margin: 8px 0 5px 0;
+}
+
+.progress-text {
+    font-size: 0.8em;
+    margin-top: 5px;
 }
 
     /* CTA buttons on mobile */
@@ -475,14 +468,14 @@
 /* Mobile camera setup spacing */
 @media (max-width: 768px) {
     .camera-setup {
-        padding: 20px 15px !important;
-        min-height: 250px !important;
-        gap: 15px !important;
+        padding: 10px 15px !important;
+        min-height: 200px !important;
+        gap: 10px !important;
     }
     
     .camera-setup img {
         width: 180px !important;
-        margin-bottom: 25px !important;
+        margin-bottom: 15px !important;
     }
 }
 
@@ -578,7 +571,7 @@
 /* Landscape orientation adjustments */
 @media screen and (max-height: 500px) and (orientation: landscape) {
     .header {
-        margin-bottom: 15px;
+        margin-bottom: 8px;
     }
     
     .header h1 {
