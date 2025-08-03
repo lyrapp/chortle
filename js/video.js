@@ -138,27 +138,37 @@ setupScrollingCaptionOverlay: function() {
     this.createCaptionOverlay();
 },
 
- // NEW: Create scrollable text chunks with filled word detection - UPDATED for teleprompter style
-    // NEW: Create scrollable text chunks with filled word detection - UPDATED for better word matching
+// NEW: Create scrollable text chunks with filled word detection - FIXED stop words
 createScrollingCaptionChunks: function(htmlStory, templateData) {
     // Convert HTML to plain text but keep track of filled words
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = htmlStory;
     
-    // Extract filled words for highlighting - IMPROVED matching
+    // Extract filled words for highlighting - IMPROVED with stop word filtering
     const filledWords = new Set();
     const filledPhrases = []; // Track multi-word phrases
+    
+    // Common stop words that shouldn't be highlighted
+    const stopWords = new Set([
+        'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 
+        'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+        'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+        'should', 'may', 'might', 'can', 'must', 'shall', 'it', 'its', 'they',
+        'them', 'their', 'this', 'that', 'these', 'those', 'i', 'you', 'he',
+        'she', 'we', 'me', 'him', 'her', 'us'
+    ]);
     
     Object.values(templateData).forEach(value => {
         if (typeof value === 'string' && value.trim()) {
             const cleanValue = value.trim().toLowerCase();
             filledPhrases.push(cleanValue);
             
-            // Also add individual words from multi-word entries
+            // Only add individual words if they're meaningful (not stop words, 3+ chars)
             const words = cleanValue.split(/\s+/);
             words.forEach(word => {
-                if (word.length > 0) {
-                    filledWords.add(word);
+                const cleanWord = word.replace(/[^\w]/g, '').toLowerCase();
+                if (cleanWord.length >= 3 && !stopWords.has(cleanWord)) {
+                    filledWords.add(cleanWord);
                 }
             });
         }
