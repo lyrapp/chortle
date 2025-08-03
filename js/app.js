@@ -481,7 +481,7 @@ window.ChortleApp = {
             currentPage: window.ChortleState.currentPage,
             templateStats: window.ChortleTemplates.getStats(),
             wizardState: window.ChortleWizard ? window.ChortleWizard.debug() : null,
-            historyStats: window.ChortleHistory ? window.ChortleHistory.getStats() : null
+            // historyStats removed - history system disabled
         };
     },
 
