@@ -873,6 +873,11 @@ sendVideo: async function() {
 
         // Step 4: Create playback link
         const chortleData = this.getCurrentChortleData();
+        // Validate chortle data
+        if (!chortleData || !chortleData.template) {
+            console.error('Invalid or missing chortle data:', chortleData);
+            throw new Error('Missing Chortle data - unable to create playback link');
+        }
         console.log('Creating playback link with video ID:', videoId);
         
         const linkData = {
