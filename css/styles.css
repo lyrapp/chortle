@@ -1101,3 +1101,41 @@ body {
         font-size: 1em;
     }
 }
+
+/* Suggestion Pills */
+.suggestion-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 15px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.suggestion-pill {
+    background: rgba(0, 187, 249, 0.1);
+    border: 2px solid rgba(0, 187, 249, 0.3);
+    color: #00BBF9;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.suggestion-pill:hover {
+    background: rgba(0, 187, 249, 0.2);
+    border-color: rgba(0, 187, 249, 0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 187, 249, 0.15);
+}
+
+.suggestion-pill:active {
+    transform: translateY(0) scale(0.95);
+    background: rgba(0, 187, 249, 0.3);
+}
