@@ -906,28 +906,44 @@ window.ChortleVideo = {
         }
     },
 
-    // Create video container in api.video (unchanged)
-    createVideoContainer: async function() {
-        const response = await fetch('https://ws.api.video/videos', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${window.ChortleConfig.API_VIDEO.apiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                title: `Chortle Reading - ${Date.now()}`,
-                description: 'A hilarious Chortle reading created with Chortle!',
-                public: true,
-                mp4Support: true
-            })
-        });
+// Create video container in api.video (FIXED with better error handling)
+createVideoContainer: async function() {
+    console.log('Creating video container...');
+    
+    const response = await fetch('https://ws.api.video/videos', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${window.ChortleConfig.API_VIDEO.apiKey}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            title: `Chortle Reading - ${Date.now()}`,
+            description: 'A hilarious Chortle reading created with Chortle!',
+            public: true,
+            mp4Support: true
+        })
+    });
 
-        if (!response.ok) {
-            throw new Error(`Failed to create video container: ${response.status}`);
-        }
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API response error:', response.status, errorText);
+        throw new Error(`Failed to create video container: ${response.status} - ${errorText}`);
+    }
 
-        return await response.json();
-    },
+    const responseData = await response.json();
+    console.log('Video container response:', responseData);
+    
+    // FIXED: Handle different possible response structures
+    const videoId = responseData.videoId || responseData.id || responseData.video?.id;
+    
+    if (!videoId) {
+        console.error('No video ID found in response:', responseData);
+        throw new Error('No video ID returned from API');
+    }
+    
+    console.log('Video container created with ID:', videoId);
+    return { videoId: videoId, ...responseData };
+},
 
     // Upload video to api.video (unchanged)
     uploadVideoToApiVideo: function(videoBlob, videoId) {
