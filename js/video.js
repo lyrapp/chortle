@@ -1051,12 +1051,18 @@ uploadVideoToApiVideo: function(videoBlob, videoId) {
         window.ChortleApp.showError(errorMessage);
     },
 
-// Get current chortle data from URL (FIXED to preserve data)
+// Get current chortle data from URL (FIXED to preserve data and validate)
 getCurrentChortleData: function() {
     // First try to get from stored state (if we've already processed it)
     if (window.ChortleState.currentChortleData) {
         console.log('Using stored chortle data:', window.ChortleState.currentChortleData);
-        return window.ChortleState.currentChortleData;
+        
+        // Validate that it has the required template field
+        if (window.ChortleState.currentChortleData.template) {
+            return window.ChortleState.currentChortleData;
+        } else {
+            console.error('Stored chortle data missing template field');
+        }
     }
     
     // Otherwise, get from URL hash
@@ -1068,6 +1074,12 @@ getCurrentChortleData: function() {
             const chortleData = hash.substring(9);
             const decodedData = window.ChortleUtils.decodeChortleData(chortleData);
             console.log('Decoded chortle data from hash:', decodedData);
+            
+            // Validate the decoded data has a template
+            if (!decodedData || !decodedData.template) {
+                console.error('Decoded data missing template:', decodedData);
+                return null;
+            }
             
             // Store it for future use
             window.ChortleState.currentChortleData = decodedData;
