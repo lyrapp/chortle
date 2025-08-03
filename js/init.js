@@ -297,15 +297,6 @@ function setupDevelopmentHelpers() {
                 console.log('Current state:', window.ChortleState);
                 console.log('Browser support:', window.ChortleApp.checkBrowserSupport());
                 console.log('Performance timings:', window.performance.getEntriesByType('measure'));
-                
-                // History info
-                if (window.ChortleHistory) {
-                    console.log('History stats:', window.ChortleHistory.getStats());
-                    console.log('Recent history:', window.ChortleHistory.getHistory().slice(0, 3));
-                } else {
-                    console.log('History module not available');
-                }
-                
                 console.groupEnd();
             },
             
@@ -335,39 +326,6 @@ function setupDevelopmentHelpers() {
             reset: function() {
                 window.ChortleApp.resetApp();
                 console.log('App reset complete');
-            },
-            
-            // History debugging
-            showHistory: function() {
-                if (window.ChortleHistory) {
-                    const history = window.ChortleHistory.getHistory();
-                    console.table(history.map(entry => ({
-                        id: entry.id,
-                        template: entry.templateTitle,
-                        status: entry.status,
-                        created: window.ChortleHistory.formatDate(entry.createdAt)
-                    })));
-                } else {
-                    console.log('History module not available');
-                }
-            },
-            
-            clearHistory: function() {
-                if (window.ChortleHistory) {
-                    window.ChortleHistory.clearHistory();
-                    console.log('History cleared');
-                } else {
-                    console.log('History module not available');
-                }
-            },
-            
-            // Export history for backup
-            exportHistory: function() {
-                if (window.ChortleHistory) {
-                    window.ChortleHistory.exportHistory();
-                } else {
-                    console.log('History module not available');
-                }
             },
             
             // Test native sharing
