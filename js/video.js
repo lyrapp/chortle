@@ -139,53 +139,67 @@ setupScrollingCaptionOverlay: function() {
 },
 
  // NEW: Create scrollable text chunks with filled word detection - UPDATED for teleprompter style
-    createScrollingCaptionChunks: function(htmlStory, templateData) {
-        // Convert HTML to plain text but keep track of filled words
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = htmlStory;
-        
-        // Extract filled words for highlighting
-        const filledWords = new Set();
-        Object.values(templateData).forEach(value => {
-            if (typeof value === 'string' && value.trim()) {
-                filledWords.add(value.trim().toLowerCase());
-            }
-        });
-
-        // Get plain text and split into chunks
-        const plainText = tempDiv.textContent || tempDiv.innerText || '';
-        const words = plainText.split(/\s+/).filter(word => word.length > 0);
-        
-        // UPDATED: Create larger chunks for more natural reading - 8-12 words per line
-        this.captionChunks = [];
-        const chunkSize = window.ChortleUtils.isMobile() ? 8 : 12;
-        
-        for (let i = 0; i < words.length; i += chunkSize) {
-            const chunkWords = words.slice(i, i + chunkSize);
-            const chunkText = chunkWords.join(' ');
+    // NEW: Create scrollable text chunks with filled word detection - UPDATED for better word matching
+createScrollingCaptionChunks: function(htmlStory, templateData) {
+    // Convert HTML to plain text but keep track of filled words
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlStory;
+    
+    // Extract filled words for highlighting - IMPROVED matching
+    const filledWords = new Set();
+    const filledPhrases = []; // Track multi-word phrases
+    
+    Object.values(templateData).forEach(value => {
+        if (typeof value === 'string' && value.trim()) {
+            const cleanValue = value.trim().toLowerCase();
+            filledPhrases.push(cleanValue);
             
-            // Check if any words in this chunk are filled words
-            const hasFilledWords = chunkWords.some(word => {
-                const cleanWord = word.replace(/[^\w]/g, '').toLowerCase();
-                return filledWords.has(cleanWord);
-            });
-            
-            this.captionChunks.push({
-                text: chunkText,
-                hasFilledWords: hasFilledWords,
-                words: chunkWords.map(word => {
-                    const cleanWord = word.replace(/[^\w]/g, '').toLowerCase();
-                    return {
-                        text: word,
-                        isFilled: filledWords.has(cleanWord)
-                    };
-                })
+            // Also add individual words from multi-word entries
+            const words = cleanValue.split(/\s+/);
+            words.forEach(word => {
+                if (word.length > 0) {
+                    filledWords.add(word);
+                }
             });
         }
+    });
+
+    // Get plain text and split into chunks
+    const plainText = tempDiv.textContent || tempDiv.innerText || '';
+    const words = plainText.split(/\s+/).filter(word => word.length > 0);
+    
+    // UPDATED: Create larger chunks for more natural reading - 8-12 words per line
+    this.captionChunks = [];
+    const chunkSize = window.ChortleUtils.isMobile() ? 8 : 12;
+    
+    for (let i = 0; i < words.length; i += chunkSize) {
+        const chunkWords = words.slice(i, i + chunkSize);
+        const chunkText = chunkWords.join(' ');
         
-        this.currentChunkIndex = 0;
-        console.log(`Created ${this.captionChunks.length} caption chunks for teleprompter-style scrolling`);
-    },
+        // Check if any words in this chunk are filled words
+        const hasFilledWords = chunkWords.some(word => {
+            const cleanWord = word.replace(/[^\w]/g, '').toLowerCase();
+            return filledWords.has(cleanWord);
+        });
+        
+        this.captionChunks.push({
+            text: chunkText,
+            hasFilledWords: hasFilledWords,
+            words: chunkWords.map(word => {
+                const cleanWord = word.replace(/[^\w]/g, '').toLowerCase();
+                return {
+                    text: word,
+                    isFilled: filledWords.has(cleanWord)
+                };
+            }),
+            filledPhrases: filledPhrases // Store for phrase matching
+        });
+    }
+    
+    this.currentChunkIndex = 0;
+    console.log(`Created ${this.captionChunks.length} caption chunks for teleprompter-style scrolling`);
+    console.log('Filled words to highlight:', Array.from(filledWords));
+},
 
     // NEW: Create caption overlay container
     createCaptionOverlay: function() {
@@ -483,27 +497,51 @@ updateCaptionText: function() {
     }, 150);
 },
 
-    // NEW: Format chunk text with filled word highlighting
-    formatChunkText: function(chunk, isCurrentLine) {
-        if (!chunk) return '';
+// NEW: Format chunk text with filled word highlighting - IMPROVED matching
+formatChunkText: function(chunk, isCurrentLine) {
+    if (!chunk) return '';
+    
+    let formattedText = '';
+    const chunkText = chunk.words.map(w => w.text).join(' ').toLowerCase();
+    
+    chunk.words.forEach((wordObj, index) => {
+        let shouldHighlight = false;
         
-        let formattedText = '';
-        chunk.words.forEach((wordObj, index) => {
-            if (wordObj.isFilled && isCurrentLine) {
-                // Highlight filled words only on current line
-                formattedText += `<span style="color: #FE5946; background: rgba(254, 89, 70, 0.3); padding: 2px 6px; border-radius: 4px; font-weight: 700;">${wordObj.text}</span>`;
-            } else {
-                formattedText += wordObj.text;
-            }
+        if (isCurrentLine) {
+            // Check if this individual word should be highlighted
+            shouldHighlight = wordObj.isFilled;
             
-            // Add space between words (except last word) - FIXED
-            if (index < chunk.words.length - 1) {
-                formattedText += ' ';
+            // IMPROVED: Also check for phrase matching
+            if (!shouldHighlight && chunk.filledPhrases) {
+                for (const phrase of chunk.filledPhrases) {
+                    // Check if this word is part of a phrase that appears in this chunk
+                    if (phrase.includes(' ') && chunkText.includes(phrase)) {
+                        const phraseWords = phrase.split(/\s+/);
+                        const currentWord = wordObj.text.replace(/[^\w]/g, '').toLowerCase();
+                        if (phraseWords.includes(currentWord)) {
+                            shouldHighlight = true;
+                            break;
+                        }
+                    }
+                }
             }
-        });
+        }
         
-        return formattedText;
-    },
+        if (shouldHighlight) {
+            // Highlight filled words only on current line
+            formattedText += `<span style="color: #FE5946; background: rgba(254, 89, 70, 0.3); padding: 2px 6px; border-radius: 4px; font-weight: 700;">${wordObj.text}</span>`;
+        } else {
+            formattedText += wordObj.text;
+        }
+        
+        // Add space between words (except last word)
+        if (index < chunk.words.length - 1) {
+            formattedText += ' ';
+        }
+    });
+    
+    return formattedText;
+},
 
     // NEW: Move to next caption chunk
     nextCaptionChunk: function() {
