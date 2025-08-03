@@ -324,8 +324,31 @@ setupEventListeners: function(template) {
 
     // Get wizard data for sharing
     getWizardData: function() {
-        return { ...window.ChortleState.wizardData };
-    },
+    const data = { ...window.ChortleState.wizardData };
+    console.log('Getting wizard data:', data);
+    
+    // Validate that we have essential data
+    if (!data.template) {
+        console.error('No template in wizard data!');
+        console.error('Current wizard state:', window.ChortleState);
+        return null;
+    }
+    
+    // Count filled fields
+    const template = window.ChortleTemplates.getTemplate(data.template);
+    if (template) {
+        const filledFields = template.fields.filter(field => 
+            data[field.name] && data[field.name].trim() !== ''
+        ).length;
+        console.log(`Wizard data: ${filledFields}/${template.fields.length} fields filled`);
+        
+        if (filledFields !== template.fields.length) {
+            console.warn('Not all fields are filled:', data);
+        }
+    }
+    
+    return data;
+},
 
     // Set wizard data (for editing)
     setWizardData: function(data) {
