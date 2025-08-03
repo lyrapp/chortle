@@ -497,48 +497,72 @@ updateCaptionText: function() {
     }, 150);
 },
 
-// NEW: Format chunk text with filled word highlighting - IMPROVED matching
+// NEW: Format chunk text with filled word highlighting - IMPROVED phrase grouping
 formatChunkText: function(chunk, isCurrentLine) {
     if (!chunk) return '';
     
-    let formattedText = '';
-    const chunkText = chunk.words.map(w => w.text).join(' ').toLowerCase();
+    if (!isCurrentLine) {
+        // For non-current lines, just return plain text
+        return chunk.words.map(w => w.text).join(' ');
+    }
     
-    chunk.words.forEach((wordObj, index) => {
-        let shouldHighlight = false;
+    // For current line, group consecutive highlighted words into phrases
+    const words = chunk.words;
+    const chunkText = words.map(w => w.text).join(' ').toLowerCase();
+    
+    // First, mark which words should be highlighted
+    const highlightMap = words.map((wordObj, index) => {
+        // Check if this individual word should be highlighted
+        if (wordObj.isFilled) return true;
         
-        if (isCurrentLine) {
-            // Check if this individual word should be highlighted
-            shouldHighlight = wordObj.isFilled;
-            
-            // IMPROVED: Also check for phrase matching
-            if (!shouldHighlight && chunk.filledPhrases) {
-                for (const phrase of chunk.filledPhrases) {
-                    // Check if this word is part of a phrase that appears in this chunk
-                    if (phrase.includes(' ') && chunkText.includes(phrase)) {
-                        const phraseWords = phrase.split(/\s+/);
-                        const currentWord = wordObj.text.replace(/[^\w]/g, '').toLowerCase();
-                        if (phraseWords.includes(currentWord)) {
-                            shouldHighlight = true;
-                            break;
-                        }
+        // Check for phrase matching
+        if (chunk.filledPhrases) {
+            for (const phrase of chunk.filledPhrases) {
+                if (phrase.includes(' ') && chunkText.includes(phrase)) {
+                    const phraseWords = phrase.split(/\s+/);
+                    const currentWord = wordObj.text.replace(/[^\w]/g, '').toLowerCase();
+                    if (phraseWords.includes(currentWord)) {
+                        return true;
                     }
                 }
             }
         }
         
-        if (shouldHighlight) {
-            // Highlight filled words only on current line
-            formattedText += `<span style="color: #FE5946; background: rgba(254, 89, 70, 0.3); padding: 2px 6px; border-radius: 4px; font-weight: 700;">${wordObj.text}</span>`;
-        } else {
-            formattedText += wordObj.text;
-        }
-        
-        // Add space between words (except last word)
-        if (index < chunk.words.length - 1) {
-            formattedText += ' ';
-        }
+        return false;
     });
+    
+    // Now group consecutive highlighted words
+    let formattedText = '';
+    let i = 0;
+    
+    while (i < words.length) {
+        if (highlightMap[i]) {
+            // Start of highlighted phrase - collect all consecutive highlighted words
+            let phraseWords = [];
+            while (i < words.length && highlightMap[i]) {
+                phraseWords.push(words[i].text);
+                i++;
+            }
+            
+            // Create single highlighted span for the entire phrase
+            const phraseText = phraseWords.join(' ');
+            formattedText += `<span style="color: #FE5946; background: rgba(254, 89, 70, 0.3); padding: 2px 6px; border-radius: 4px; font-weight: 700;">${phraseText}</span>`;
+            
+            // Add space after phrase if not at end
+            if (i < words.length) {
+                formattedText += ' ';
+            }
+        } else {
+            // Regular word - not highlighted
+            formattedText += words[i].text;
+            
+            // Add space after word if not at end
+            if (i < words.length - 1) {
+                formattedText += ' ';
+            }
+            i++;
+        }
+    }
     
     return formattedText;
 },
