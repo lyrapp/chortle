@@ -96,10 +96,10 @@ window.ChortleVideo = {
             }
             
             // UPDATED: Setup scrolling caption overlay system
-                this.setupScrollingCaptionOverlay();
+            this.setupScrollingCaptionOverlay();
 
-             // NEW: Setup canvas recording with watermark
-                this.setupCanvasRecording();
+            // NEW: Setup canvas recording with watermark
+            this.setupCanvasRecording();
 
             console.log('Camera started with vertical recording format');
 
@@ -111,105 +111,105 @@ window.ChortleVideo = {
         }
     },
 
-setupScrollingCaptionOverlay: function() {
-    const chortleData = this.getCurrentChortleData();
-    if (!chortleData) {
-        console.log('No chortle data found for caption overlay');
-        return;
-    }
+    setupScrollingCaptionOverlay: function() {
+        const chortleData = this.getCurrentChortleData();
+        if (!chortleData) {
+            console.log('No chortle data found for caption overlay');
+            return;
+        }
 
-    // Get the rendered Mad Lib text
-    const template = chortleData.template;
-    const templateData = { ...chortleData };
-    delete templateData.template;
+        // Get the rendered Mad Lib text
+        const template = chortleData.template;
+        const templateData = { ...chortleData };
+        delete templateData.template;
 
-    const templateObj = window.ChortleTemplates.getTemplate(template);
-    if (!templateObj) {
-        console.log('Template not found for caption overlay');
-        return;
-    }
+        const templateObj = window.ChortleTemplates.getTemplate(template);
+        if (!templateObj) {
+            console.log('Template not found for caption overlay');
+            return;
+        }
 
-    const story = window.ChortleTemplates.renderTemplate(template, templateData);
-    
-    // UPDATED: Create scrollable chunks with filled word highlighting
-    this.createScrollingCaptionChunks(story, templateData);
-    
-    // Create caption overlay element
-    this.createCaptionOverlay();
-},
+        const story = window.ChortleTemplates.renderTemplate(template, templateData);
+        
+        // UPDATED: Create scrollable chunks with filled word highlighting
+        this.createScrollingCaptionChunks(story, templateData);
+        
+        // Create caption overlay element
+        this.createCaptionOverlay();
+    },
 
-// NEW: Create scrollable text chunks with filled word detection - FIXED stop words
-createScrollingCaptionChunks: function(htmlStory, templateData) {
-    // Convert HTML to plain text but keep track of filled words
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = htmlStory;
-    
-    // Extract filled words for highlighting - IMPROVED with stop word filtering
-    const filledWords = new Set();
-    const filledPhrases = []; // Track multi-word phrases
-    
-    // Common stop words that shouldn't be highlighted
-    const stopWords = new Set([
-        'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 
-        'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
-        'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-        'should', 'may', 'might', 'can', 'must', 'shall', 'it', 'its', 'they',
-        'them', 'their', 'this', 'that', 'these', 'those', 'i', 'you', 'he',
-        'she', 'we', 'me', 'him', 'her', 'us'
-    ]);
-    
-    Object.values(templateData).forEach(value => {
-        if (typeof value === 'string' && value.trim()) {
-            const cleanValue = value.trim().toLowerCase();
-            filledPhrases.push(cleanValue);
+    // NEW: Create scrollable text chunks with filled word detection - FIXED stop words
+    createScrollingCaptionChunks: function(htmlStory, templateData) {
+        // Convert HTML to plain text but keep track of filled words
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlStory;
+        
+        // Extract filled words for highlighting - IMPROVED with stop word filtering
+        const filledWords = new Set();
+        const filledPhrases = []; // Track multi-word phrases
+        
+        // Common stop words that shouldn't be highlighted
+        const stopWords = new Set([
+            'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 
+            'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+            'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+            'should', 'may', 'might', 'can', 'must', 'shall', 'it', 'its', 'they',
+            'them', 'their', 'this', 'that', 'these', 'those', 'i', 'you', 'he',
+            'she', 'we', 'me', 'him', 'her', 'us'
+        ]);
+        
+        Object.values(templateData).forEach(value => {
+            if (typeof value === 'string' && value.trim()) {
+                const cleanValue = value.trim().toLowerCase();
+                filledPhrases.push(cleanValue);
+                
+                // Only add individual words if they're meaningful (not stop words, 3+ chars)
+                const words = cleanValue.split(/\s+/);
+                words.forEach(word => {
+                    const cleanWord = word.replace(/[^\w]/g, '').toLowerCase();
+                    if (cleanWord.length >= 3 && !stopWords.has(cleanWord)) {
+                        filledWords.add(cleanWord);
+                    }
+                });
+            }
+        });
+
+        // Get plain text and split into chunks
+        const plainText = tempDiv.textContent || tempDiv.innerText || '';
+        const words = plainText.split(/\s+/).filter(word => word.length > 0);
+        
+        // UPDATED: Create larger chunks for more natural reading - 8-12 words per line
+        this.captionChunks = [];
+        const chunkSize = window.ChortleUtils.isMobile() ? 8 : 12;
+        
+        for (let i = 0; i < words.length; i += chunkSize) {
+            const chunkWords = words.slice(i, i + chunkSize);
+            const chunkText = chunkWords.join(' ');
             
-            // Only add individual words if they're meaningful (not stop words, 3+ chars)
-            const words = cleanValue.split(/\s+/);
-            words.forEach(word => {
+            // Check if any words in this chunk are filled words
+            const hasFilledWords = chunkWords.some(word => {
                 const cleanWord = word.replace(/[^\w]/g, '').toLowerCase();
-                if (cleanWord.length >= 3 && !stopWords.has(cleanWord)) {
-                    filledWords.add(cleanWord);
-                }
+                return filledWords.has(cleanWord);
+            });
+            
+            this.captionChunks.push({
+                text: chunkText,
+                hasFilledWords: hasFilledWords,
+                words: chunkWords.map(word => {
+                    const cleanWord = word.replace(/[^\w]/g, '').toLowerCase();
+                    return {
+                        text: word,
+                        isFilled: filledWords.has(cleanWord)
+                    };
+                }),
+                filledPhrases: filledPhrases // Store for phrase matching
             });
         }
-    });
-
-    // Get plain text and split into chunks
-    const plainText = tempDiv.textContent || tempDiv.innerText || '';
-    const words = plainText.split(/\s+/).filter(word => word.length > 0);
-    
-    // UPDATED: Create larger chunks for more natural reading - 8-12 words per line
-    this.captionChunks = [];
-    const chunkSize = window.ChortleUtils.isMobile() ? 8 : 12;
-    
-    for (let i = 0; i < words.length; i += chunkSize) {
-        const chunkWords = words.slice(i, i + chunkSize);
-        const chunkText = chunkWords.join(' ');
         
-        // Check if any words in this chunk are filled words
-        const hasFilledWords = chunkWords.some(word => {
-            const cleanWord = word.replace(/[^\w]/g, '').toLowerCase();
-            return filledWords.has(cleanWord);
-        });
-        
-        this.captionChunks.push({
-            text: chunkText,
-            hasFilledWords: hasFilledWords,
-            words: chunkWords.map(word => {
-                const cleanWord = word.replace(/[^\w]/g, '').toLowerCase();
-                return {
-                    text: word,
-                    isFilled: filledWords.has(cleanWord)
-                };
-            }),
-            filledPhrases: filledPhrases // Store for phrase matching
-        });
-    }
-    
-    this.currentChunkIndex = 0;
-    console.log(`Created ${this.captionChunks.length} caption chunks for teleprompter-style scrolling`);
-    console.log('Filled words to highlight:', Array.from(filledWords));
-},
+        this.currentChunkIndex = 0;
+        console.log(`Created ${this.captionChunks.length} caption chunks for teleprompter-style scrolling`);
+        console.log('Filled words to highlight:', Array.from(filledWords));
+    },
 
     // NEW: Create caption overlay container
     createCaptionOverlay: function() {
@@ -285,7 +285,7 @@ createScrollingCaptionChunks: function(htmlStory, templateData) {
         }
     },
 
-// NEW: Setup canvas for recording with watermark
+    // NEW: Setup canvas for recording with watermark
     setupCanvasRecording: function() {
         // Create canvas element
         const canvas = document.createElement('canvas');
@@ -374,7 +374,7 @@ createScrollingCaptionChunks: function(htmlStory, templateData) {
         return canvasStream;
     },
 
-   // NEW: Draw watermark on canvas
+    // NEW: Draw watermark on canvas
     drawWatermark: function(ctx, canvasWidth, canvasHeight) {
         if (!this.watermarkImage) return;
         
@@ -439,143 +439,143 @@ createScrollingCaptionChunks: function(htmlStory, templateData) {
         }
     },
 
-// NEW: Show logo watermark during recording
-showLogoWatermark: function() {
-    const watermark = document.getElementById('logo-watermark');
-    if (watermark) {
-        watermark.style.display = 'block';
-        console.log('Logo watermark shown');
-    }
-},
+    // NEW: Show logo watermark during recording
+    showLogoWatermark: function() {
+        const watermark = document.getElementById('logo-watermark');
+        if (watermark) {
+            watermark.style.display = 'block';
+            console.log('Logo watermark shown');
+        }
+    },
 
-        // NEW: Hide logo watermark
-        hideLogoWatermark: function() {
-            const watermark = document.getElementById('logo-watermark');
-            if (watermark) {
-                watermark.style.display = 'none';
-                console.log('Logo watermark hidden');
-            }
-        },
-        
-        // NEW: Remove logo watermark
-        removeLogoWatermark: function() {
-            const watermark = document.getElementById('logo-watermark');
-            if (watermark) {
-                watermark.remove();
-                console.log('Logo watermark removed');
-            }
-        },
+    // NEW: Hide logo watermark
+    hideLogoWatermark: function() {
+        const watermark = document.getElementById('logo-watermark');
+        if (watermark) {
+            watermark.style.display = 'none';
+            console.log('Logo watermark hidden');
+        }
+    },
+    
+    // NEW: Remove logo watermark
+    removeLogoWatermark: function() {
+        const watermark = document.getElementById('logo-watermark');
+        if (watermark) {
+            watermark.remove();
+            console.log('Logo watermark removed');
+        }
+    },
+
     // NEW: Update caption text with current chunk
-    // WITH THIS:
-updateCaptionText: function() {
-    const captionTextEl = document.getElementById('caption-text');
-    if (!captionTextEl || !this.captionChunks.length) return;
-    
-    // Get previous, current, and next chunks
-    const prevIndex = this.currentChunkIndex > 0 ? this.currentChunkIndex - 1 : null;
-    const currentIndex = this.currentChunkIndex;
-    const nextIndex = this.currentChunkIndex < this.captionChunks.length - 1 ? this.currentChunkIndex + 1 : null;
-    
-    // Create 3-line karaoke display
-    let karaokeHTML = '';
-    
-    // Previous line (dimmed)
-    if (prevIndex !== null) {
-        const prevChunk = this.captionChunks[prevIndex];
-        karaokeHTML += `<div class="caption-line caption-previous">${this.formatChunkText(prevChunk, false)}</div>`;
-    } else {
-        karaokeHTML += `<div class="caption-line caption-previous" style="opacity: 0;">&nbsp;</div>`;
-    }
-    
-    // Current line (highlighted)
-    const currentChunk = this.captionChunks[currentIndex];
-    karaokeHTML += `<div class="caption-line caption-current">${this.formatChunkText(currentChunk, true)}</div>`;
-    
-    // Next line (preview)
-    if (nextIndex !== null) {
-        const nextChunk = this.captionChunks[nextIndex];
-        karaokeHTML += `<div class="caption-line caption-next">${this.formatChunkText(nextChunk, false)}</div>`;
-    } else {
-        karaokeHTML += `<div class="caption-line caption-next" style="opacity: 0;">&nbsp;</div>`;
-    }
-    
-    // Apply with smooth transition
-    captionTextEl.style.opacity = '0';
-    setTimeout(() => {
-        captionTextEl.innerHTML = karaokeHTML;
-        captionTextEl.style.opacity = '1';
-    }, 150);
-},
-
-// NEW: Format chunk text with filled word highlighting - IMPROVED phrase grouping
-formatChunkText: function(chunk, isCurrentLine) {
-    if (!chunk) return '';
-    
-    if (!isCurrentLine) {
-        // For non-current lines, just return plain text
-        return chunk.words.map(w => w.text).join(' ');
-    }
-    
-    // For current line, group consecutive highlighted words into phrases
-    const words = chunk.words;
-    const chunkText = words.map(w => w.text).join(' ').toLowerCase();
-    
-    // First, mark which words should be highlighted
-    const highlightMap = words.map((wordObj, index) => {
-        // Check if this individual word should be highlighted
-        if (wordObj.isFilled) return true;
+    updateCaptionText: function() {
+        const captionTextEl = document.getElementById('caption-text');
+        if (!captionTextEl || !this.captionChunks.length) return;
         
-        // Check for phrase matching
-        if (chunk.filledPhrases) {
-            for (const phrase of chunk.filledPhrases) {
-                if (phrase.includes(' ') && chunkText.includes(phrase)) {
-                    const phraseWords = phrase.split(/\s+/);
-                    const currentWord = wordObj.text.replace(/[^\w]/g, '').toLowerCase();
-                    if (phraseWords.includes(currentWord)) {
-                        return true;
+        // Get previous, current, and next chunks
+        const prevIndex = this.currentChunkIndex > 0 ? this.currentChunkIndex - 1 : null;
+        const currentIndex = this.currentChunkIndex;
+        const nextIndex = this.currentChunkIndex < this.captionChunks.length - 1 ? this.currentChunkIndex + 1 : null;
+        
+        // Create 3-line karaoke display
+        let karaokeHTML = '';
+        
+        // Previous line (dimmed)
+        if (prevIndex !== null) {
+            const prevChunk = this.captionChunks[prevIndex];
+            karaokeHTML += `<div class="caption-line caption-previous">${this.formatChunkText(prevChunk, false)}</div>`;
+        } else {
+            karaokeHTML += `<div class="caption-line caption-previous" style="opacity: 0;">&nbsp;</div>`;
+        }
+        
+        // Current line (highlighted)
+        const currentChunk = this.captionChunks[currentIndex];
+        karaokeHTML += `<div class="caption-line caption-current">${this.formatChunkText(currentChunk, true)}</div>`;
+        
+        // Next line (preview)
+        if (nextIndex !== null) {
+            const nextChunk = this.captionChunks[nextIndex];
+            karaokeHTML += `<div class="caption-line caption-next">${this.formatChunkText(nextChunk, false)}</div>`;
+        } else {
+            karaokeHTML += `<div class="caption-line caption-next" style="opacity: 0;">&nbsp;</div>`;
+        }
+        
+        // Apply with smooth transition
+        captionTextEl.style.opacity = '0';
+        setTimeout(() => {
+            captionTextEl.innerHTML = karaokeHTML;
+            captionTextEl.style.opacity = '1';
+        }, 150);
+    },
+
+    // NEW: Format chunk text with filled word highlighting - IMPROVED phrase grouping
+    formatChunkText: function(chunk, isCurrentLine) {
+        if (!chunk) return '';
+        
+        if (!isCurrentLine) {
+            // For non-current lines, just return plain text
+            return chunk.words.map(w => w.text).join(' ');
+        }
+        
+        // For current line, group consecutive highlighted words into phrases
+        const words = chunk.words;
+        const chunkText = words.map(w => w.text).join(' ').toLowerCase();
+        
+        // First, mark which words should be highlighted
+        const highlightMap = words.map((wordObj, index) => {
+            // Check if this individual word should be highlighted
+            if (wordObj.isFilled) return true;
+            
+            // Check for phrase matching
+            if (chunk.filledPhrases) {
+                for (const phrase of chunk.filledPhrases) {
+                    if (phrase.includes(' ') && chunkText.includes(phrase)) {
+                        const phraseWords = phrase.split(/\s+/);
+                        const currentWord = wordObj.text.replace(/[^\w]/g, '').toLowerCase();
+                        if (phraseWords.includes(currentWord)) {
+                            return true;
+                        }
                     }
                 }
             }
-        }
+            
+            return false;
+        });
         
-        return false;
-    });
-    
-    // Now group consecutive highlighted words
-    let formattedText = '';
-    let i = 0;
-    
-    while (i < words.length) {
-        if (highlightMap[i]) {
-            // Start of highlighted phrase - collect all consecutive highlighted words
-            let phraseWords = [];
-            while (i < words.length && highlightMap[i]) {
-                phraseWords.push(words[i].text);
+        // Now group consecutive highlighted words
+        let formattedText = '';
+        let i = 0;
+        
+        while (i < words.length) {
+            if (highlightMap[i]) {
+                // Start of highlighted phrase - collect all consecutive highlighted words
+                let phraseWords = [];
+                while (i < words.length && highlightMap[i]) {
+                    phraseWords.push(words[i].text);
+                    i++;
+                }
+                
+                // Create single highlighted span for the entire phrase
+                const phraseText = phraseWords.join(' ');
+                formattedText += `<span style="color: #FE5946; background: rgba(254, 89, 70, 0.3); padding: 2px 6px; border-radius: 4px; font-weight: 700;">${phraseText}</span>`;
+                
+                // Add space after phrase if not at end
+                if (i < words.length) {
+                    formattedText += ' ';
+                }
+            } else {
+                // Regular word - not highlighted
+                formattedText += words[i].text;
+                
+                // Add space after word if not at end
+                if (i < words.length - 1) {
+                    formattedText += ' ';
+                }
                 i++;
             }
-            
-            // Create single highlighted span for the entire phrase
-            const phraseText = phraseWords.join(' ');
-            formattedText += `<span style="color: #FE5946; background: rgba(254, 89, 70, 0.3); padding: 2px 6px; border-radius: 4px; font-weight: 700;">${phraseText}</span>`;
-            
-            // Add space after phrase if not at end
-            if (i < words.length) {
-                formattedText += ' ';
-            }
-        } else {
-            // Regular word - not highlighted
-            formattedText += words[i].text;
-            
-            // Add space after word if not at end
-            if (i < words.length - 1) {
-                formattedText += ' ';
-            }
-            i++;
         }
-    }
-    
-    return formattedText;
-},
+        
+        return formattedText;
+    },
 
     // NEW: Move to next caption chunk
     nextCaptionChunk: function() {
@@ -777,38 +777,38 @@ formatChunkText: function(chunk, isCurrentLine) {
         console.log('Recording stopped, scrolling caption overlay hidden');
     },
 
-// UPDATED: Handle recording stop event
-handleRecordingStop: function() {
-    const mimeType = window.ChortleState.mediaRecorder.mimeType || 'video/webm';
-    const blob = new Blob(window.ChortleState.recordedChunks, { type: mimeType });
-    const videoUrl = URL.createObjectURL(blob);
+    // UPDATED: Handle recording stop event
+    handleRecordingStop: function() {
+        const mimeType = window.ChortleState.mediaRecorder.mimeType || 'video/webm';
+        const blob = new Blob(window.ChortleState.recordedChunks, { type: mimeType });
+        const videoUrl = URL.createObjectURL(blob);
 
-    // Show recorded video
-    const recordedVideo = document.getElementById('recorded-video');
-    recordedVideo.src = videoUrl;
-    recordedVideo.videoBlob = blob; // Store blob for upload
+        // Show recorded video
+        const recordedVideo = document.getElementById('recorded-video');
+        recordedVideo.src = videoUrl;
+        recordedVideo.videoBlob = blob; // Store blob for upload
 
-    // Switch to playback view
-    document.getElementById('recording-area').style.display = 'none';
-    const playbackArea = document.getElementById('playback-area');
-    playbackArea.style.display = 'block';
-    playbackArea.classList.add('active');
+        // Switch to playback view
+        document.getElementById('recording-area').style.display = 'none';
+        const playbackArea = document.getElementById('playback-area');
+        playbackArea.style.display = 'block';
+        playbackArea.classList.add('active');
 
-    // Stop camera stream
-    if (window.ChortleState.stream) {
-        window.ChortleState.stream.getTracks().forEach(track => track.stop());
-    }
-    
-    // Restore normal layout
-    document.querySelector('.header').style.display = 'block';
-    const recordingArea = document.getElementById('recording-area');
-    recordingArea.classList.remove('fullscreen-recording');
-    
-    // UPDATED: Remove scrolling caption overlay
-    this.removeCaptionOverlay();
+        // Stop camera stream
+        if (window.ChortleState.stream) {
+            window.ChortleState.stream.getTracks().forEach(track => track.stop());
+        }
+        
+        // Restore normal layout
+        document.querySelector('.header').style.display = 'block';
+        const recordingArea = document.getElementById('recording-area');
+        recordingArea.classList.remove('fullscreen-recording');
+        
+        // UPDATED: Remove scrolling caption overlay
+        this.removeCaptionOverlay();
 
-    console.log('Recording completed and processed');
-},
+        console.log('Recording completed and processed');
+    },
 
     // UPDATED: Re-record video
     reRecord: function() {
@@ -833,78 +833,78 @@ handleRecordingStop: function() {
         console.log('Re-recording setup - returning to camera start');
     },
 
-// UPDATED: Send video to creator with native sharing
-sendVideo: async function() {
-    const recordedVideo = document.getElementById('recorded-video');
-    const videoBlob = recordedVideo.videoBlob;
+    // UPDATED: Send video to creator with native sharing
+    sendVideo: async function() {
+        const recordedVideo = document.getElementById('recorded-video');
+        const videoBlob = recordedVideo.videoBlob;
 
-    if (!videoBlob) {
-        window.ChortleApp.showError('No video to send!');
-        return;
-    }
-
-    // Show upload progress
-    document.getElementById('playback-area').style.display = 'none';
-    document.getElementById('upload-progress').style.display = 'block';
-
-    try {
-        // Step 1: Create video container
-        this.updateUploadProgress(10, 'Creating video container...');
-        const videoContainer = await this.createVideoContainer();
-        const videoId = videoContainer.videoId;
-
-        // Step 2: Upload video
-        this.updateUploadProgress(20, 'Starting upload...');
-        await this.uploadVideoToApiVideo(videoBlob, videoId);
-
-        // Step 3: Finalize
-        this.updateUploadProgress(95, 'Finalizing upload...');
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // Step 4: Create playback link
-        const chortleData = this.getCurrentChortleData();
-        const linkData = {
-            videoId: videoId,
-            chortle: chortleData,
-            uploadTime: Date.now()
-        };
-
-        const encodedLinkData = window.ChortleUtils.encodeChortleData(linkData);
-        const playbackUrl = window.ChortleUtils.getBaseUrl() + '#video=' + encodedLinkData;
-
-        // UPDATED: Try native sharing first, then fall back to copy link
-        this.updateUploadProgress(100, 'Upload complete!');
-        document.getElementById('upload-progress').style.display = 'none';
-        
-        // Try to share using native Web Share API
-        const shareResult = await window.ChortleUtils.shareUrl(
-            playbackUrl, 
-            'Watch my hilarious Chortle performance!'
-        );
-
-        if (shareResult.success && shareResult.method === 'native') {
-            // Native sharing succeeded - show simple success message
-            document.getElementById('video-sent').innerHTML = `
-                <h4>🎉 Video Shared!</h4>
-                <p>Your performance has been shared successfully!</p>
-            `;
-            document.getElementById('video-sent').style.display = 'block';
-        } else {
-            // Fall back to showing the copy link interface
-            document.getElementById('playback-link').value = playbackUrl;
-            document.getElementById('video-sent').style.display = 'block';
+        if (!videoBlob) {
+            window.ChortleApp.showError('No video to send!');
+            return;
         }
 
-        // Haptic feedback
-        window.ChortleUtils.vibrate([200, 100, 200]);
+        // Show upload progress
+        document.getElementById('playback-area').style.display = 'none';
+        document.getElementById('upload-progress').style.display = 'block';
 
-        // Add processing note
-        this.addProcessingNote();
+        try {
+            // Step 1: Create video container
+            this.updateUploadProgress(10, 'Creating video container...');
+            const videoContainer = await this.createVideoContainer();
+            const videoId = videoContainer.videoId;
 
-    } catch (error) {
-        this.handleUploadError(error);
-    }
-},
+            // Step 2: Upload video
+            this.updateUploadProgress(20, 'Starting upload...');
+            await this.uploadVideoToApiVideo(videoBlob, videoId);
+
+            // Step 3: Finalize
+            this.updateUploadProgress(95, 'Finalizing upload...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Step 4: Create playback link
+            const chortleData = this.getCurrentChortleData();
+            const linkData = {
+                videoId: videoId,
+                chortle: chortleData,
+                uploadTime: Date.now()
+            };
+
+            const encodedLinkData = window.ChortleUtils.encodeChortleData(linkData);
+            const playbackUrl = window.ChortleUtils.getBaseUrl() + '#video=' + encodedLinkData;
+
+            // UPDATED: Try native sharing first, then fall back to copy link
+            this.updateUploadProgress(100, 'Upload complete!');
+            document.getElementById('upload-progress').style.display = 'none';
+            
+            // Try to share using native Web Share API
+            const shareResult = await window.ChortleUtils.shareUrl(
+                playbackUrl, 
+                'Watch my hilarious Chortle performance!'
+            );
+
+            if (shareResult.success && shareResult.method === 'native') {
+                // Native sharing succeeded - show simple success message
+                document.getElementById('video-sent').innerHTML = `
+                    <h4>🎉 Video Shared!</h4>
+                    <p>Your performance has been shared successfully!</p>
+                `;
+                document.getElementById('video-sent').style.display = 'block';
+            } else {
+                // Fall back to showing the copy link interface
+                document.getElementById('playback-link').value = playbackUrl;
+                document.getElementById('video-sent').style.display = 'block';
+            }
+
+            // Haptic feedback
+            window.ChortleUtils.vibrate([200, 100, 200]);
+
+            // Add processing note
+            this.addProcessingNote();
+
+        } catch (error) {
+            this.handleUploadError(error);
+        }
+    },
 
     // Create video container in api.video (unchanged)
     createVideoContainer: async function() {
@@ -1191,20 +1191,10 @@ sendVideo: async function() {
         window.ChortleState.recordedChunks = [];
         window.ChortleState.recordingSeconds = 0;
 
-        // Export for debugging
-        if (window.ChortleDebug) {
-            window.ChortleDebug.video = window.ChortleVideo;
-        }
-        
-        // WITH THIS (properly closed):
-                console.log('Video cleanup complete with caption system reset');
-            }
-        };
-        
-        // Export for debugging
-        if (window.ChortleDebug) {
-            window.ChortleDebug.video = window.ChortleVideo;
-        }
+        console.log('Video cleanup complete with caption system reset');
+    }
+};
+
 // Export for debugging
 if (window.ChortleDebug) {
     window.ChortleDebug.video = window.ChortleVideo;
