@@ -833,78 +833,97 @@ window.ChortleVideo = {
         console.log('Re-recording setup - returning to camera start');
     },
 
-    // UPDATED: Send video to creator with native sharing
-    sendVideo: async function() {
-        const recordedVideo = document.getElementById('recorded-video');
-        const videoBlob = recordedVideo.videoBlob;
+// UPDATED: Send video to creator with better error handling
+sendVideo: async function() {
+    const recordedVideo = document.getElementById('recorded-video');
+    const videoBlob = recordedVideo.videoBlob;
 
-        if (!videoBlob) {
-            window.ChortleApp.showError('No video to send!');
-            return;
+    if (!videoBlob) {
+        window.ChortleApp.showError('No video to send!');
+        return;
+    }
+
+    console.log('Starting video upload process...');
+    console.log('Video blob size:', videoBlob.size, 'bytes');
+
+    // Show upload progress
+    document.getElementById('playback-area').style.display = 'none';
+    document.getElementById('upload-progress').style.display = 'block';
+
+    try {
+        // Step 1: Create video container
+        this.updateUploadProgress(10, 'Creating video container...');
+        const videoContainer = await this.createVideoContainer();
+        const videoId = videoContainer.videoId;
+        
+        console.log('Video container created, ID:', videoId);
+        
+        if (!videoId) {
+            throw new Error('Video ID is null or undefined after container creation');
         }
 
-        // Show upload progress
-        document.getElementById('playback-area').style.display = 'none';
-        document.getElementById('upload-progress').style.display = 'block';
+        // Step 2: Upload video
+        this.updateUploadProgress(20, 'Starting upload...');
+        const uploadResult = await this.uploadVideoToApiVideo(videoBlob, videoId);
+        console.log('Upload completed:', uploadResult);
 
-        try {
-            // Step 1: Create video container
-            this.updateUploadProgress(10, 'Creating video container...');
-            const videoContainer = await this.createVideoContainer();
-            const videoId = videoContainer.videoId;
+        // Step 3: Finalize
+        this.updateUploadProgress(95, 'Finalizing upload...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
-            // Step 2: Upload video
-            this.updateUploadProgress(20, 'Starting upload...');
-            await this.uploadVideoToApiVideo(videoBlob, videoId);
+        // Step 4: Create playback link
+        const chortleData = this.getCurrentChortleData();
+        console.log('Creating playback link with video ID:', videoId);
+        
+        const linkData = {
+            videoId: videoId,
+            chortle: chortleData,
+            uploadTime: Date.now()
+        };
 
-            // Step 3: Finalize
-            this.updateUploadProgress(95, 'Finalizing upload...');
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            // Step 4: Create playback link
-            const chortleData = this.getCurrentChortleData();
-            const linkData = {
-                videoId: videoId,
-                chortle: chortleData,
-                uploadTime: Date.now()
-            };
-
-            const encodedLinkData = window.ChortleUtils.encodeChortleData(linkData);
-            const playbackUrl = window.ChortleUtils.getBaseUrl() + '#video=' + encodedLinkData;
-
-            // UPDATED: Try native sharing first, then fall back to copy link
-            this.updateUploadProgress(100, 'Upload complete!');
-            document.getElementById('upload-progress').style.display = 'none';
-            
-            // Try to share using native Web Share API
-            const shareResult = await window.ChortleUtils.shareUrl(
-                playbackUrl, 
-                'Watch my hilarious Chortle performance!'
-            );
-
-            if (shareResult.success && shareResult.method === 'native') {
-                // Native sharing succeeded - show simple success message
-                document.getElementById('video-sent').innerHTML = `
-                    <h4>🎉 Video Shared!</h4>
-                    <p>Your performance has been shared successfully!</p>
-                `;
-                document.getElementById('video-sent').style.display = 'block';
-            } else {
-                // Fall back to showing the copy link interface
-                document.getElementById('playback-link').value = playbackUrl;
-                document.getElementById('video-sent').style.display = 'block';
-            }
-
-            // Haptic feedback
-            window.ChortleUtils.vibrate([200, 100, 200]);
-
-            // Add processing note
-            this.addProcessingNote();
-
-        } catch (error) {
-            this.handleUploadError(error);
+        const encodedLinkData = window.ChortleUtils.encodeChortleData(linkData);
+        if (!encodedLinkData) {
+            throw new Error('Failed to encode link data');
         }
-    },
+        
+        const playbackUrl = window.ChortleUtils.getBaseUrl() + '#video=' + encodedLinkData;
+        console.log('Generated playback URL:', playbackUrl);
+
+        // UPDATED: Try native sharing first, then fall back to copy link
+        this.updateUploadProgress(100, 'Upload complete!');
+        document.getElementById('upload-progress').style.display = 'none';
+        
+        // Try to share using native Web Share API
+        const shareResult = await window.ChortleUtils.shareUrl(
+            playbackUrl, 
+            'Watch my hilarious Chortle performance!'
+        );
+
+        if (shareResult.success && shareResult.method === 'native') {
+            // Native sharing succeeded - show simple success message
+            document.getElementById('video-sent').innerHTML = `
+                <h4>🎉 Video Shared!</h4>
+                <p>Your performance has been shared successfully!</p>
+                <p style="font-size: 0.9em; color: #666; margin-top: 10px;">Video ID: ${videoId}</p>
+            `;
+            document.getElementById('video-sent').style.display = 'block';
+        } else {
+            // Fall back to showing the copy link interface
+            document.getElementById('playback-link').value = playbackUrl;
+            document.getElementById('video-sent').style.display = 'block';
+        }
+
+        // Haptic feedback
+        window.ChortleUtils.vibrate([200, 100, 200]);
+
+        // Add processing note
+        this.addProcessingNote();
+
+    } catch (error) {
+        console.error('Video upload process failed:', error);
+        this.handleUploadError(error);
+    }
+},
 
 // Create video container in api.video (FIXED with better error handling)
 createVideoContainer: async function() {
@@ -945,40 +964,56 @@ createVideoContainer: async function() {
     return { videoId: videoId, ...responseData };
 },
 
-    // Upload video to api.video (unchanged)
-    uploadVideoToApiVideo: function(videoBlob, videoId) {
-        return new Promise((resolve, reject) => {
-            const formData = new FormData();
-            formData.append('file', videoBlob, 'chortle-recording.webm');
+// Upload video to api.video (FIXED with better error handling)
+uploadVideoToApiVideo: function(videoBlob, videoId) {
+    console.log('Starting video upload to API, video ID:', videoId);
+    
+    return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('file', videoBlob, 'chortle-recording.webm');
 
-            const uploadUrl = `https://ws.api.video/videos/${videoId}/source`;
-            const xhr = new XMLHttpRequest();
+        const uploadUrl = `https://ws.api.video/videos/${videoId}/source`;
+        console.log('Upload URL:', uploadUrl);
+        
+        const xhr = new XMLHttpRequest();
 
-            // Track upload progress
-            xhr.upload.addEventListener('progress', (event) => {
-                if (event.lengthComputable) {
-                    const percentComplete = 20 + (event.loaded / event.total) * 70; // 20-90%
-                    this.updateUploadProgress(percentComplete, `Uploading... ${Math.round(percentComplete - 20)}%`);
-                }
-            });
-
-            xhr.addEventListener('load', () => {
-                if (xhr.status === 201) {
-                    resolve(JSON.parse(xhr.responseText));
-                } else {
-                    reject(new Error(`Upload failed: ${xhr.status}`));
-                }
-            });
-
-            xhr.addEventListener('error', () => {
-                reject(new Error('Upload failed due to network error'));
-            });
-
-            xhr.open('POST', uploadUrl);
-            xhr.setRequestHeader('Authorization', `Bearer ${window.ChortleConfig.API_VIDEO.apiKey}`);
-            xhr.send(formData);
+        // Track upload progress
+        xhr.upload.addEventListener('progress', (event) => {
+            if (event.lengthComputable) {
+                const percentComplete = 20 + (event.loaded / event.total) * 70; // 20-90%
+                this.updateUploadProgress(percentComplete, `Uploading... ${Math.round(percentComplete - 20)}%`);
+                console.log('Upload progress:', Math.round(percentComplete - 20) + '%');
+            }
         });
-    },
+
+        xhr.addEventListener('load', () => {
+            console.log('Upload completed with status:', xhr.status);
+            
+            if (xhr.status === 201) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    console.log('Upload response:', response);
+                    resolve(response);
+                } catch (e) {
+                    console.error('Failed to parse upload response:', xhr.responseText);
+                    resolve({ success: true }); // Continue anyway
+                }
+            } else {
+                console.error('Upload failed with status:', xhr.status, xhr.responseText);
+                reject(new Error(`Upload failed: ${xhr.status} - ${xhr.responseText}`));
+            }
+        });
+
+        xhr.addEventListener('error', () => {
+            console.error('Upload network error');
+            reject(new Error('Upload failed due to network error'));
+        });
+
+        xhr.open('POST', uploadUrl);
+        xhr.setRequestHeader('Authorization', `Bearer ${window.ChortleConfig.API_VIDEO.apiKey}`);
+        xhr.send(formData);
+    });
+},
 
     // Update upload progress (unchanged)
     updateUploadProgress: function(percent, message) {
@@ -1065,23 +1100,38 @@ createVideoContainer: async function() {
         });
     },
 
-    // Show video playback for creators (unchanged)
-    showVideoPlayback: function(encodedData) {
-        window.ChortleApp.showPage('video-playback-view');
+ // Show video playback for creators (FIXED with better error handling)
+showVideoPlayback: function(encodedData) {
+    console.log('Showing video playback for encoded data:', encodedData);
+    
+    window.ChortleApp.showPage('video-playback-view');
 
-        try {
-            const linkData = window.ChortleUtils.decodeChortleData(encodedData);
-            const videoId = linkData.videoId;
-            const chortleData = linkData.chortle;
-
-            this.setupVideoPlayer(videoId);
-            this.displayOriginalChortle(chortleData);
-
-        } catch (error) {
-            console.error('Error loading video:', error);
-            window.ChortleApp.showError('Video not found or link is invalid.');
+    try {
+        const linkData = window.ChortleUtils.decodeChortleData(encodedData);
+        console.log('Decoded link data:', linkData);
+        
+        if (!linkData) {
+            throw new Error('Failed to decode video link data');
         }
-    },
+        
+        const videoId = linkData.videoId;
+        const chortleData = linkData.chortle;
+        
+        console.log('Video ID for playback:', videoId);
+        console.log('Chortle data for playback:', chortleData);
+
+        if (!videoId) {
+            throw new Error('No video ID found in link data');
+        }
+
+        this.setupVideoPlayer(videoId);
+        this.displayOriginalChortle(chortleData);
+
+    } catch (error) {
+        console.error('Error loading video playback:', error);
+        window.ChortleApp.showError(`Video not found or link is invalid. Error: ${error.message}`);
+    }
+},
 
     // Setup video player with multiple fallback options (unchanged)
     setupVideoPlayer: function(videoId) {
