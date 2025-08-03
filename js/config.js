@@ -207,8 +207,7 @@ window.ChortleUtils = {
         return true;
     },
     
-    // URL encoding/decoding
-// WITH THIS:
+// URL encoding/decoding
 encodeChortleData: function(data) {
     try {
         // Debug logging to identify the issue
