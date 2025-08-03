@@ -115,6 +115,26 @@
     font-size: 0.95em;
 }
 
+/* Suggestion pills mobile */
+.suggestion-pills {
+    gap: 6px;
+    margin-top: 12px;
+}
+
+.suggestion-pill {
+    padding: 10px 14px;
+    font-size: 0.9em;
+    min-height: 44px; /* iOS touch target */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.suggestion-pill:active {
+    transform: scale(0.95);
+    background: rgba(0, 187, 249, 0.3);
+}
+
 /* Ultra-compact wizard for keyboard visibility */
 .wizard-header {
     margin-bottom: 8px; /* Tighter */
