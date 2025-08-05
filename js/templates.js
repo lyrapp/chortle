@@ -21,7 +21,7 @@ templates: {
             { name: 'bodypart2', label: 'Another body part', type: 'text', suggestions: ['hand', 'foot', 'nose'] },
             { name: 'adjective2', label: 'A feeling adjective', type: 'text', suggestions: ['angry', 'confused', 'embarrassed'] }
         ]
-    },
+    }
     
     'sweet-dreams': {
         title: 'Sweet Dreams',
