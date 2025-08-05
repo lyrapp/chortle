@@ -158,28 +158,23 @@ window.ChortleApp = {
                 throw new Error('No template in wizard data - wizard setup may have failed');
             }
             
-            // Validate that we have all required fields
+            // Debug template validation
             const template = window.ChortleTemplates.getTemplate(wizardData.template);
             if (!template) {
                 throw new Error(`Template '${wizardData.template}' not found`);
             }
+            console.log('✅ Template validated:', template.title);
             
+            // Debug field validation  
             const missingFields = template.fields.filter(field => 
                 !wizardData[field.name] || wizardData[field.name].trim() === ''
             );
             
             if (missingFields.length > 0) {
+                console.log('❌ Missing fields:', missingFields.map(f => f.name));
                 throw new Error(`Missing required fields: ${missingFields.map(f => f.name).join(', ')}`);
             }
-    
-            console.log('Generating link with validated data:', wizardData);
-    
-            const encodedData = window.ChortleUtils.encodeChortleData(wizardData);
-            console.log('Encoded result:', encodedData);
-            
-            if (!encodedData) {
-                throw new Error('Failed to encode chortle data - check console for encoding errors');
-            }
+            console.log('✅ All fields validated');
 
 
             const shareableUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
