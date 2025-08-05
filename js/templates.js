@@ -21,7 +21,7 @@ templates: {
             { name: 'bodypart2', label: 'Another body part', type: 'text', suggestions: ['hand', 'foot', 'nose'] },
             { name: 'adjective2', label: 'A feeling adjective', type: 'text', suggestions: ['angry', 'confused', 'embarrassed'] }
         ]
-    }
+    },
     
     'sweet-dreams': {
         title: 'Sweet Dreams',
@@ -39,7 +39,7 @@ templates: {
             { name: 'adjective2', label: 'An emotion adjective', type: 'text', suggestions: ['excited', 'dreamy', 'weird'] },
             { name: 'adjective3', label: 'A positive adjective', type: 'text', suggestions: ['amazing', 'fantastic', 'wild'] }
         ]
-    }    
+    },    
 
     'silly-story': {
         title: 'Silly Zoo Adventure',
