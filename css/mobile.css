@@ -437,6 +437,17 @@
         font-weight: 700;
     }
 
+/* Ensure mirroring works properly on mobile */
+@media (max-width: 768px) {
+    #camera-preview {
+        transform: scaleX(-1);
+    }
+    
+    #recorded-video {
+        transform: none; /* Final video stays normal orientation */
+    }
+}
+
     /* Better mobile video player */
     #api-video-player iframe {
         height: 250px;
