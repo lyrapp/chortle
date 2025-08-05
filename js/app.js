@@ -186,9 +186,6 @@ window.ChortleApp = {
             const shareableUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
             console.log('Generated URL:', shareableUrl);
 
-            const shareableUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
-            console.log('Generated URL:', shareableUrl);
-
             // Try native sharing first
            const shareResult = await window.ChortleUtils.shareUrl(
                 shareableUrl, 
