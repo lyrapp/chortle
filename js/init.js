@@ -1,23 +1,44 @@
-/* Chortle v5.2 - App Initialization with History */
+/* Chortle v5.2 - App Initialization with Mobile Fixes */
 
-// Main initialization function
+// MOBILE DEBUG: Add mobile-specific logging
+const isMobileDevice = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+const logMobile = (message, data = null) => {
+    if (isMobileDevice) {
+        console.log(`📱 MOBILE: ${message}`, data || '');
+    } else {
+        console.log(`🖥️ DESKTOP: ${message}`, data || '');
+    }
+};
+
+// Main initialization function with mobile error handling
 function initializeChortle() {
-    console.log('🎭 Starting Chortle v' + window.ChortleConfig.APP.version);
+    logMobile('🎭 Starting Chortle v' + window.ChortleConfig.APP.version);
     
     // Start performance timer
     window.ChortleUtils.startTimer('app-init');
     
     try {
+        // MOBILE FIX: Check if all required modules are loaded
+        if (!checkModulesLoaded()) {
+            logMobile('❌ Modules not fully loaded, retrying in 500ms');
+            setTimeout(initializeChortle, 500);
+            return;
+        }
+        
         // Check browser support
         const browserSupport = window.ChortleApp.checkBrowserSupport();
         
-        // Show warning for unsupported browsers
+        // MOBILE FIX: Only show warnings that don't block the UI on mobile
         if (!browserSupport.mediaRecorder || !browserSupport.getUserMedia) {
-            showBrowserWarning();
+            if (!isMobileDevice) {
+                showBrowserWarning();
+            } else {
+                logMobile('⚠️ Video features may not work on this mobile browser');
+            }
         }
 
-        // Show localStorage warning if not supported
-        if (!browserSupport.localStorage) {
+        // MOBILE FIX: Don't show localStorage warning on mobile to avoid UI clutter
+        if (!browserSupport.localStorage && !isMobileDevice) {
             showLocalStorageWarning();
         }
         
@@ -41,7 +62,7 @@ function initializeChortle() {
         // Performance timing
         window.ChortleUtils.endTimer('app-init');
         
-        console.log('✅ Chortle initialization complete');
+        logMobile('✅ Chortle initialization complete');
         
         // Debug information
         if (window.ChortleDebug) {
@@ -55,26 +76,70 @@ function initializeChortle() {
     }
 }
 
-// Initialize all modules
+// MOBILE FIX: Check if all required modules are loaded
+function checkModulesLoaded() {
+    const requiredModules = [
+        'ChortleConfig',
+        'ChortleState', 
+        'ChortleUtils',
+        'ChortleTemplates',
+        'ChortleWizard',
+        'ChortleVideo',
+        'ChortleApp'
+    ];
+    
+    const missingModules = requiredModules.filter(module => !window[module]);
+    
+    if (missingModules.length > 0) {
+        logMobile('Missing modules:', missingModules);
+        return false;
+    }
+    
+    return true;
+}
+
+// Initialize all modules with better error handling
 function initializeModules() {
-    console.log('Initializing modules...');
+    logMobile('Initializing modules...');
     
-    // Initialize in dependency order
-    // Config and Utils are already loaded (no init needed)
-    
-    // Templates (no init needed - just data)
-    console.log('✓ Templates loaded:', Object.keys(window.ChortleTemplates.templates).length, 'templates');
-    
-    // App (main logic)
-    window.ChortleApp.initialize();
-    console.log('✓ App module initialized');
-    
-    // Video system
-    window.ChortleVideo.initialize();
-    console.log('✓ Video module initialized');
-    
-    // Wizard (no separate init - setup on demand)
-    console.log('✓ Wizard module ready');
+    try {
+        // Initialize in dependency order
+        // Config and Utils are already loaded (no init needed)
+        
+        // Templates (no init needed - just data)
+        if (window.ChortleTemplates && window.ChortleTemplates.templates) {
+            logMobile('✓ Templates loaded:', Object.keys(window.ChortleTemplates.templates).length + ' templates');
+        } else {
+            throw new Error('ChortleTemplates not loaded properly');
+        }
+        
+        // App (main logic)
+        if (window.ChortleApp && typeof window.ChortleApp.initialize === 'function') {
+            window.ChortleApp.initialize();
+            logMobile('✓ App module initialized');
+        } else {
+            throw new Error('ChortleApp not loaded properly');
+        }
+        
+        // Video system
+        if (window.ChortleVideo && typeof window.ChortleVideo.initialize === 'function') {
+            window.ChortleVideo.initialize();
+            logMobile('✓ Video module initialized');
+        } else {
+            throw new Error('ChortleVideo not loaded properly');
+        }
+        
+        // Wizard (no separate init - setup on demand)
+        if (window.ChortleWizard) {
+            logMobile('✓ Wizard module ready');
+        } else {
+            throw new Error('ChortleWizard not loaded properly');
+        }
+        
+    } catch (error) {
+        logMobile('❌ Module initialization failed:', error.message);
+        throw error;
+    }
 }
 
 // Setup global event listeners
@@ -91,7 +156,7 @@ function setupGlobalEventListeners() {
     
     // Hash change (for back button support)
     window.addEventListener('hashchange', () => {
-        console.log('Hash changed to:', window.location.hash);
+        logMobile('Hash changed to:', window.location.hash);
         
         // Re-check for incoming links
         const hasIncomingLink = window.ChortleApp.checkForIncomingLinks();
@@ -113,71 +178,165 @@ function setupGlobalEventListeners() {
     
     // Global error handling
     window.addEventListener('error', (event) => {
+        logMobile('Global error caught:', event.error?.message);
         window.ChortleUtils.logError(event.error, 'global');
     });
     
     // Unhandled promise rejections
     window.addEventListener('unhandledrejection', (event) => {
+        logMobile('Unhandled promise rejection:', event.reason);
         window.ChortleUtils.logError(event.reason, 'promise');
     });
     
-    console.log('✓ Global event listeners setup');
+    logMobile('✓ Global event listeners setup');
 }
 
-// Setup creation interface (for normal app usage)
+// MOBILE FIX: Enhanced creation interface setup with better button handling
 function setupCreationInterface() {
-    console.log('Setting up creation interface...');
+    logMobile('Setting up creation interface...');
     
     // Show intro page first
     window.ChortleApp.showPage('intro-page');
     
-    // Initial template render (for when user navigates to template page)
+    // Initial template render (for when user navigates to template page) 
     window.ChortleApp.renderTemplates();
     
-    console.log('✓ Creation interface ready');
+    // MOBILE FIX: Enhanced button setup with multiple retry attempts
+    setupGetStartedButton();
+    
+    logMobile('✓ Creation interface ready');
+}
+
+// MOBILE FIX: Robust get-started button setup with multiple retries
+function setupGetStartedButton(attempt = 1) {
+    const maxAttempts = 5;
+    const retryDelay = attempt * 200; // Increasing delay: 200ms, 400ms, 600ms, etc.
+    
+    logMobile(`Attempting to setup get-started button (attempt ${attempt}/${maxAttempts})`);
+    
+    const getStartedBtn = document.getElementById('get-started-btn');
+    
+    if (getStartedBtn) {
+        logMobile('✓ Get Started button found, adding event listener');
+        
+        // Remove any existing listeners to prevent duplicates
+        getStartedBtn.replaceWith(getStartedBtn.cloneNode(true));
+        const newBtn = document.getElementById('get-started-btn');
+        
+        newBtn.addEventListener('click', (e) => {
+            logMobile('Get Started button clicked');
+            e.preventDefault();
+            
+            try {
+                if (window.ChortleApp && typeof window.ChortleApp.showPage === 'function') {
+                    window.ChortleApp.showPage('template-selection-page');
+                    logMobile('✓ Navigated to template selection');
+                } else {
+                    throw new Error('ChortleApp.showPage not available');
+                }
+            } catch (error) {
+                logMobile('❌ Error navigating from get started button:', error.message);
+                showInitializationError(error);
+            }
+        });
+        
+        // MOBILE FIX: Also handle touch events for better mobile responsiveness
+        if (isMobileDevice) {
+            newBtn.addEventListener('touchstart', (e) => {
+                logMobile('Get Started button touched');
+                // Add visual feedback
+                newBtn.style.transform = 'scale(0.98)';
+            });
+            
+            newBtn.addEventListener('touchend', (e) => {
+                // Remove visual feedback
+                newBtn.style.transform = 'scale(1)';
+            });
+        }
+        
+        logMobile('✓ Get Started button setup complete');
+        
+    } else {
+        if (attempt < maxAttempts) {
+            logMobile(`❌ Get Started button not found, retrying in ${retryDelay}ms...`);
+            setTimeout(() => setupGetStartedButton(attempt + 1), retryDelay);
+        } else {
+            logMobile('❌ Get Started button setup failed after all attempts');
+            console.error('CRITICAL: Get Started button not found after', maxAttempts, 'attempts');
+            
+            // MOBILE FIX: Show detailed error for debugging
+            if (isMobileDevice) {
+                const introPage = document.getElementById('intro-page');
+                if (introPage) {
+                    introPage.innerHTML += `
+                        <div style="background: #ffebee; border: 1px solid #f44336; padding: 20px; margin: 20px; border-radius: 8px; color: #c62828;">
+                            <h4>Mobile Debug Info</h4>
+                            <p><strong>Error:</strong> Get Started button not found</p>
+                            <p><strong>User Agent:</strong> ${navigator.userAgent}</p>
+                            <p><strong>Page Ready State:</strong> ${document.readyState}</p>
+                            <p><strong>Modules Loaded:</strong> ${checkModulesLoaded()}</p>
+                            <button onclick="window.location.reload()" style="background: #f44336; color: white; border: none; padding: 10px; border-radius: 4px;">
+                                Reload Page
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        }
+    }
 }
 
 // Setup error handling
 function setupErrorHandling() {
-    // Set up uncaught error boundary
+    // Set up uncaught error boundary with mobile-specific handling
     window.onerror = function(message, source, lineno, colno, error) {
-        console.error('Uncaught error:', {
+        logMobile('Uncaught error:', {
             message,
             source,
             lineno,
             colno,
-            error
+            error: error?.message
         });
         
-        // Show user-friendly error
-        window.ChortleApp.showError('An unexpected error occurred. Please refresh the page.');
+        // Show user-friendly error with mobile consideration
+        if (isMobileDevice) {
+            // More concise error message for mobile
+            window.ChortleApp?.showError('App error occurred. Please refresh.');
+        } else {
+            window.ChortleApp?.showError('An unexpected error occurred. Please refresh the page.');
+        }
         
         return true; // Prevent default browser error handling
     };
     
-    console.log('✓ Error handling setup');
+    logMobile('✓ Error handling setup');
 }
 
 // Handle window resize
 function handleWindowResize() {
     // Update mobile detection
-    const isMobileNow = window.ChortleUtils.isSmallScreen();
+    const isMobileNow = window.ChortleUtils?.isSmallScreen();
     
     // Re-render templates if needed (for responsive grid)
-    if (window.ChortleState.currentPage === 'template-selection-page') {
+    if (window.ChortleState?.currentPage === 'template-selection-page') {
         // Force template re-render for responsive layout
-        window.ChortleApp.renderTemplates();
+        window.ChortleApp?.renderTemplates();
     }
     
     // Adjust video elements if active
-    if (window.ChortleState.stream) {
+    if (window.ChortleState?.stream) {
         // Video is active - might need adjustments
-        console.log('Video active during resize');
+        logMobile('Video active during resize');
     }
 }
 
-// Show browser warning for unsupported features
+// MOBILE FIX: Don't show browser warnings on mobile (they're disruptive)
 function showBrowserWarning() {
+    if (isMobileDevice) {
+        logMobile('Skipping browser warning on mobile');
+        return;
+    }
+    
     const warningDiv = document.createElement('div');
     warningDiv.className = 'browser-warning';
     warningDiv.style.cssText = `
@@ -211,7 +370,7 @@ function showBrowserWarning() {
     }, 10000);
 }
 
-// Show localStorage warning
+// Show localStorage warning (desktop only)
 function showLocalStorageWarning() {
     const warningDiv = document.createElement('div');
     warningDiv.className = 'localStorage-warning';
@@ -245,7 +404,7 @@ function showLocalStorageWarning() {
     }, 8000);
 }
 
-// Show initialization error
+// MOBILE FIX: Enhanced initialization error with mobile debugging
 function showInitializationError(error) {
     const errorDiv = document.createElement('div');
     errorDiv.style.cssText = `
@@ -257,19 +416,34 @@ function showInitializationError(error) {
         border: 1px solid #f5c6cb;
         border-radius: 8px;
         padding: 20px;
-        max-width: 400px;
+        max-width: 90%;
+        width: 400px;
         text-align: center;
         z-index: 10000;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: ${isMobileDevice ? '14px' : '16px'};
     `;
+    
+    const debugInfo = isMobileDevice ? `
+        <details style="margin-top: 10px; text-align: left;">
+            <summary style="cursor: pointer;">Debug Info</summary>
+            <div style="font-size: 12px; margin-top: 10px;">
+                <strong>User Agent:</strong> ${navigator.userAgent}<br>
+                <strong>Error:</strong> ${error.message}<br>
+                <strong>Modules:</strong> ${checkModulesLoaded() ? 'OK' : 'MISSING'}<br>
+                <strong>Page State:</strong> ${document.readyState}
+            </div>
+        </details>
+    ` : '';
     
     errorDiv.innerHTML = `
         <h3 style="color: #721c24; margin-bottom: 10px;">Initialization Error</h3>
         <p style="color: #721c24; margin-bottom: 15px;">
             Chortle failed to start properly. Please refresh the page to try again.
         </p>
+        ${debugInfo}
         <button onclick="window.location.reload()" 
-                style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px;">
             Refresh Page
         </button>
     `;
@@ -292,11 +466,12 @@ function setupDevelopmentHelpers() {
             // Log initialization info
             logInitialization: function() {
                 console.group('🎭 Chortle Debug Info');
-                console.log('Version:', window.ChortleConfig.APP.version);
-                console.log('Templates loaded:', Object.keys(window.ChortleTemplates.templates).length);
+                console.log('Version:', window.ChortleConfig?.APP?.version || 'UNKNOWN');
+                console.log('Device:', isMobileDevice ? 'Mobile' : 'Desktop');
+                console.log('Templates loaded:', Object.keys(window.ChortleTemplates?.templates || {}).length);
                 console.log('Current state:', window.ChortleState);
-                console.log('Browser support:', window.ChortleApp.checkBrowserSupport());
-                console.log('Performance timings:', window.performance.getEntriesByType('measure'));
+                console.log('Browser support:', window.ChortleApp?.checkBrowserSupport?.());
+                console.log('Performance timings:', window.performance?.getEntriesByType?.('measure') || []);
                 console.groupEnd();
             },
             
@@ -313,8 +488,8 @@ function setupDevelopmentHelpers() {
                     number: 42
                 };
                 
-                const encodedData = window.ChortleUtils.encodeChortleData(testData);
-                const testUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
+                const encodedData = window.ChortleUtils?.encodeChortleData?.(testData);
+                const testUrl = (window.ChortleUtils?.getBaseUrl?.() || '') + '#chortle=' + encodedData;
                 
                 console.log('Test URL:', testUrl);
                 window.location.hash = '#chortle=' + encodedData;
@@ -324,14 +499,28 @@ function setupDevelopmentHelpers() {
             
             // Reset everything
             reset: function() {
-                window.ChortleApp.resetApp();
+                window.ChortleApp?.resetApp?.();
                 console.log('App reset complete');
+            },
+            
+            // MOBILE FIX: Test button functionality
+            testGetStartedButton: function() {
+                const btn = document.getElementById('get-started-btn');
+                console.log('Get Started Button:', {
+                    found: !!btn,
+                    visible: btn ? window.getComputedStyle(btn).display !== 'none' : false,
+                    hasListener: btn ? getEventListeners(btn).click?.length > 0 : false
+                });
+                
+                if (btn) {
+                    btn.click();
+                }
             },
             
             // Test native sharing
             testNativeSharing: async function() {
                 const testUrl = 'https://example.com/test-chortle';
-                const result = await window.ChortleUtils.shareUrl(testUrl, 'Test Chortle Share');
+                const result = await window.ChortleUtils?.shareUrl?.(testUrl, 'Test Chortle Share');
                 console.log('Share result:', result);
             },
             
@@ -340,33 +529,58 @@ function setupDevelopmentHelpers() {
                 console.group('🛠️ Chortle Debug Commands');
                 console.log('ChortleDebug.logInitialization() - Show initialization info');
                 console.log('ChortleDebug.testTemplate() - Generate test chortle');
+                console.log('ChortleDebug.testGetStartedButton() - Test button functionality');
                 console.log('ChortleDebug.reset() - Reset app state');
                 console.log('ChortleDebug.getState() - Get current app state');
-                console.log('ChortleDebug.showHistory() - Display history table');
-                console.log('ChortleDebug.clearHistory() - Clear all history');
-                console.log('ChortleDebug.exportHistory() - Export history as JSON');
                 console.log('ChortleDebug.testNativeSharing() - Test sharing functionality');
                 console.groupEnd();
             },
             
-            getState: () => window.ChortleApp.getState()
+            getState: () => window.ChortleApp?.getState?.() || 'ChortleApp not available'
         });
         
         console.log('🛠️ Development helpers loaded. Use ChortleDebug.help() for commands.');
     }
 }
 
-// Wait for DOM to be ready, then initialize
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        initializeChortle();
-        setupDevelopmentHelpers();
-    });
-} else {
-    // DOM is already ready
-    initializeChortle();
-    setupDevelopmentHelpers();
+// MOBILE FIX: Enhanced DOM ready detection with multiple fallbacks
+function waitForDOMAndInitialize() {
+    logMobile('Checking DOM readiness...');
+    
+    if (document.readyState === 'loading') {
+        logMobile('DOM still loading, waiting for DOMContentLoaded...');
+        document.addEventListener('DOMContentLoaded', () => {
+            logMobile('DOMContentLoaded fired');
+            setTimeout(() => {
+                initializeChortle();
+                setupDevelopmentHelpers();
+            }, 100); // Small delay for mobile
+        });
+    } else {
+        logMobile('DOM already ready, initializing immediately');
+        // Small delay to ensure all scripts are fully loaded
+        setTimeout(() => {
+            initializeChortle();
+            setupDevelopmentHelpers();
+        }, 50);
+    }
 }
 
-// Prevent multiple initialization
+// MOBILE FIX: Additional fallback initialization
+window.addEventListener('load', () => {
+    logMobile('Window load event fired');
+    // If initialization hasn't happened yet (backup)
+    if (!window.ChortleInitialized) {
+        logMobile('Initialization not complete, running backup initialization');
+        setTimeout(() => {
+            initializeChortle();
+            setupDevelopmentHelpers();
+        }, 200);
+    }
+});
+
+// Start the initialization process
+waitForDOMAndInitialize();
+
+// Prevent multiple initialization but allow retry
 window.ChortleInitialized = true;
