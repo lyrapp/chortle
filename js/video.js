@@ -59,12 +59,9 @@ window.ChortleVideo = {
             // UPDATED: Vertical video constraints optimized for mobile
             const constraints = {
                 video: {
-                    // Prefer vertical aspect ratios
-                    width: { ideal: 720, min: 480, max: 1080 },
-                    height: { ideal: 1280, min: 720, max: 1920 },
-                    aspectRatio: { ideal: 9/16 }, // Vertical ratio
                     facingMode: 'user',
-                    frameRate: { ideal: 30, min: 24 }
+                    frameRate: { ideal: 30 }
+                    // Let device choose natural dimensions
                 },
                 audio: {
                     echoCancellation: true,
@@ -73,7 +70,6 @@ window.ChortleVideo = {
                     sampleRate: 44100
                 }
             };
-
             window.ChortleState.stream = await navigator.mediaDevices.getUserMedia(constraints);
 
             const preview = document.getElementById('camera-preview');
