@@ -580,6 +580,16 @@ body {
     object-fit: cover;
 }
 
+/* Mirror camera preview like selfie camera */
+#camera-preview {
+    transform: scaleX(-1); /* Horizontal flip for natural selfie view */
+}
+
+/* Recorded video should NOT be mirrored (normal for viewers) */
+#recorded-video {
+    transform: none;
+}
+
 /* Mobile-specific video sizing */
 @media (max-width: 768px) {
     #camera-preview, #recorded-video {
