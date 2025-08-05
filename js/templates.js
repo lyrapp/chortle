@@ -3,6 +3,44 @@
 window.ChortleTemplates = {
     // All Chortle templates
 templates: {
+        'ghost-story': {
+        title: 'Ghost Story',
+        category: 'weird',
+        description: 'A spooky tale of ghostly roommate troubles',
+        icon: 'icons/ghost-story.png',
+        template: `I've been living with a ghost in my <span class="filled-word">{place}</span>. Last night, he <span class="filled-word">{verb1}</span> so <span class="filled-word">{adverb}</span> that I <span class="filled-word">{verb2}</span> my <span class="filled-word">{bodypart1}</span>. He won't leave me alone and even <span class="filled-word">{verb3}</span> me as I am sleeping. I needed to get rid of him, so I bought a <span class="filled-word">{object}</span> to put in his <span class="filled-word">{adjective1}</span> <span class="filled-word">{bodypart2}</span>. After that, he was really <span class="filled-word">{adjective2}</span>. That'll teach him a lesson.`,
+        fields: [
+            { name: 'place', label: 'A place to live', type: 'text', suggestions: ['attic', 'basement', 'closet'] },
+            { name: 'verb1', label: 'A spooky verb - past tense', type: 'text', suggestions: ['howled', 'rattled', 'floated'] },
+            { name: 'adverb', label: 'An adverb', type: 'text', suggestions: ['loudly', 'mysteriously', 'annoyingly'] },
+            { name: 'verb2', label: 'A reaction verb - past tense', type: 'text', suggestions: ['covered', 'grabbed', 'hid'] },
+            { name: 'bodypart1', label: 'A body part', type: 'text', suggestions: ['ears', 'eyes', 'head'] },
+            { name: 'verb3', label: 'A spooky verb - present tense', type: 'text', suggestions: ['haunts', 'bothers', 'tickles'] },
+            { name: 'object', label: 'A magical object', type: 'text', suggestions: ['crystal', 'garlic clove', 'music box'] },
+            { name: 'adjective1', label: 'An adjective', type: 'text', suggestions: ['ghostly', 'transparent', 'creepy'] },
+            { name: 'bodypart2', label: 'Another body part', type: 'text', suggestions: ['hand', 'foot', 'nose'] },
+            { name: 'adjective2', label: 'A feeling adjective', type: 'text', suggestions: ['angry', 'confused', 'embarrassed'] }
+        ]
+    },
+    
+    'sweet-dreams': {
+        title: 'Sweet Dreams',
+        category: 'weird',
+        description: 'Share your wildest dreams with everyone',
+        icon: 'icons/sweet-dreams.png',
+        template: `Sometimes, I dream about <span class="filled-word">{noun}</span>. When I do, it makes me say <span class="filled-word">{exclamation}</span>! I just can't stop dreaming about it because it's so <span class="filled-word">{adjective1}</span> and makes my <span class="filled-word">{bodypart}</span> <span class="filled-word">{verb}</span>. I like to tell everyone my dreams, especially <span class="filled-word">{person}</span>, because they totally understand how <span class="filled-word">{adjective2}</span> I feel. I hope your dreams are as <span class="filled-word">{adjective3}</span> as mine.`,
+        fields: [
+            { name: 'noun', label: 'Something to dream about', type: 'text', suggestions: ['flying pizza', 'talking cats', 'chocolate rivers'] },
+            { name: 'exclamation', label: 'An exclamation', type: 'text', suggestions: ['Wow!', 'Holy moly!', 'Great Scott!'] },
+            { name: 'adjective1', label: 'An adjective', type: 'text', suggestions: ['magical', 'bizarre', 'wonderful'] },
+            { name: 'bodypart', label: 'A body part', type: 'text', suggestions: ['toes', 'brain', 'heart'] },
+            { name: 'verb', label: 'A verb', type: 'text', suggestions: ['tingle', 'dance', 'glow'] },
+            { name: 'person', label: 'A person you know', type: 'text', suggestions: ['my best friend', 'my neighbor', 'my teacher'] },
+            { name: 'adjective2', label: 'An emotion adjective', type: 'text', suggestions: ['excited', 'dreamy', 'weird'] },
+            { name: 'adjective3', label: 'A positive adjective', type: 'text', suggestions: ['amazing', 'fantastic', 'wild'] }
+        ]
+    }    
+
     'silly-story': {
         title: 'Silly Zoo Adventure',
         category: 'funny',
