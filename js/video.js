@@ -138,90 +138,51 @@ window.ChortleVideo = {
         this.createCaptionOverlay();
     },
 
-// NEW: Create scrollable text chunks with Unicode-safe filled word detection
-createScrollingCaptionChunks: function(htmlStory, templateData) {
-    // Convert HTML to plain text but keep track of filled words
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = htmlStory;
-    
-    // Extract filled words for highlighting - IMPROVED with Unicode support
-    const filledWords = new Set();
-    const filledPhrases = []; // Track multi-word phrases
-    
-    // Common stop words that shouldn't be highlighted (Unicode-aware)
-    const stopWords = new Set([
-        'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 
-        'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
-        'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-        'should', 'may', 'might', 'can', 'must', 'shall', 'it', 'its', 'they',
-        'them', 'their', 'this', 'that', 'these', 'those', 'i', 'you', 'he',
-        'she', 'we', 'me', 'him', 'her', 'us'
-    ]);
-    
-    Object.values(templateData).forEach(value => {
-        if (typeof value === 'string' && value.trim()) {
-            const cleanValue = value.trim();
-            // FIXED: Use Unicode-aware normalization and case conversion
-            const normalizedValue = cleanValue.normalize('NFD').toLowerCase();
-            filledPhrases.push(normalizedValue);
-            
-            // FIXED: Split on Unicode-aware word boundaries
-            const words = cleanValue.split(/\s+/);
-            words.forEach(word => {
-                // FIXED: Unicode-safe word cleaning - keep all letter/number characters
-                const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
-                if (cleanWord.length >= 2 && !stopWords.has(cleanWord)) {
-                    filledWords.add(cleanWord);
-                }
-            });
-        }
-    });
-
-    // Get plain text and split into chunks
-    const plainText = tempDiv.textContent || tempDiv.innerText || '';
-    // FIXED: Unicode-aware word splitting
-    const words = plainText.split(/\s+/).filter(word => word.length > 0);
-    
-    // Create larger chunks for more natural reading
-    this.captionChunks = [];
-    const chunkSize = window.ChortleUtils.isMobile() ? 8 : 12;
-    
-    for (let i = 0; i < words.length; i += chunkSize) {
-        const chunkWords = words.slice(i, i + chunkSize);
-        const chunkText = chunkWords.join(' ');
+    // NEW: Create scrollable text chunks with Unicode-safe filled word detection
+    createScrollingCaptionChunks: function(htmlStory, templateData) {
+        // Convert HTML to plain text but keep track of filled words
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlStory;
         
-        // Check if any words in this chunk are filled words
-        const hasFilledWords = chunkWords.some(word => {
-            // FIXED: Unicode-safe word cleaning for comparison
-            const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
-            return filledWords.has(cleanWord);
-        });
+        // Extract filled words for highlighting - IMPROVED with Unicode support
+        const filledWords = new Set();
+        const filledPhrases = []; // Track multi-word phrases
         
-        this.captionChunks.push({
-            text: chunkText,
-            hasFilledWords: hasFilledWords,
-            words: chunkWords.map(word => {
-                // FIXED: Unicode-safe word cleaning for comparison
-                const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
-                return {
-                    text: word,
-                    isFilled: filledWords.has(cleanWord)
-                };
-            }),
-            filledPhrases: filledPhrases // Store for phrase matching
+        // Common stop words that shouldn't be highlighted (Unicode-aware)
+        const stopWords = new Set([
+            'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 
+            'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+            'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+            'should', 'may', 'might', 'can', 'must', 'shall', 'it', 'its', 'they',
+            'them', 'their', 'this', 'that', 'these', 'those', 'i', 'you', 'he',
+            'she', 'we', 'me', 'him', 'her', 'us'
+        ]);
+        
+        Object.values(templateData).forEach(value => {
+            if (typeof value === 'string' && value.trim()) {
+                const cleanValue = value.trim();
+                // FIXED: Use Unicode-aware normalization and case conversion
+                const normalizedValue = cleanValue.normalize('NFD').toLowerCase();
+                filledPhrases.push(normalizedValue);
+                
+                // FIXED: Split on Unicode-aware word boundaries
+                const words = cleanValue.split(/\s+/);
+                words.forEach(word => {
+                    // FIXED: Unicode-safe word cleaning - keep all letter/number characters
+                    const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
+                    if (cleanWord.length >= 2 && !stopWords.has(cleanWord)) {
+                        filledWords.add(cleanWord);
+                    }
+                });
+            }
         });
-    }
-    
-    this.currentChunkIndex = 0;
-    console.log(`Created ${this.captionChunks.length} caption chunks for teleprompter-style scrolling`);
-    console.log('Filled words to highlight:', Array.from(filledWords));
-},
 
         // Get plain text and split into chunks
         const plainText = tempDiv.textContent || tempDiv.innerText || '';
+        // FIXED: Unicode-aware word splitting
         const words = plainText.split(/\s+/).filter(word => word.length > 0);
         
-        // UPDATED: Create larger chunks for more natural reading - 8-12 words per line
+        // Create larger chunks for more natural reading
         this.captionChunks = [];
         const chunkSize = window.ChortleUtils.isMobile() ? 8 : 12;
         
@@ -231,7 +192,8 @@ createScrollingCaptionChunks: function(htmlStory, templateData) {
             
             // Check if any words in this chunk are filled words
             const hasFilledWords = chunkWords.some(word => {
-                const cleanWord = word.replace(/[^\w]/g, '').toLowerCase();
+                // FIXED: Unicode-safe word cleaning for comparison
+                const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
                 return filledWords.has(cleanWord);
             });
             
@@ -239,7 +201,8 @@ createScrollingCaptionChunks: function(htmlStory, templateData) {
                 text: chunkText,
                 hasFilledWords: hasFilledWords,
                 words: chunkWords.map(word => {
-                    const cleanWord = word.replace(/[^\w]/g, '').toLowerCase();
+                    // FIXED: Unicode-safe word cleaning for comparison
+                    const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
                     return {
                         text: word,
                         isFilled: filledWords.has(cleanWord)
@@ -550,79 +513,79 @@ createScrollingCaptionChunks: function(htmlStory, templateData) {
         }, 150);
     },
 
- // NEW: Format chunk text with Unicode-safe filled word highlighting
-formatChunkText: function(chunk, isCurrentLine) {
-    if (!chunk) return '';
-    
-    if (!isCurrentLine) {
-        // For non-current lines, just return plain text
-        return chunk.words.map(w => w.text).join(' ');
-    }
-    
-    // For current line, group consecutive highlighted words into phrases
-    const words = chunk.words;
-    const chunkText = words.map(w => w.text).join(' ');
-    
-    // FIXED: Unicode-safe phrase matching
-    const normalizedChunkText = chunkText.normalize('NFD').toLowerCase();
-    
-    // First, mark which words should be highlighted
-    const highlightMap = words.map((wordObj, index) => {
-        // Check if this individual word should be highlighted
-        if (wordObj.isFilled) return true;
+    // NEW: Format chunk text with Unicode-safe filled word highlighting
+    formatChunkText: function(chunk, isCurrentLine) {
+        if (!chunk) return '';
         
-        // Check for phrase matching with Unicode support
-        if (chunk.filledPhrases) {
-            for (const phrase of chunk.filledPhrases) {
-                if (phrase.includes(' ') && normalizedChunkText.includes(phrase)) {
-                    const phraseWords = phrase.split(/\s+/);
-                    // FIXED: Unicode-safe word comparison
-                    const currentWord = wordObj.text.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
-                    if (phraseWords.includes(currentWord)) {
-                        return true;
+        if (!isCurrentLine) {
+            // For non-current lines, just return plain text
+            return chunk.words.map(w => w.text).join(' ');
+        }
+        
+        // For current line, group consecutive highlighted words into phrases
+        const words = chunk.words;
+        const chunkText = words.map(w => w.text).join(' ');
+        
+        // FIXED: Unicode-safe phrase matching
+        const normalizedChunkText = chunkText.normalize('NFD').toLowerCase();
+        
+        // First, mark which words should be highlighted
+        const highlightMap = words.map((wordObj, index) => {
+            // Check if this individual word should be highlighted
+            if (wordObj.isFilled) return true;
+            
+            // Check for phrase matching with Unicode support
+            if (chunk.filledPhrases) {
+                for (const phrase of chunk.filledPhrases) {
+                    if (phrase.includes(' ') && normalizedChunkText.includes(phrase)) {
+                        const phraseWords = phrase.split(/\s+/);
+                        // FIXED: Unicode-safe word comparison
+                        const currentWord = wordObj.text.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
+                        if (phraseWords.includes(currentWord)) {
+                            return true;
+                        }
                     }
                 }
             }
-        }
+            
+            return false;
+        });
         
-        return false;
-    });
-    
-    // Now group consecutive highlighted words
-    let formattedText = '';
-    let i = 0;
-    
-    while (i < words.length) {
-        if (highlightMap[i]) {
-            // Start of highlighted phrase - collect all consecutive highlighted words
-            let phraseWords = [];
-            while (i < words.length && highlightMap[i]) {
-                phraseWords.push(words[i].text);
+        // Now group consecutive highlighted words
+        let formattedText = '';
+        let i = 0;
+        
+        while (i < words.length) {
+            if (highlightMap[i]) {
+                // Start of highlighted phrase - collect all consecutive highlighted words
+                let phraseWords = [];
+                while (i < words.length && highlightMap[i]) {
+                    phraseWords.push(words[i].text);
+                    i++;
+                }
+                
+                // Create single highlighted span for the entire phrase
+                const phraseText = phraseWords.join(' ');
+                formattedText += `<span style="color: #FE5946; background: rgba(254, 89, 70, 0.3); padding: 2px 6px; border-radius: 4px; font-weight: 700;">${phraseText}</span>`;
+                
+                // Add space after phrase if not at end
+                if (i < words.length) {
+                    formattedText += ' ';
+                }
+            } else {
+                // Regular word - not highlighted
+                formattedText += words[i].text;
+                
+                // Add space after word if not at end
+                if (i < words.length - 1) {
+                    formattedText += ' ';
+                }
                 i++;
             }
-            
-            // Create single highlighted span for the entire phrase
-            const phraseText = phraseWords.join(' ');
-            formattedText += `<span style="color: #FE5946; background: rgba(254, 89, 70, 0.3); padding: 2px 6px; border-radius: 4px; font-weight: 700;">${phraseText}</span>`;
-            
-            // Add space after phrase if not at end
-            if (i < words.length) {
-                formattedText += ' ';
-            }
-        } else {
-            // Regular word - not highlighted
-            formattedText += words[i].text;
-            
-            // Add space after word if not at end
-            if (i < words.length - 1) {
-                formattedText += ' ';
-            }
-            i++;
         }
-    }
-    
-    return formattedText;
-},
+        
+        return formattedText;
+    },
 
     // NEW: Move to next caption chunk
     nextCaptionChunk: function() {
@@ -880,192 +843,192 @@ formatChunkText: function(chunk, isCurrentLine) {
         console.log('Re-recording setup - returning to camera start');
     },
 
-// UPDATED: Send video to creator with better error handling
-sendVideo: async function() {
-    const recordedVideo = document.getElementById('recorded-video');
-    const videoBlob = recordedVideo.videoBlob;
+    // UPDATED: Send video to creator with better error handling
+    sendVideo: async function() {
+        const recordedVideo = document.getElementById('recorded-video');
+        const videoBlob = recordedVideo.videoBlob;
 
-    if (!videoBlob) {
-        window.ChortleApp.showError('No video to send!');
-        return;
-    }
+        if (!videoBlob) {
+            window.ChortleApp.showError('No video to send!');
+            return;
+        }
 
-    console.log('Starting video upload process...');
-    console.log('Video blob size:', videoBlob.size, 'bytes');
+        console.log('Starting video upload process...');
+        console.log('Video blob size:', videoBlob.size, 'bytes');
 
-    // Show upload progress
-    document.getElementById('playback-area').style.display = 'none';
-    document.getElementById('upload-progress').style.display = 'block';
+        // Show upload progress
+        document.getElementById('playback-area').style.display = 'none';
+        document.getElementById('upload-progress').style.display = 'block';
 
-    try {
-        // Step 1: Create video container
-        this.updateUploadProgress(10, 'Creating video container...');
-        const videoContainer = await this.createVideoContainer();
-        const videoId = videoContainer.videoId;
+        try {
+            // Step 1: Create video container
+            this.updateUploadProgress(10, 'Creating video container...');
+            const videoContainer = await this.createVideoContainer();
+            const videoId = videoContainer.videoId;
+            
+            console.log('Video container created, ID:', videoId);
+            
+            if (!videoId) {
+                throw new Error('Video ID is null or undefined after container creation');
+            }
+
+            // Step 2: Upload video
+            this.updateUploadProgress(20, 'Starting upload...');
+            const uploadResult = await this.uploadVideoToApiVideo(videoBlob, videoId);
+            console.log('Upload completed:', uploadResult);
+
+            // Step 3: Finalize
+            this.updateUploadProgress(95, 'Finalizing upload...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Step 4: Create playback link
+            const chortleData = this.getCurrentChortleData();
+            // Validate chortle data
+            if (!chortleData || !chortleData.template) {
+                console.error('Invalid or missing chortle data:', chortleData);
+                throw new Error('Missing Chortle data - unable to create playback link');
+            }
+            console.log('Creating playback link with video ID:', videoId);
+            
+            const linkData = {
+                videoId: videoId,
+                chortle: chortleData,
+                uploadTime: Date.now()
+            };
+
+            const encodedLinkData = window.ChortleUtils.encodeChortleData(linkData);
+            if (!encodedLinkData) {
+                throw new Error('Failed to encode link data');
+            }
+            
+            const playbackUrl = window.ChortleUtils.getBaseUrl() + '#video=' + encodedLinkData;
+            console.log('Generated playback URL:', playbackUrl);
+
+            // UPDATED: Try native sharing first, then fall back to copy link
+            this.updateUploadProgress(100, 'Upload complete!');
+            document.getElementById('upload-progress').style.display = 'none';
+            
+            // Try to share using native Web Share API
+            const shareResult = await window.ChortleUtils.shareUrl(
+                playbackUrl, 
+                'Watch my hilarious Chortle performance!'
+            );
+
+            if (shareResult.success && shareResult.method === 'native') {
+                // Native sharing succeeded - show simple success message
+                document.getElementById('video-sent').innerHTML = `
+                    <h4>🎉 Video Shared!</h4>
+                    <p>Your performance has been shared successfully!</p>
+                    <p style="font-size: 0.9em; color: #666; margin-top: 10px;">Video ID: ${videoId}</p>
+                `;
+                document.getElementById('video-sent').style.display = 'block';
+            } else {
+                // Fall back to showing the copy link interface
+                document.getElementById('playback-link').value = playbackUrl;
+                document.getElementById('video-sent').style.display = 'block';
+            }
+
+            // Haptic feedback
+            window.ChortleUtils.vibrate([200, 100, 200]);
+
+            // Add processing note
+            this.addProcessingNote();
+
+        } catch (error) {
+            console.error('Video upload process failed:', error);
+            this.handleUploadError(error);
+        }
+    },
+
+    // Create video container in api.video (FIXED with better error handling)
+    createVideoContainer: async function() {
+        console.log('Creating video container...');
         
-        console.log('Video container created, ID:', videoId);
+        const response = await fetch('https://ws.api.video/videos', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${window.ChortleConfig.API_VIDEO.apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                title: `Chortle Reading - ${Date.now()}`,
+                description: 'A hilarious Chortle reading created with Chortle!',
+                public: true,
+                mp4Support: true
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('API response error:', response.status, errorText);
+            throw new Error(`Failed to create video container: ${response.status} - ${errorText}`);
+        }
+
+        const responseData = await response.json();
+        console.log('Video container response:', responseData);
+        
+        // FIXED: Handle different possible response structures
+        const videoId = responseData.videoId || responseData.id || responseData.video?.id;
         
         if (!videoId) {
-            throw new Error('Video ID is null or undefined after container creation');
-        }
-
-        // Step 2: Upload video
-        this.updateUploadProgress(20, 'Starting upload...');
-        const uploadResult = await this.uploadVideoToApiVideo(videoBlob, videoId);
-        console.log('Upload completed:', uploadResult);
-
-        // Step 3: Finalize
-        this.updateUploadProgress(95, 'Finalizing upload...');
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // Step 4: Create playback link
-        const chortleData = this.getCurrentChortleData();
-        // Validate chortle data
-        if (!chortleData || !chortleData.template) {
-            console.error('Invalid or missing chortle data:', chortleData);
-            throw new Error('Missing Chortle data - unable to create playback link');
-        }
-        console.log('Creating playback link with video ID:', videoId);
-        
-        const linkData = {
-            videoId: videoId,
-            chortle: chortleData,
-            uploadTime: Date.now()
-        };
-
-        const encodedLinkData = window.ChortleUtils.encodeChortleData(linkData);
-        if (!encodedLinkData) {
-            throw new Error('Failed to encode link data');
+            console.error('No video ID found in response:', responseData);
+            throw new Error('No video ID returned from API');
         }
         
-        const playbackUrl = window.ChortleUtils.getBaseUrl() + '#video=' + encodedLinkData;
-        console.log('Generated playback URL:', playbackUrl);
+        console.log('Video container created with ID:', videoId);
+        return { videoId: videoId, ...responseData };
+    },
 
-        // UPDATED: Try native sharing first, then fall back to copy link
-        this.updateUploadProgress(100, 'Upload complete!');
-        document.getElementById('upload-progress').style.display = 'none';
+    // Upload video to api.video (FIXED with better error handling)
+    uploadVideoToApiVideo: function(videoBlob, videoId) {
+        console.log('Starting video upload to API, video ID:', videoId);
         
-        // Try to share using native Web Share API
-        const shareResult = await window.ChortleUtils.shareUrl(
-            playbackUrl, 
-            'Watch my hilarious Chortle performance!'
-        );
+        return new Promise((resolve, reject) => {
+            const formData = new FormData();
+            formData.append('file', videoBlob, 'chortle-recording.webm');
 
-        if (shareResult.success && shareResult.method === 'native') {
-            // Native sharing succeeded - show simple success message
-            document.getElementById('video-sent').innerHTML = `
-                <h4>🎉 Video Shared!</h4>
-                <p>Your performance has been shared successfully!</p>
-                <p style="font-size: 0.9em; color: #666; margin-top: 10px;">Video ID: ${videoId}</p>
-            `;
-            document.getElementById('video-sent').style.display = 'block';
-        } else {
-            // Fall back to showing the copy link interface
-            document.getElementById('playback-link').value = playbackUrl;
-            document.getElementById('video-sent').style.display = 'block';
-        }
-
-        // Haptic feedback
-        window.ChortleUtils.vibrate([200, 100, 200]);
-
-        // Add processing note
-        this.addProcessingNote();
-
-    } catch (error) {
-        console.error('Video upload process failed:', error);
-        this.handleUploadError(error);
-    }
-},
-
-// Create video container in api.video (FIXED with better error handling)
-createVideoContainer: async function() {
-    console.log('Creating video container...');
-    
-    const response = await fetch('https://ws.api.video/videos', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${window.ChortleConfig.API_VIDEO.apiKey}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            title: `Chortle Reading - ${Date.now()}`,
-            description: 'A hilarious Chortle reading created with Chortle!',
-            public: true,
-            mp4Support: true
-        })
-    });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API response error:', response.status, errorText);
-        throw new Error(`Failed to create video container: ${response.status} - ${errorText}`);
-    }
-
-    const responseData = await response.json();
-    console.log('Video container response:', responseData);
-    
-    // FIXED: Handle different possible response structures
-    const videoId = responseData.videoId || responseData.id || responseData.video?.id;
-    
-    if (!videoId) {
-        console.error('No video ID found in response:', responseData);
-        throw new Error('No video ID returned from API');
-    }
-    
-    console.log('Video container created with ID:', videoId);
-    return { videoId: videoId, ...responseData };
-},
-
-// Upload video to api.video (FIXED with better error handling)
-uploadVideoToApiVideo: function(videoBlob, videoId) {
-    console.log('Starting video upload to API, video ID:', videoId);
-    
-    return new Promise((resolve, reject) => {
-        const formData = new FormData();
-        formData.append('file', videoBlob, 'chortle-recording.webm');
-
-        const uploadUrl = `https://ws.api.video/videos/${videoId}/source`;
-        console.log('Upload URL:', uploadUrl);
-        
-        const xhr = new XMLHttpRequest();
-
-        // Track upload progress
-        xhr.upload.addEventListener('progress', (event) => {
-            if (event.lengthComputable) {
-                const percentComplete = 20 + (event.loaded / event.total) * 70; // 20-90%
-                this.updateUploadProgress(percentComplete, `Uploading... ${Math.round(percentComplete - 20)}%`);
-                console.log('Upload progress:', Math.round(percentComplete - 20) + '%');
-            }
-        });
-
-        xhr.addEventListener('load', () => {
-            console.log('Upload completed with status:', xhr.status);
+            const uploadUrl = `https://ws.api.video/videos/${videoId}/source`;
+            console.log('Upload URL:', uploadUrl);
             
-            if (xhr.status === 201) {
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    console.log('Upload response:', response);
-                    resolve(response);
-                } catch (e) {
-                    console.error('Failed to parse upload response:', xhr.responseText);
-                    resolve({ success: true }); // Continue anyway
+            const xhr = new XMLHttpRequest();
+
+            // Track upload progress
+            xhr.upload.addEventListener('progress', (event) => {
+                if (event.lengthComputable) {
+                    const percentComplete = 20 + (event.loaded / event.total) * 70; // 20-90%
+                    this.updateUploadProgress(percentComplete, `Uploading... ${Math.round(percentComplete - 20)}%`);
+                    console.log('Upload progress:', Math.round(percentComplete - 20) + '%');
                 }
-            } else {
-                console.error('Upload failed with status:', xhr.status, xhr.responseText);
-                reject(new Error(`Upload failed: ${xhr.status} - ${xhr.responseText}`));
-            }
-        });
+            });
 
-        xhr.addEventListener('error', () => {
-            console.error('Upload network error');
-            reject(new Error('Upload failed due to network error'));
-        });
+            xhr.addEventListener('load', () => {
+                console.log('Upload completed with status:', xhr.status);
+                
+                if (xhr.status === 201) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        console.log('Upload response:', response);
+                        resolve(response);
+                    } catch (e) {
+                        console.error('Failed to parse upload response:', xhr.responseText);
+                        resolve({ success: true }); // Continue anyway
+                    }
+                } else {
+                    console.error('Upload failed with status:', xhr.status, xhr.responseText);
+                    reject(new Error(`Upload failed: ${xhr.status} - ${xhr.responseText}`));
+                }
+            });
 
-        xhr.open('POST', uploadUrl);
-        xhr.setRequestHeader('Authorization', `Bearer ${window.ChortleConfig.API_VIDEO.apiKey}`);
-        xhr.send(formData);
-    });
-},
+            xhr.addEventListener('error', () => {
+                console.error('Upload network error');
+                reject(new Error('Upload failed due to network error'));
+            });
+
+            xhr.open('POST', uploadUrl);
+            xhr.setRequestHeader('Authorization', `Bearer ${window.ChortleConfig.API_VIDEO.apiKey}`);
+            xhr.send(formData);
+        });
+    },
 
     // Update upload progress (unchanged)
     updateUploadProgress: function(percent, message) {
@@ -1103,49 +1066,49 @@ uploadVideoToApiVideo: function(videoBlob, videoId) {
         window.ChortleApp.showError(errorMessage);
     },
 
-// Get current chortle data from URL (FIXED to preserve data and validate)
-getCurrentChortleData: function() {
-    // First try to get from stored state (if we've already processed it)
-    if (window.ChortleState.currentChortleData) {
-        console.log('Using stored chortle data:', window.ChortleState.currentChortleData);
-        
-        // Validate that it has the required template field
-        if (window.ChortleState.currentChortleData.template) {
-            return window.ChortleState.currentChortleData;
-        } else {
-            console.error('Stored chortle data missing template field');
-        }
-    }
-    
-    // Otherwise, get from URL hash
-    const hash = window.location.hash;
-    console.log('Checking hash for chortle data:', hash);
-    
-    if (hash.startsWith('#chortle=')) {
-        try {
-            const chortleData = hash.substring(9);
-            const decodedData = window.ChortleUtils.decodeChortleData(chortleData);
-            console.log('Decoded chortle data from hash:', decodedData);
+    // Get current chortle data from URL (FIXED to preserve data and validate)
+    getCurrentChortleData: function() {
+        // First try to get from stored state (if we've already processed it)
+        if (window.ChortleState.currentChortleData) {
+            console.log('Using stored chortle data:', window.ChortleState.currentChortleData);
             
-            // Validate the decoded data has a template
-            if (!decodedData || !decodedData.template) {
-                console.error('Decoded data missing template:', decodedData);
+            // Validate that it has the required template field
+            if (window.ChortleState.currentChortleData.template) {
+                return window.ChortleState.currentChortleData;
+            } else {
+                console.error('Stored chortle data missing template field');
+            }
+        }
+        
+        // Otherwise, get from URL hash
+        const hash = window.location.hash;
+        console.log('Checking hash for chortle data:', hash);
+        
+        if (hash.startsWith('#chortle=')) {
+            try {
+                const chortleData = hash.substring(9);
+                const decodedData = window.ChortleUtils.decodeChortleData(chortleData);
+                console.log('Decoded chortle data from hash:', decodedData);
+                
+                // Validate the decoded data has a template
+                if (!decodedData || !decodedData.template) {
+                    console.error('Decoded data missing template:', decodedData);
+                    return null;
+                }
+                
+                // Store it for future use
+                window.ChortleState.currentChortleData = decodedData;
+                
+                return decodedData;
+            } catch (e) {
+                console.error('Failed to decode chortle data from hash:', e);
                 return null;
             }
-            
-            // Store it for future use
-            window.ChortleState.currentChortleData = decodedData;
-            
-            return decodedData;
-        } catch (e) {
-            console.error('Failed to decode chortle data from hash:', e);
-            return null;
         }
-    }
-    
-    console.log('No chortle data found in hash or state');
-    return null;
-},
+        
+        console.log('No chortle data found in hash or state');
+        return null;
+    },
 
     // Add processing note to video sent section (unchanged)
     addProcessingNote: function() {
@@ -1182,38 +1145,38 @@ getCurrentChortleData: function() {
         });
     },
 
- // Show video playback for creators (FIXED with better error handling)
-showVideoPlayback: function(encodedData) {
-    console.log('Showing video playback for encoded data:', encodedData);
-    
-    window.ChortleApp.showPage('video-playback-view');
-
-    try {
-        const linkData = window.ChortleUtils.decodeChortleData(encodedData);
-        console.log('Decoded link data:', linkData);
+    // Show video playback for creators (FIXED with better error handling)
+    showVideoPlayback: function(encodedData) {
+        console.log('Showing video playback for encoded data:', encodedData);
         
-        if (!linkData) {
-            throw new Error('Failed to decode video link data');
+        window.ChortleApp.showPage('video-playback-view');
+
+        try {
+            const linkData = window.ChortleUtils.decodeChortleData(encodedData);
+            console.log('Decoded link data:', linkData);
+            
+            if (!linkData) {
+                throw new Error('Failed to decode video link data');
+            }
+            
+            const videoId = linkData.videoId;
+            const chortleData = linkData.chortle;
+            
+            console.log('Video ID for playback:', videoId);
+            console.log('Chortle data for playback:', chortleData);
+
+            if (!videoId) {
+                throw new Error('No video ID found in link data');
+            }
+
+            this.setupVideoPlayer(videoId);
+            this.displayOriginalChortle(chortleData);
+
+        } catch (error) {
+            console.error('Error loading video playback:', error);
+            window.ChortleApp.showError(`Video not found or link is invalid. Error: ${error.message}`);
         }
-        
-        const videoId = linkData.videoId;
-        const chortleData = linkData.chortle;
-        
-        console.log('Video ID for playback:', videoId);
-        console.log('Chortle data for playback:', chortleData);
-
-        if (!videoId) {
-            throw new Error('No video ID found in link data');
-        }
-
-        this.setupVideoPlayer(videoId);
-        this.displayOriginalChortle(chortleData);
-
-    } catch (error) {
-        console.error('Error loading video playback:', error);
-        window.ChortleApp.showError(`Video not found or link is invalid. Error: ${error.message}`);
-    }
-},
+    },
 
     // Setup video player with multiple fallback options (unchanged)
     setupVideoPlayer: function(videoId) {
