@@ -138,41 +138,84 @@ window.ChortleVideo = {
         this.createCaptionOverlay();
     },
 
-    // NEW: Create scrollable text chunks with filled word detection - FIXED stop words
-    createScrollingCaptionChunks: function(htmlStory, templateData) {
-        // Convert HTML to plain text but keep track of filled words
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = htmlStory;
+// NEW: Create scrollable text chunks with Unicode-safe filled word detection
+createScrollingCaptionChunks: function(htmlStory, templateData) {
+    // Convert HTML to plain text but keep track of filled words
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlStory;
+    
+    // Extract filled words for highlighting - IMPROVED with Unicode support
+    const filledWords = new Set();
+    const filledPhrases = []; // Track multi-word phrases
+    
+    // Common stop words that shouldn't be highlighted (Unicode-aware)
+    const stopWords = new Set([
+        'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 
+        'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+        'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+        'should', 'may', 'might', 'can', 'must', 'shall', 'it', 'its', 'they',
+        'them', 'their', 'this', 'that', 'these', 'those', 'i', 'you', 'he',
+        'she', 'we', 'me', 'him', 'her', 'us'
+    ]);
+    
+    Object.values(templateData).forEach(value => {
+        if (typeof value === 'string' && value.trim()) {
+            const cleanValue = value.trim();
+            // FIXED: Use Unicode-aware normalization and case conversion
+            const normalizedValue = cleanValue.normalize('NFD').toLowerCase();
+            filledPhrases.push(normalizedValue);
+            
+            // FIXED: Split on Unicode-aware word boundaries
+            const words = cleanValue.split(/\s+/);
+            words.forEach(word => {
+                // FIXED: Unicode-safe word cleaning - keep all letter/number characters
+                const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
+                if (cleanWord.length >= 2 && !stopWords.has(cleanWord)) {
+                    filledWords.add(cleanWord);
+                }
+            });
+        }
+    });
+
+    // Get plain text and split into chunks
+    const plainText = tempDiv.textContent || tempDiv.innerText || '';
+    // FIXED: Unicode-aware word splitting
+    const words = plainText.split(/\s+/).filter(word => word.length > 0);
+    
+    // Create larger chunks for more natural reading
+    this.captionChunks = [];
+    const chunkSize = window.ChortleUtils.isMobile() ? 8 : 12;
+    
+    for (let i = 0; i < words.length; i += chunkSize) {
+        const chunkWords = words.slice(i, i + chunkSize);
+        const chunkText = chunkWords.join(' ');
         
-        // Extract filled words for highlighting - IMPROVED with stop word filtering
-        const filledWords = new Set();
-        const filledPhrases = []; // Track multi-word phrases
-        
-        // Common stop words that shouldn't be highlighted
-        const stopWords = new Set([
-            'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 
-            'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
-            'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-            'should', 'may', 'might', 'can', 'must', 'shall', 'it', 'its', 'they',
-            'them', 'their', 'this', 'that', 'these', 'those', 'i', 'you', 'he',
-            'she', 'we', 'me', 'him', 'her', 'us'
-        ]);
-        
-        Object.values(templateData).forEach(value => {
-            if (typeof value === 'string' && value.trim()) {
-                const cleanValue = value.trim().toLowerCase();
-                filledPhrases.push(cleanValue);
-                
-                // Only add individual words if they're meaningful (not stop words, 3+ chars)
-                const words = cleanValue.split(/\s+/);
-                words.forEach(word => {
-                    const cleanWord = word.replace(/[^\w]/g, '').toLowerCase();
-                    if (cleanWord.length >= 3 && !stopWords.has(cleanWord)) {
-                        filledWords.add(cleanWord);
-                    }
-                });
-            }
+        // Check if any words in this chunk are filled words
+        const hasFilledWords = chunkWords.some(word => {
+            // FIXED: Unicode-safe word cleaning for comparison
+            const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
+            return filledWords.has(cleanWord);
         });
+        
+        this.captionChunks.push({
+            text: chunkText,
+            hasFilledWords: hasFilledWords,
+            words: chunkWords.map(word => {
+                // FIXED: Unicode-safe word cleaning for comparison
+                const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
+                return {
+                    text: word,
+                    isFilled: filledWords.has(cleanWord)
+                };
+            }),
+            filledPhrases: filledPhrases // Store for phrase matching
+        });
+    }
+    
+    this.currentChunkIndex = 0;
+    console.log(`Created ${this.captionChunks.length} caption chunks for teleprompter-style scrolling`);
+    console.log('Filled words to highlight:', Array.from(filledWords));
+},
 
         // Get plain text and split into chunks
         const plainText = tempDiv.textContent || tempDiv.innerText || '';
@@ -507,75 +550,79 @@ window.ChortleVideo = {
         }, 150);
     },
 
-    // NEW: Format chunk text with filled word highlighting - IMPROVED phrase grouping
-    formatChunkText: function(chunk, isCurrentLine) {
-        if (!chunk) return '';
+ // NEW: Format chunk text with Unicode-safe filled word highlighting
+formatChunkText: function(chunk, isCurrentLine) {
+    if (!chunk) return '';
+    
+    if (!isCurrentLine) {
+        // For non-current lines, just return plain text
+        return chunk.words.map(w => w.text).join(' ');
+    }
+    
+    // For current line, group consecutive highlighted words into phrases
+    const words = chunk.words;
+    const chunkText = words.map(w => w.text).join(' ');
+    
+    // FIXED: Unicode-safe phrase matching
+    const normalizedChunkText = chunkText.normalize('NFD').toLowerCase();
+    
+    // First, mark which words should be highlighted
+    const highlightMap = words.map((wordObj, index) => {
+        // Check if this individual word should be highlighted
+        if (wordObj.isFilled) return true;
         
-        if (!isCurrentLine) {
-            // For non-current lines, just return plain text
-            return chunk.words.map(w => w.text).join(' ');
-        }
-        
-        // For current line, group consecutive highlighted words into phrases
-        const words = chunk.words;
-        const chunkText = words.map(w => w.text).join(' ').toLowerCase();
-        
-        // First, mark which words should be highlighted
-        const highlightMap = words.map((wordObj, index) => {
-            // Check if this individual word should be highlighted
-            if (wordObj.isFilled) return true;
-            
-            // Check for phrase matching
-            if (chunk.filledPhrases) {
-                for (const phrase of chunk.filledPhrases) {
-                    if (phrase.includes(' ') && chunkText.includes(phrase)) {
-                        const phraseWords = phrase.split(/\s+/);
-                        const currentWord = wordObj.text.replace(/[^\w]/g, '').toLowerCase();
-                        if (phraseWords.includes(currentWord)) {
-                            return true;
-                        }
+        // Check for phrase matching with Unicode support
+        if (chunk.filledPhrases) {
+            for (const phrase of chunk.filledPhrases) {
+                if (phrase.includes(' ') && normalizedChunkText.includes(phrase)) {
+                    const phraseWords = phrase.split(/\s+/);
+                    // FIXED: Unicode-safe word comparison
+                    const currentWord = wordObj.text.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
+                    if (phraseWords.includes(currentWord)) {
+                        return true;
                     }
                 }
             }
-            
-            return false;
-        });
-        
-        // Now group consecutive highlighted words
-        let formattedText = '';
-        let i = 0;
-        
-        while (i < words.length) {
-            if (highlightMap[i]) {
-                // Start of highlighted phrase - collect all consecutive highlighted words
-                let phraseWords = [];
-                while (i < words.length && highlightMap[i]) {
-                    phraseWords.push(words[i].text);
-                    i++;
-                }
-                
-                // Create single highlighted span for the entire phrase
-                const phraseText = phraseWords.join(' ');
-                formattedText += `<span style="color: #FE5946; background: rgba(254, 89, 70, 0.3); padding: 2px 6px; border-radius: 4px; font-weight: 700;">${phraseText}</span>`;
-                
-                // Add space after phrase if not at end
-                if (i < words.length) {
-                    formattedText += ' ';
-                }
-            } else {
-                // Regular word - not highlighted
-                formattedText += words[i].text;
-                
-                // Add space after word if not at end
-                if (i < words.length - 1) {
-                    formattedText += ' ';
-                }
-                i++;
-            }
         }
         
-        return formattedText;
-    },
+        return false;
+    });
+    
+    // Now group consecutive highlighted words
+    let formattedText = '';
+    let i = 0;
+    
+    while (i < words.length) {
+        if (highlightMap[i]) {
+            // Start of highlighted phrase - collect all consecutive highlighted words
+            let phraseWords = [];
+            while (i < words.length && highlightMap[i]) {
+                phraseWords.push(words[i].text);
+                i++;
+            }
+            
+            // Create single highlighted span for the entire phrase
+            const phraseText = phraseWords.join(' ');
+            formattedText += `<span style="color: #FE5946; background: rgba(254, 89, 70, 0.3); padding: 2px 6px; border-radius: 4px; font-weight: 700;">${phraseText}</span>`;
+            
+            // Add space after phrase if not at end
+            if (i < words.length) {
+                formattedText += ' ';
+            }
+        } else {
+            // Regular word - not highlighted
+            formattedText += words[i].text;
+            
+            // Add space after word if not at end
+            if (i < words.length - 1) {
+                formattedText += ' ';
+            }
+            i++;
+        }
+    }
+    
+    return formattedText;
+},
 
     // NEW: Move to next caption chunk
     nextCaptionChunk: function() {
