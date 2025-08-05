@@ -176,6 +176,15 @@ window.ChortleApp = {
             }
             console.log('✅ All fields validated');
 
+            const encodedData = window.ChortleUtils.encodeChortleData(wizardData);
+            console.log('Encoded result:', encodedData);
+            
+            if (!encodedData) {
+                throw new Error('Failed to encode chortle data - check console for encoding errors');
+            }
+
+            const shareableUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
+            console.log('Generated URL:', shareableUrl);
 
             const shareableUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
             console.log('Generated URL:', shareableUrl);
