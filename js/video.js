@@ -254,8 +254,8 @@ window.ChortleVideo = {
     startBottomCaptionTimer: function() {
         if (!this.captionChunks.length) return;
         
-        // Use realistic reading-aloud speed: 150 words per minute
-        const wordsPerMinute = 150;
+        // Use slower reading-aloud speed: 120 words per minute (more natural for video)
+        const wordsPerMinute = 120;
         const msPerWord = (60 * 1000) / wordsPerMinute; // ~400ms per word
         
         let currentIndex = 0;
