@@ -952,43 +952,6 @@ window.ChortleVideo = {
                     console.log('Upload progress:', Math.round(percentComplete - 20) + '%');
                 }
             });
-    
-            xhr.addEventListener('load', () => {
-                console.log('Upload completed with status:', xhr.status);
-                
-                if (xhr.status === 200) {
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        console.log('Cloudinary upload response:', response);
-                        
-                        if (response.public_id) {
-                            resolve({
-                                videoId: response.public_id,
-                                url: response.secure_url,
-                                ...response
-                            });
-                        } else {
-                            reject(new Error('No public_id returned from Cloudinary'));
-                        }
-                    } catch (e) {
-                        console.error('Failed to parse upload response:', xhr.responseText);
-                        reject(new Error('Invalid response from Cloudinary'));
-                    }
-                } else {
-                    console.error('Upload failed with status:', xhr.status, xhr.responseText);
-                    reject(new Error(`Upload failed: ${xhr.status} - ${xhr.responseText}`));
-                }
-            });
-    
-            xhr.addEventListener('error', () => {
-                console.error('Upload network error');
-                reject(new Error('Upload failed due to network error'));
-            });
-    
-            xhr.open('POST', window.ChortleConfig.CLOUDINARY.uploadEndpoint);
-            xhr.send(formData);
-        });
-    },
 
             xhr.addEventListener('load', () => {
                 console.log('Upload completed with status:', xhr.status);
