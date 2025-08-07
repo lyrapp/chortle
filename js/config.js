@@ -3,9 +3,9 @@
 window.ChortleConfig = {
     // Cloudinary configuration
     CLOUDINARY: {
-        cloudName: 'Root',
+        cloudName: 'root', // Changed from 'Root' to lowercase
         apiKey: '466825116782547',
-        uploadEndpoint: 'https://api.cloudinary.com/v1_1/Root/video/upload',
+        uploadEndpoint: 'https://api.cloudinary.com/v1_1/root/upload', // Removed '/video' from path
         uploadPreset: 'chortle_videos'
     },
     
