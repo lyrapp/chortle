@@ -857,21 +857,16 @@ window.ChortleVideo = {
         document.getElementById('upload-progress').style.display = 'block';
 
         try {
-            // Step 1: Create video container
-            this.updateUploadProgress(10, 'Creating video container...');
-            const videoContainer = await this.createVideoContainer();
-            const videoId = videoContainer.videoId;
-            
-            console.log('Video container created, ID:', videoId);
-            
-            if (!videoId) {
-                throw new Error('Video ID is null or undefined after container creation');
-            }
-
-            // Step 2: Upload video
-            this.updateUploadProgress(20, 'Starting upload...');
-            const uploadResult = await this.uploadVideoToApiVideo(videoBlob, videoId);
-            console.log('Upload completed:', uploadResult);
+            // Upload video to Cloudinary (single step)
+                this.updateUploadProgress(10, 'Starting upload...');
+                const uploadResult = await this.uploadToCloudinary(videoBlob);
+                const videoId = uploadResult.videoId;
+                
+                console.log('Cloudinary upload completed, ID:', videoId);
+                
+                if (!videoId) {
+                    throw new Error('No video ID returned from Cloudinary');
+                }
 
             // Step 3: Finalize
             this.updateUploadProgress(95, 'Finalizing upload...');
@@ -936,66 +931,64 @@ window.ChortleVideo = {
         }
     },
 
-    // Create video container in api.video (FIXED with better error handling)
-    createVideoContainer: async function() {
-        console.log('Creating video container...');
+   // Upload video directly to Cloudinary
+uploadToCloudinary: async function(videoBlob) {
+    console.log('Starting Cloudinary upload...');
+    
+    return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('file', videoBlob, 'chortle-recording.webm');
+        formData.append('upload_preset', window.ChortleConfig.CLOUDINARY.uploadPreset);
+        formData.append('resource_type', 'video');
+        formData.append('public_id', `chortle_${Date.now()}`);
         
-        const response = await fetch('https://ws.api.video/videos', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${window.ChortleConfig.API_VIDEO.apiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                title: `Chortle Reading - ${Date.now()}`,
-                description: 'A hilarious Chortle reading created with Chortle!',
-                public: true,
-                mp4Support: true
-            })
+        const xhr = new XMLHttpRequest();
+
+        // Track upload progress
+        xhr.upload.addEventListener('progress', (event) => {
+            if (event.lengthComputable) {
+                const percentComplete = 20 + (event.loaded / event.total) * 70; // 20-90%
+                this.updateUploadProgress(percentComplete, `Uploading... ${Math.round(percentComplete - 20)}%`);
+                console.log('Upload progress:', Math.round(percentComplete - 20) + '%');
+            }
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('API response error:', response.status, errorText);
-            throw new Error(`Failed to create video container: ${response.status} - ${errorText}`);
-        }
-
-        const responseData = await response.json();
-        console.log('Video container response:', responseData);
-        
-        // FIXED: Handle different possible response structures
-        const videoId = responseData.videoId || responseData.id || responseData.video?.id;
-        
-        if (!videoId) {
-            console.error('No video ID found in response:', responseData);
-            throw new Error('No video ID returned from API');
-        }
-        
-        console.log('Video container created with ID:', videoId);
-        return { videoId: videoId, ...responseData };
-    },
-
-    // Upload video to api.video (FIXED with better error handling)
-    uploadVideoToApiVideo: function(videoBlob, videoId) {
-        console.log('Starting video upload to API, video ID:', videoId);
-        
-        return new Promise((resolve, reject) => {
-            const formData = new FormData();
-            formData.append('file', videoBlob, 'chortle-recording.webm');
-
-            const uploadUrl = `https://ws.api.video/videos/${videoId}/source`;
-            console.log('Upload URL:', uploadUrl);
+        xhr.addEventListener('load', () => {
+            console.log('Upload completed with status:', xhr.status);
             
-            const xhr = new XMLHttpRequest();
-
-            // Track upload progress
-            xhr.upload.addEventListener('progress', (event) => {
-                if (event.lengthComputable) {
-                    const percentComplete = 20 + (event.loaded / event.total) * 70; // 20-90%
-                    this.updateUploadProgress(percentComplete, `Uploading... ${Math.round(percentComplete - 20)}%`);
-                    console.log('Upload progress:', Math.round(percentComplete - 20) + '%');
+            if (xhr.status === 200) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    console.log('Cloudinary upload response:', response);
+                    
+                    if (response.public_id) {
+                        resolve({
+                            videoId: response.public_id,
+                            url: response.secure_url,
+                            ...response
+                        });
+                    } else {
+                        reject(new Error('No public_id returned from Cloudinary'));
+                    }
+                } catch (e) {
+                    console.error('Failed to parse upload response:', xhr.responseText);
+                    reject(new Error('Invalid response from Cloudinary'));
                 }
-            });
+            } else {
+                console.error('Upload failed with status:', xhr.status, xhr.responseText);
+                reject(new Error(`Upload failed: ${xhr.status} - ${xhr.responseText}`));
+            }
+        });
+
+        xhr.addEventListener('error', () => {
+            console.error('Upload network error');
+            reject(new Error('Upload failed due to network error'));
+        });
+
+        xhr.open('POST', window.ChortleConfig.CLOUDINARY.uploadEndpoint);
+        xhr.send(formData);
+    });
+},
 
             xhr.addEventListener('load', () => {
                 console.log('Upload completed with status:', xhr.status);
@@ -1196,48 +1189,43 @@ window.ChortleVideo = {
             this.loadDirectVideo(videoId, playerContainer);
         });
 
-        // Try iframe embed first
+        // Try Cloudinary video player first
         setTimeout(() => {
-            this.tryVideoEmbed(videoId, playerContainer);
-        }, 2000);
-    },
+            this.tryCloudinaryVideo(videoId, playerContainer);
+        }, 1000);
 
-    // Try iframe video embed (unchanged)
-    tryVideoEmbed: function(videoId, container) {
-        const embedUrl = `https://embed.api.video/vod/${videoId}`;
+        // Try Cloudinary video player
+        tryCloudinaryVideo: function(videoId, container) {
+            const videoUrl = `https://res.cloudinary.com/${window.ChortleConfig.CLOUDINARY.cloudName}/video/upload/${videoId}.mp4`;
+            
+            container.innerHTML = `
+                <video controls style="width: 100%; max-width: 600px; border-radius: 10px;" preload="metadata">
+                    <source src="${videoUrl}" type="video/mp4">
+                    <p>Your browser doesn't support video playback.</p>
+                </video>
+                <p style="margin-top: 10px; font-size: 0.9em; color: #666;">Powered by Cloudinary</p>
+            `;
         
-        container.innerHTML = `
-            <iframe
-                src="${embedUrl}"
-                width="100%"
-                height="400"
-                frameborder="0"
-                scrolling="no"
-                allowfullscreen="true"
-                style="border-radius: 10px;">
-            </iframe>
-        `;
-
-        // Fallback after timeout
-        setTimeout(() => {
-            if (container.querySelector('iframe')) {
+            // Fallback after timeout if video fails to load
+            const video = container.querySelector('video');
+            video.addEventListener('error', () => {
+                console.warn('Cloudinary video failed to load, showing fallback');
                 this.showVideoFallback(videoId, container);
-            }
-        }, 5000);
-    },
+            });
+        },
 
-    // Load direct video if embed fails (unchanged)
-    loadDirectVideo: function(videoId, container) {
-        const directUrl = `https://vod.api.video/vod/${videoId}/mp4/source.mp4`;
-        
-        container.innerHTML = `
-            <video controls style="width: 100%; max-width: 600px; border-radius: 10px;">
-                <source src="${directUrl}" type="video/mp4">
-                <p>Your browser doesn't support video playback.</p>
-            </video>
-            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">Direct video link</p>
-        `;
-    },
+        // Load direct Cloudinary video
+        loadDirectVideo: function(videoId, container) {
+            const directUrl = `https://res.cloudinary.com/${window.ChortleConfig.CLOUDINARY.cloudName}/video/upload/${videoId}.mp4`;
+            
+            container.innerHTML = `
+                <video controls style="width: 100%; max-width: 600px; border-radius: 10px;">
+                    <source src="${directUrl}" type="video/mp4">
+                    <p>Your browser doesn't support video playback.</p>
+                </video>
+                <p style="margin-top: 10px; font-size: 0.9em; color: #666;">Cloudinary direct link</p>
+            `;
+        },
 
     // Show fallback options if video loading fails (unchanged)
     showVideoFallback: function(videoId, container) {
