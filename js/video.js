@@ -1167,10 +1167,10 @@ uploadToCloudinary: async function(videoBlob) {
         }
     },
 
-    // Setup video player with multiple fallback options (unchanged)
+       // Setup video player with Cloudinary support
     setupVideoPlayer: function(videoId) {
         const playerContainer = document.getElementById('api-video-player');
-
+    
         // Show loading first
         playerContainer.innerHTML = `
             <div style="text-align: center; padding: 40px; background: #f0f0f0; border-radius: 10px;">
@@ -1183,58 +1183,61 @@ uploadToCloudinary: async function(videoBlob) {
                 </div>
             </div>
         `;
-
+    
         // Add direct link handler
         document.getElementById('try-direct-link').addEventListener('click', () => {
             this.loadDirectVideo(videoId, playerContainer);
         });
-
+    
         // Try Cloudinary video player first
         setTimeout(() => {
             this.tryCloudinaryVideo(videoId, playerContainer);
         }, 1000);
-
-        // Try Cloudinary video player
-        tryCloudinaryVideo: function(videoId, container) {
-            const videoUrl = `https://res.cloudinary.com/${window.ChortleConfig.CLOUDINARY.cloudName}/video/upload/${videoId}.mp4`;
-            
-            container.innerHTML = `
-                <video controls style="width: 100%; max-width: 600px; border-radius: 10px;" preload="metadata">
-                    <source src="${videoUrl}" type="video/mp4">
-                    <p>Your browser doesn't support video playback.</p>
-                </video>
-                <p style="margin-top: 10px; font-size: 0.9em; color: #666;">Powered by Cloudinary</p>
-            `;
+    },
+    
+    // Try Cloudinary video player
+    tryCloudinaryVideo: function(videoId, container) {
+        const videoUrl = `https://res.cloudinary.com/${window.ChortleConfig.CLOUDINARY.cloudName}/video/upload/${videoId}.mp4`;
         
-            // Fallback after timeout if video fails to load
-            const video = container.querySelector('video');
-            video.addEventListener('error', () => {
-                console.warn('Cloudinary video failed to load, showing fallback');
-                this.showVideoFallback(videoId, container);
-            });
-        },
+        container.innerHTML = `
+            <video controls style="width: 100%; max-width: 600px; border-radius: 10px;" preload="metadata">
+                <source src="${videoUrl}" type="video/mp4">
+                <p>Your browser doesn't support video playback.</p>
+            </video>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">Powered by Cloudinary</p>
+        `;
+    
+        // Fallback after timeout if video fails to load
+        const video = container.querySelector('video');
+        video.addEventListener('error', () => {
+            console.warn('Cloudinary video failed to load, showing fallback');
+            this.showVideoFallback(videoId, container);
+        });
+    },
+    
+    // Load direct Cloudinary video
+    loadDirectVideo: function(videoId, container) {
+        const directUrl = `https://res.cloudinary.com/${window.ChortleConfig.CLOUDINARY.cloudName}/video/upload/${videoId}.mp4`;
+        
+        container.innerHTML = `
+            <video controls style="width: 100%; max-width: 600px; border-radius: 10px;">
+                <source src="${directUrl}" type="video/mp4">
+                <p>Your browser doesn't support video playback.</p>
+            </video>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">Cloudinary direct link</p>
+        `;
+    },
 
-        // Load direct Cloudinary video
-        loadDirectVideo: function(videoId, container) {
-            const directUrl = `https://res.cloudinary.com/${window.ChortleConfig.CLOUDINARY.cloudName}/video/upload/${videoId}.mp4`;
-            
-            container.innerHTML = `
-                <video controls style="width: 100%; max-width: 600px; border-radius: 10px;">
-                    <source src="${directUrl}" type="video/mp4">
-                    <p>Your browser doesn't support video playback.</p>
-                </video>
-                <p style="margin-top: 10px; font-size: 0.9em; color: #666;">Cloudinary direct link</p>
-            `;
-        },
-
-    // Show fallback options if video loading fails (unchanged)
+       // Show fallback options if video loading fails
     showVideoFallback: function(videoId, container) {
+        const directUrl = `https://res.cloudinary.com/${window.ChortleConfig.CLOUDINARY.cloudName}/video/upload/${videoId}.mp4`;
+        
         container.innerHTML = `
             <div style="text-align: center; padding: 20px; background: #fff3cd; border-radius: 10px; border: 1px solid #ffeaa7;">
                 <h4>Video Processing</h4>
-                <p>The video is still being processed by api.video.</p>
+                <p>The video is still being processed by Cloudinary.</p>
                 <p style="margin: 15px 0;">Try this direct link:</p>
-                <a href="https://vod.api.video/vod/${videoId}/mp4/source.mp4" 
+                <a href="${directUrl}" 
                    target="_blank" 
                    style="color: #2196f3; text-decoration: underline;">
                    Open Video in New Tab
