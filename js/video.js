@@ -135,84 +135,99 @@ window.ChortleVideo = {
     },
 
     // Create Continous Scroll Text
-    createContinuousScrollText: function(htmlStory, templateData) {
-        // Convert HTML to plain text but keep track of filled words
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = htmlStory;
-        
-        // Extract filled words for highlighting - IMPROVED with Unicode support
-        const filledWords = new Set();
-        const filledPhrases = []; // Track multi-word phrases
-        
-        // Common stop words that shouldn't be highlighted (Unicode-aware)
-        const stopWords = new Set([
-            'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 
-            'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
-            'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-            'should', 'may', 'might', 'can', 'must', 'shall', 'it', 'its', 'they',
-            'them', 'their', 'this', 'that', 'these', 'those', 'i', 'you', 'he',
-            'she', 'we', 'me', 'him', 'her', 'us'
-        ]);
-        
-        Object.values(templateData).forEach(value => {
-            if (typeof value === 'string' && value.trim()) {
-                const cleanValue = value.trim();
-                const normalizedValue = cleanValue.normalize('NFD').toLowerCase();
-                filledPhrases.push(normalizedValue);
-                
-                const words = cleanValue.split(/\s+/);
-                words.forEach(word => {
-                    const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
-                    if (cleanWord.length >= 2 && !stopWords.has(cleanWord)) {
-                        filledWords.add(cleanWord);
-                    }
-                });
-            }
-        });
+createContinuousScrollText: function(htmlStory, templateData) {
+    // Convert HTML to plain text but keep track of filled words
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlStory;
     
-        // Get plain text and create highlighted version
-        const plainText = tempDiv.textContent || tempDiv.innerText || '';
-        const words = plainText.split(/\s+/).filter(word => word.length > 0);
-        
-        // Create highlighted text for continuous scroll
-        const highlightedText = words.map(word => {
-            const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
-            const isFilled = filledWords.has(cleanWord);
+    // Extract filled words for highlighting - IMPROVED with Unicode support
+    const filledWords = new Set();
+    const filledPhrases = []; // Track multi-word phrases
+    
+    // Common stop words that shouldn't be highlighted (Unicode-aware)
+    const stopWords = new Set([
+        'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 
+        'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+        'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+        'should', 'may', 'might', 'can', 'must', 'shall', 'it', 'its', 'they',
+        'them', 'their', 'this', 'that', 'these', 'those', 'i', 'you', 'he',
+        'she', 'we', 'me', 'him', 'her', 'us'
+    ]);
+    
+    Object.values(templateData).forEach(value => {
+        if (typeof value === 'string' && value.trim()) {
+            const cleanValue = value.trim();
+            const normalizedValue = cleanValue.normalize('NFD').toLowerCase();
+            filledPhrases.push(normalizedValue);
             
-            if (isFilled) {
-                return `<span style="color: #FE5946; background: rgba(254, 89, 70, 0.3); padding: 3px 8px; border-radius: 6px; font-weight: 700;">${word}</span>`;
-            }
-            return word;
-        }).join(' ');
+            const words = cleanValue.split(/\s+/);
+            words.forEach(word => {
+                const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
+                if (cleanWord.length >= 2 && !stopWords.has(cleanWord)) {
+                    filledWords.add(cleanWord);
+                }
+            });
+        }
+    });
+
+        // Get plain text and break into sentences for better spacing
+        const plainText = tempDiv.textContent || tempDiv.innerText || '';
         
-        this.scrollText = highlightedText;
-        console.log('Created continuous scroll text with filled word highlighting');
+        // Split into sentences and add spacing
+        const sentences = plainText.split(/([.!?]+)/);
+        const processedSentences = [];
+        
+        for (let i = 0; i < sentences.length; i += 2) {
+            const sentence = sentences[i];
+            const punctuation = sentences[i + 1] || '';
+            
+            if (sentence && sentence.trim()) {
+                const words = sentence.trim().split(/\s+/);
+                
+                // Create highlighted text for this sentence
+                const highlightedSentence = words.map(word => {
+                    const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
+                    const isFilled = filledWords.has(cleanWord);
+                    
+                    if (isFilled) {
+                        return `<span style="color: #FE5946; background: rgba(254, 89, 70, 0.4); padding: 4px 10px; border-radius: 8px; font-weight: 800; margin: 0 2px;">${word}</span>`;
+                    }
+                    return word;
+                }).join(' ');
+                
+                processedSentences.push(highlightedSentence + punctuation);
+            }
+        }
+        
+        // Join sentences with better spacing
+        this.scrollText = processedSentences.join(' &nbsp;&nbsp; ');
+        console.log('Created continuous scroll text with sentence spacing and filled word highlighting');
     },
 
         // Create caption overlay container
-        createCaptionOverlay: function() {
-            // Remove existing overlay if any
-            const existingOverlay = document.getElementById('caption-overlay');
-            if (existingOverlay) {
-                existingOverlay.remove();
-            }
+       createCaptionOverlay: function() {
+        // Remove existing overlay if any
+        const existingOverlay = document.getElementById('caption-overlay');
+        if (existingOverlay) {
+            existingOverlay.remove();
+        }
+    
+        // Create overlay container
+        const overlay = document.createElement('div');
+        overlay.id = 'caption-overlay';
+        overlay.className = 'caption-overlay';
         
-            // Create overlay container
-            const overlay = document.createElement('div');
-            overlay.id = 'caption-overlay';
-            overlay.className = 'caption-overlay';
-            
-            // Create scrolling text container
-            const scrollContainer = document.createElement('div');
-            scrollContainer.id = 'scroll-container';
-            scrollContainer.style.cssText = `
-                height: 100%;
+        // Create scrolling text container
+        const scrollContainer = document.createElement('div');
+        scrollContainer.id = 'scroll-container';
+        scrollContainer.style.cssText = `
+            height: 100%;
             overflow: hidden;
             position: relative;
             display: flex;
             align-items: flex-start;
             justify-content: center;
-            padding-top: 10px;
+            padding-top: 15px;
         `;
         
         // Create text element that will scroll
@@ -222,12 +237,12 @@ window.ChortleVideo = {
             position: absolute;
             width: 100%;
             text-align: center;
-            line-height: 1.5;
-            font-weight: 600;
+            line-height: 1.8;
+            font-weight: 700;
             transform: translateY(100%);
             white-space: normal;
             word-wrap: break-word;
-            padding: 0 10px;
+            padding: 0 15px;
         `;
         
         scrollContainer.appendChild(scrollingText);
@@ -244,14 +259,14 @@ window.ChortleVideo = {
                 position: absolute;
                 z-index: 10;
                 pointer-events: none;
-                background: rgba(0, 0, 0, 0.85);
+                background: rgba(0, 0, 0, 0.9);
                 color: white;
-                border-radius: 12px;
+                border-radius: 16px;
                 overflow: hidden;
                 display: none;
-                backdrop-filter: blur(5px);
+                backdrop-filter: blur(8px);
                 transition: opacity 0.3s ease;
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+                text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9);
             `;
             
             // Mobile-optimized positioning and much larger text
@@ -259,21 +274,21 @@ window.ChortleVideo = {
                 overlay.style.bottom = '140px';
                 overlay.style.left = '10px';
                 overlay.style.right = '10px';
-                overlay.style.height = '140px';
-                overlay.style.fontSize = '1.6rem'; // Much larger
-                overlay.style.padding = '20px';
+                overlay.style.height = '160px';
+                overlay.style.fontSize = '2rem'; // Even larger!
+                overlay.style.padding = '25px';
             } else {
                 overlay.style.bottom = '120px';
                 overlay.style.left = '20px';
                 overlay.style.right = '20px';
-                overlay.style.height = '160px';
-                overlay.style.fontSize = '1.8rem'; // Much larger
-                overlay.style.padding = '25px';
+                overlay.style.height = '180px';
+                overlay.style.fontSize = '2.2rem'; // Even larger!
+                overlay.style.padding = '30px';
             }
             
             recordingArea.appendChild(overlay);
             
-            console.log('Continuous scroll caption overlay created with much larger text');
+            console.log('Continuous scroll caption overlay created with much larger text and spacing');
         }
     },
 
@@ -607,14 +622,14 @@ window.ChortleVideo = {
         // Force a reflow to ensure the reset takes effect
         scrollingText.offsetHeight;
         
-        // Calculate scroll duration based on text length and comfortable reading pace
-        // Aim for about 180 words per minute (slightly slower)
+        // Calculate scroll duration - MUCH FASTER
+        // Aim for about 300 words per minute (much faster reading pace)
         const wordCount = this.scrollText.split(' ').length;
-        const wordsPerMinute = 180;
+        const wordsPerMinute = 300;
         const durationMs = (wordCount / wordsPerMinute) * 60 * 1000;
         
-        // Minimum duration to ensure it's not too fast
-        const finalDuration = Math.max(durationMs, 20000); // At least 20 seconds
+        // Minimum duration reduced for faster scrolling
+        const finalDuration = Math.max(durationMs, 12000); // At least 12 seconds (was 20)
         
         console.log(`Starting continuous scroll: ${wordCount} words, ${finalDuration/1000}s duration`);
         
@@ -625,7 +640,7 @@ window.ChortleVideo = {
             scrollingText.style.transform = 'translateY(-100%)';
             
             console.log('Scroll animation started');
-        }, 1000); // Longer delay to ensure everything is ready
+        }, 800); // Shorter delay
         
         // Store animation info for cleanup
         this.scrollAnimation = {
