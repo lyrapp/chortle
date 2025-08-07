@@ -1149,3 +1149,60 @@ body {
     transform: translateY(0) scale(0.95);
     background: rgba(0, 187, 249, 0.3);
 }
+
+/* Countdown Overlay Styles */
+.countdown-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+}
+
+.countdown-number,
+.countdown-go {
+    font-size: 8rem;
+    font-weight: 900;
+    color: #FFDD04;
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.8);
+    animation: countdownPulse 0.8s ease-out;
+    font-family: 'Outfit', sans-serif;
+}
+
+.countdown-go {
+    color: #00BBF9;
+    font-size: 6rem;
+}
+
+@keyframes countdownPulse {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Mobile countdown adjustments */
+@media (max-width: 768px) {
+    .countdown-number,
+    .countdown-go {
+        font-size: 6rem;
+    }
+    
+    .countdown-go {
+        font-size: 4rem;
+    }
+}
