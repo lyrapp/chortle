@@ -615,32 +615,32 @@ createContinuousScrollText: function(htmlStory, templateData) {
         console.log('Scroll text content:', this.scrollText?.substring(0, 100) + '...');
         console.log('Scrolling text element:', scrollingText);
         
-        // Reset position to start from bottom
-        scrollingText.style.transform = 'translateY(100%)';
+        // Start text closer to visible area so it appears quickly
+        scrollingText.style.transform = 'translateY(50%)'; // Start closer to view
         scrollingText.style.transition = 'none';
         
         // Force a reflow to ensure the reset takes effect
         scrollingText.offsetHeight;
         
         // Calculate scroll duration - MUCH FASTER
-        // Aim for about 300 words per minute (much faster reading pace)
+        // Aim for about 350 words per minute (faster reading pace)
         const wordCount = this.scrollText.split(' ').length;
-        const wordsPerMinute = 300;
+        const wordsPerMinute = 350;
         const durationMs = (wordCount / wordsPerMinute) * 60 * 1000;
         
         // Minimum duration reduced for faster scrolling
-        const finalDuration = Math.max(durationMs, 12000); // At least 12 seconds (was 20)
+        const finalDuration = Math.max(durationMs, 10000); // At least 10 seconds
         
         console.log(`Starting continuous scroll: ${wordCount} words, ${finalDuration/1000}s duration`);
         
-        // Start scrolling after a brief delay
+        // Start scrolling with much shorter delay
         setTimeout(() => {
-            // Apply CSS animation
+            // Apply CSS animation - scroll further up so text exits completely
             scrollingText.style.transition = `transform ${finalDuration}ms linear`;
-            scrollingText.style.transform = 'translateY(-100%)';
+            scrollingText.style.transform = 'translateY(-150%)'; // Go further up
             
             console.log('Scroll animation started');
-        }, 800); // Shorter delay
+        }, 200); // Much shorter delay - only 200ms
         
         // Store animation info for cleanup
         this.scrollAnimation = {
