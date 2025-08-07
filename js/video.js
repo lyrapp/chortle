@@ -107,28 +107,30 @@ window.ChortleVideo = {
         }
     },
 
-    setupScrollingCaptionOverlay: function() {
+        setupScrollingCaptionOverlay: function() {
         const chortleData = this.getCurrentChortleData();
         if (!chortleData) {
             console.log('No chortle data found for caption overlay');
             return;
         }
-
-        // Get the rendered Mad Lib text
+    
         const template = chortleData.template;
         const templateData = { ...chortleData };
         delete templateData.template;
-
+    
         const templateObj = window.ChortleTemplates.getTemplate(template);
         if (!templateObj) {
             console.log('Template not found for caption overlay');
             return;
         }
-
+    
         const story = window.ChortleTemplates.renderTemplate(template, templateData);
         
         // UPDATED: Create scrollable chunks with filled word highlighting
         this.createContinuousScrollText(story, templateData);
+        
+        // NEW: Setup bottom captions for burned-in video captions
+        this.setupBottomCaptions(story, templateData);
         
         // Create caption overlay element
         this.createCaptionOverlay();
@@ -169,6 +171,77 @@ createContinuousScrollText: function(htmlStory, templateData) {
             });
         }
     });
+
+    // NEW: Setup bottom caption system
+    setupBottomCaptions: function(story, templateData) {
+        // Convert HTML story to plain text
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = story;
+        const plainText = tempDiv.textContent || tempDiv.innerText || '';
+        
+        // Split into caption chunks (shorter than the scrolling text)
+        const sentences = plainText.split(/[.!?]+/).filter(s => s.trim());
+        this.captionChunks = [];
+        
+        sentences.forEach(sentence => {
+            const trimmed = sentence.trim();
+            if (trimmed) {
+                // Highlight filled words in each chunk
+                const words = trimmed.split(/\s+/);
+                const highlightedChunk = words.map(word => {
+                    const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
+                    
+                    // Check if this word should be highlighted
+                    const shouldHighlight = Object.values(templateData).some(value => {
+                        if (typeof value === 'string' && value.trim()) {
+                            const valueWords = value.toLowerCase().split(/\s+/);
+                            return valueWords.some(vw => 
+                                vw.replace(/[^\p{L}\p{N}]/gu, '') === cleanWord
+                            );
+                        }
+                        return false;
+                    });
+                    
+                    return shouldHighlight ? `**${word}**` : word;
+                }).join(' ');
+                
+                this.captionChunks.push(highlightedChunk + '.');
+            }
+        });
+        
+        this.currentCaptionIndex = 0;
+        this.bottomCaptionText = this.captionChunks[0] || '';
+        
+        console.log('Bottom captions setup:', this.captionChunks.length, 'chunks');
+    },
+
+        // NEW: Start bottom caption progression
+    startBottomCaptionTimer: function() {
+        if (!this.captionChunks.length) return;
+        
+        // Calculate timing: spread captions evenly across recording time
+        const totalDuration = window.ChortleConfig.APP.maxRecordingTime * 1000; // Convert to ms
+        const chunkDuration = totalDuration / this.captionChunks.length;
+        
+        this.captionTimer = setInterval(() => {
+            this.currentCaptionIndex++;
+            
+            if (this.currentCaptionIndex < this.captionChunks.length) {
+                // Process markdown-style highlighting
+                let captionText = this.captionChunks[this.currentCaptionIndex];
+                
+                // Convert **word** to highlighted format (we'll keep it simple for canvas)
+                captionText = captionText.replace(/\*\*(.*?)\*\*/g, '$1');
+                
+                this.bottomCaptionText = captionText;
+            } else {
+                // Show "THE END" message
+                this.bottomCaptionText = "👏 THE END 👏";
+            }
+        }, chunkDuration);
+        
+        console.log('Bottom caption timer started:', chunkDuration + 'ms per chunk');
+    },
 
         // Get plain text and break into sentences for better spacing
         const plainText = tempDiv.textContent || tempDiv.innerText || '';
@@ -362,6 +435,13 @@ createContinuousScrollText: function(htmlStory, templateData) {
                 this.drawWatermark(ctx, canvas.width, canvas.height);
             }
             
+            // NEW: Draw bottom captions
+            this.drawBottomCaptions(ctx, canvas.width, canvas.height);
+            
+            // Continue drawing
+            requestAnimationFrame(drawFrame);
+        };
+            
             // Continue drawing
             requestAnimationFrame(drawFrame);
         };
@@ -405,6 +485,70 @@ createContinuousScrollText: function(htmlStory, templateData) {
         
         // Reset alpha
         ctx.globalAlpha = 1.0;
+    },
+
+    // NEW: Draw bottom captions on canvas
+    drawBottomCaptions: function(ctx, canvasWidth, canvasHeight) {
+        if (!this.bottomCaptionText || this.bottomCaptionText.trim() === '') return;
+        
+        // Caption area styling
+        const captionHeight = Math.min(canvasHeight * 0.15, 120); // 15% of video height, max 120px
+        const captionY = canvasHeight - captionHeight;
+        const padding = 20;
+        
+        // Draw semi-transparent background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.fillRect(0, captionY, canvasWidth, captionHeight);
+        
+        // Setup text styling
+        const fontSize = Math.min(canvasWidth / 25, 32); // Responsive font size
+        ctx.font = `bold ${fontSize}px 'Outfit', sans-serif`;
+        ctx.fillStyle = 'white';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // Add text shadow for better readability
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+        ctx.shadowBlur = 4;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+        
+        // Word wrap the text
+        const maxWidth = canvasWidth - (padding * 2);
+        const words = this.bottomCaptionText.split(' ');
+        const lines = [];
+        let currentLine = '';
+        
+        words.forEach(word => {
+            const testLine = currentLine + (currentLine ? ' ' : '') + word;
+            const metrics = ctx.measureText(testLine);
+            
+            if (metrics.width > maxWidth && currentLine) {
+                lines.push(currentLine);
+                currentLine = word;
+            } else {
+                currentLine = testLine;
+            }
+        });
+        
+        if (currentLine) lines.push(currentLine);
+        
+        // Draw text lines (max 2 lines to fit in caption area)
+        const lineHeight = fontSize * 1.2;
+        const maxLines = Math.min(lines.length, 2);
+        const totalTextHeight = maxLines * lineHeight;
+        const startY = captionY + (captionHeight - totalTextHeight) / 2 + lineHeight / 2;
+        
+        for (let i = 0; i < maxLines; i++) {
+            const y = startY + (i * lineHeight);
+            ctx.fillText(lines[i], canvasWidth / 2, y);
+        }
+        
+        // Reset shadow
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
     },
 
     // NEW: Stop canvas recording
@@ -769,6 +913,15 @@ actuallyStartRecording: function() {
     // UPDATED: Show scrolling caption overlay during recording
     this.showCaptionOverlay();
 
+    // UPDATED: Show scrolling caption overlay during recording
+    this.showCaptionOverlay();
+    
+    // NEW: Start bottom caption progression for burned-in captions
+    this.startBottomCaptionTimer();
+    
+    // NEW: Show logo watermark during recording
+    this.showLogoWatermark();
+
     // NEW: Show logo watermark during recording
     this.showLogoWatermark();
 
@@ -891,6 +1044,12 @@ playCountdownBeep: function(isGo = false) {
 
         // UPDATED: Hide scrolling caption overlay
         this.hideCaptionOverlay();
+
+        // NEW: Stop bottom caption timer
+        if (this.captionTimer) {
+            clearInterval(this.captionTimer);
+            this.captionTimer = null;
+        }
 
         // Stop canvas recording
         this.stopCanvasRecording();
@@ -1365,6 +1524,18 @@ playCountdownBeep: function(isGo = false) {
         // UPDATED: Stop caption scrolling and remove overlay
         this.removeCaptionOverlay();
         
+
+        // Clear caption timer
+        if (this.captionTimer) {
+            clearInterval(this.captionTimer);
+            this.captionTimer = null;
+        }
+
+        // Reset caption state
+        this.captionChunks = [];
+        this.currentCaptionIndex = 0;
+        this.bottomCaptionText = '';
+
         // NEW: Cleanup canvas recording
         this.cleanupCanvas();
 
