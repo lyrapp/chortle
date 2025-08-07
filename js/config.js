@@ -1,13 +1,12 @@
 /* Chortle v5.2 - Updated Configuration */
 
-// API Configuration
-window.ChortleConfig = {
-    // api.video configuration
-    API_VIDEO: {
-        apiKey: '5KgKV3AkcCXrvHhs2FnSZrTVyrvwyC5K11qNnNvC70Z',
-        environment: 'sandbox',
-        uploadEndpoint: 'https://ws.api.video/upload'
-    },
+// Cloudinary configuration
+CLOUDINARY: {
+    cloudName: 'Root',
+    apiKey: '466825116782547',
+    uploadEndpoint: 'https://api.cloudinary.com/v1_1/Root/video/upload',
+    uploadPreset: 'chortle_videos' // You'll need to create this preset
+},
     
     // App Settings
     APP: {
