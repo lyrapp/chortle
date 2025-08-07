@@ -952,32 +952,35 @@ window.ChortleVideo = {
                     console.log('Upload progress:', Math.round(percentComplete - 20) + '%');
                 }
             });
-
+    
             xhr.addEventListener('load', () => {
                 console.log('Upload completed with status:', xhr.status);
                 
-                if (xhr.status === 201) {
+                if (xhr.status === 200) { // Cloudinary uses 200, not 201
                     try {
                         const response = JSON.parse(xhr.responseText);
-                        console.log('Upload response:', response);
-                        resolve(response);
+                        console.log('Cloudinary upload response:', response);
+                        // Extract video ID from Cloudinary response
+                        const videoId = response.public_id || response.asset_id;
+                        resolve({ videoId: videoId, ...response });
                     } catch (e) {
                         console.error('Failed to parse upload response:', xhr.responseText);
-                        resolve({ success: true }); // Continue anyway
+                        reject(new Error('Failed to parse Cloudinary response'));
                     }
                 } else {
                     console.error('Upload failed with status:', xhr.status, xhr.responseText);
                     reject(new Error(`Upload failed: ${xhr.status} - ${xhr.responseText}`));
                 }
             });
-
+    
             xhr.addEventListener('error', () => {
                 console.error('Upload network error');
                 reject(new Error('Upload failed due to network error'));
             });
-
-            xhr.open('POST', uploadUrl);
-            xhr.setRequestHeader('Authorization', `Bearer ${window.ChortleConfig.API_VIDEO.apiKey}`);
+    
+            // Use Cloudinary upload endpoint
+            xhr.open('POST', window.ChortleConfig.CLOUDINARY.uploadEndpoint);
+            // No Authorization header needed for Cloudinary upload presets
             xhr.send(formData);
         });
     },
