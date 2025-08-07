@@ -46,6 +46,7 @@ window.ChortleWizard = {
                    class="step-input" 
                    data-field="${field.name}" 
                    placeholder="Enter your answer..." 
+                   autocapitalize="none"
                    required>
             ${field.suggestions ? `
                 <div class="suggestion-pills">
