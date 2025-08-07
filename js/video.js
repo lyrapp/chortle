@@ -199,10 +199,10 @@ createContinuousScrollText: function(htmlStory, templateData) {
             }
         }
         
-        // Join sentences with better spacing
-        this.scrollText = processedSentences.join(' &nbsp;&nbsp; ');
-        console.log('Created continuous scroll text with sentence spacing and filled word highlighting');
-    },
+ // Join sentences with better spacing and add end indicator
+        this.scrollText = processedSentences.join(' &nbsp;&nbsp; ') + 
+            ' &nbsp;&nbsp;&nbsp;&nbsp; <span style="color: #00BBF9; font-weight: 900; font-size: 1.2em; text-shadow: 3px 3px 6px rgba(0,0,0,0.9);">🎬 THE END 🎬</span>';
+        console.log('Created continuous scroll text with sentence spacing, filled word highlighting, and end indicator');
 
         // Create caption overlay container
        createCaptionOverlay: function() {
