@@ -931,64 +931,64 @@ window.ChortleVideo = {
         }
     },
 
-   // Upload video directly to Cloudinary
-uploadToCloudinary: async function(videoBlob) {
-    console.log('Starting Cloudinary upload...');
-    
-    return new Promise((resolve, reject) => {
-        const formData = new FormData();
-        formData.append('file', videoBlob, 'chortle-recording.webm');
-        formData.append('upload_preset', window.ChortleConfig.CLOUDINARY.uploadPreset);
-        formData.append('resource_type', 'video');
-        formData.append('public_id', `chortle_${Date.now()}`);
+    // Upload video directly to Cloudinary
+    uploadToCloudinary: async function(videoBlob) {
+        console.log('Starting Cloudinary upload...');
         
-        const xhr = new XMLHttpRequest();
-
-        // Track upload progress
-        xhr.upload.addEventListener('progress', (event) => {
-            if (event.lengthComputable) {
-                const percentComplete = 20 + (event.loaded / event.total) * 70; // 20-90%
-                this.updateUploadProgress(percentComplete, `Uploading... ${Math.round(percentComplete - 20)}%`);
-                console.log('Upload progress:', Math.round(percentComplete - 20) + '%');
-            }
-        });
-
-        xhr.addEventListener('load', () => {
-            console.log('Upload completed with status:', xhr.status);
+        return new Promise((resolve, reject) => {
+            const formData = new FormData();
+            formData.append('file', videoBlob, 'chortle-recording.webm');
+            formData.append('upload_preset', window.ChortleConfig.CLOUDINARY.uploadPreset);
+            formData.append('resource_type', 'video');
+            formData.append('public_id', `chortle_${Date.now()}`);
             
-            if (xhr.status === 200) {
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    console.log('Cloudinary upload response:', response);
-                    
-                    if (response.public_id) {
-                        resolve({
-                            videoId: response.public_id,
-                            url: response.secure_url,
-                            ...response
-                        });
-                    } else {
-                        reject(new Error('No public_id returned from Cloudinary'));
-                    }
-                } catch (e) {
-                    console.error('Failed to parse upload response:', xhr.responseText);
-                    reject(new Error('Invalid response from Cloudinary'));
+            const xhr = new XMLHttpRequest();
+    
+            // Track upload progress
+            xhr.upload.addEventListener('progress', (event) => {
+                if (event.lengthComputable) {
+                    const percentComplete = 20 + (event.loaded / event.total) * 70; // 20-90%
+                    this.updateUploadProgress(percentComplete, `Uploading... ${Math.round(percentComplete - 20)}%`);
+                    console.log('Upload progress:', Math.round(percentComplete - 20) + '%');
                 }
-            } else {
-                console.error('Upload failed with status:', xhr.status, xhr.responseText);
-                reject(new Error(`Upload failed: ${xhr.status} - ${xhr.responseText}`));
-            }
+            });
+    
+            xhr.addEventListener('load', () => {
+                console.log('Upload completed with status:', xhr.status);
+                
+                if (xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        console.log('Cloudinary upload response:', response);
+                        
+                        if (response.public_id) {
+                            resolve({
+                                videoId: response.public_id,
+                                url: response.secure_url,
+                                ...response
+                            });
+                        } else {
+                            reject(new Error('No public_id returned from Cloudinary'));
+                        }
+                    } catch (e) {
+                        console.error('Failed to parse upload response:', xhr.responseText);
+                        reject(new Error('Invalid response from Cloudinary'));
+                    }
+                } else {
+                    console.error('Upload failed with status:', xhr.status, xhr.responseText);
+                    reject(new Error(`Upload failed: ${xhr.status} - ${xhr.responseText}`));
+                }
+            });
+    
+            xhr.addEventListener('error', () => {
+                console.error('Upload network error');
+                reject(new Error('Upload failed due to network error'));
+            });
+    
+            xhr.open('POST', window.ChortleConfig.CLOUDINARY.uploadEndpoint);
+            xhr.send(formData);
         });
-
-        xhr.addEventListener('error', () => {
-            console.error('Upload network error');
-            reject(new Error('Upload failed due to network error'));
-        });
-
-        xhr.open('POST', window.ChortleConfig.CLOUDINARY.uploadEndpoint);
-        xhr.send(formData);
-    });
-},
+    },
 
             xhr.addEventListener('load', () => {
                 console.log('Upload completed with status:', xhr.status);
