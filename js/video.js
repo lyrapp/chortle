@@ -107,23 +107,23 @@ window.ChortleVideo = {
         }
     },
 
-        setupScrollingCaptionOverlay: function() {
+    setupScrollingCaptionOverlay: function() {
         const chortleData = this.getCurrentChortleData();
         if (!chortleData) {
             console.log('No chortle data found for caption overlay');
             return;
         }
-    
+
         const template = chortleData.template;
         const templateData = { ...chortleData };
         delete templateData.template;
-    
+
         const templateObj = window.ChortleTemplates.getTemplate(template);
         if (!templateObj) {
             console.log('Template not found for caption overlay');
             return;
         }
-    
+
         const story = window.ChortleTemplates.renderTemplate(template, templateData);
         
         // UPDATED: Create scrollable chunks with filled word highlighting
@@ -136,41 +136,76 @@ window.ChortleVideo = {
         this.createCaptionOverlay();
     },
 
-    // Create Continous Scroll Text
-createContinuousScrollText: function(htmlStory, templateData) {
-    // Convert HTML to plain text but keep track of filled words
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = htmlStory;
-    
-    // Extract filled words for highlighting - IMPROVED with Unicode support
-    const filledWords = new Set();
-    const filledPhrases = []; // Track multi-word phrases
-    
-    // Common stop words that shouldn't be highlighted (Unicode-aware)
-    const stopWords = new Set([
-        'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 
-        'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
-        'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-        'should', 'may', 'might', 'can', 'must', 'shall', 'it', 'its', 'they',
-        'them', 'their', 'this', 'that', 'these', 'those', 'i', 'you', 'he',
-        'she', 'we', 'me', 'him', 'her', 'us'
-    ]);
-    
-    Object.values(templateData).forEach(value => {
-        if (typeof value === 'string' && value.trim()) {
-            const cleanValue = value.trim();
-            const normalizedValue = cleanValue.normalize('NFD').toLowerCase();
-            filledPhrases.push(normalizedValue);
+    // Create Continuous Scroll Text
+    createContinuousScrollText: function(htmlStory, templateData) {
+        // Convert HTML to plain text but keep track of filled words
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlStory;
+        
+        // Extract filled words for highlighting - IMPROVED with Unicode support
+        const filledWords = new Set();
+        const filledPhrases = []; // Track multi-word phrases
+        
+        // Common stop words that shouldn't be highlighted (Unicode-aware)
+        const stopWords = new Set([
+            'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 
+            'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+            'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+            'should', 'may', 'might', 'can', 'must', 'shall', 'it', 'its', 'they',
+            'them', 'their', 'this', 'that', 'these', 'those', 'i', 'you', 'he',
+            'she', 'we', 'me', 'him', 'her', 'us'
+        ]);
+        
+        Object.values(templateData).forEach(value => {
+            if (typeof value === 'string' && value.trim()) {
+                const cleanValue = value.trim();
+                const normalizedValue = cleanValue.normalize('NFD').toLowerCase();
+                filledPhrases.push(normalizedValue);
+                
+                const words = cleanValue.split(/\s+/);
+                words.forEach(word => {
+                    const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
+                    if (cleanWord.length >= 2 && !stopWords.has(cleanWord)) {
+                        filledWords.add(cleanWord);
+                    }
+                });
+            }
+        });
+
+        // Get plain text and break into sentences for better spacing
+        const plainText = tempDiv.textContent || tempDiv.innerText || '';
+        
+        // Split into sentences and add spacing
+        const sentences = plainText.split(/([.!?]+)/);
+        const processedSentences = [];
+        
+        for (let i = 0; i < sentences.length; i += 2) {
+            const sentence = sentences[i];
+            const punctuation = sentences[i + 1] || '';
             
-            const words = cleanValue.split(/\s+/);
-            words.forEach(word => {
-                const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
-                if (cleanWord.length >= 2 && !stopWords.has(cleanWord)) {
-                    filledWords.add(cleanWord);
-                }
-            });
+            if (sentence && sentence.trim()) {
+                const words = sentence.trim().split(/\s+/);
+                
+                // Create highlighted text for this sentence
+                const highlightedSentence = words.map(word => {
+                    const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
+                    const isFilled = filledWords.has(cleanWord);
+                    
+                   if (isFilled) {
+                        return `<span style="color: #FFDD04; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); margin: 0 6px;">${word}</span>`;
+                    }
+                    return word;
+                }).join(' ');
+                
+                processedSentences.push(highlightedSentence + punctuation);
+            }
         }
-    });
+        
+        // Join sentences with better spacing and add end indicator
+        this.scrollText = processedSentences.join(' &nbsp;&nbsp; ') + 
+            ' &nbsp;&nbsp;&nbsp;&nbsp; <span style="color: #00BBF9; font-weight: 900; font-size: 1.2em; text-shadow: 3px 3px 6px rgba(0,0,0,0.9);">👏 THE END 👏</span>';
+        console.log('Created continuous scroll text with sentence spacing, filled word highlighting, and end indicator');
+    },
 
     // NEW: Setup bottom caption system
     setupBottomCaptions: function(story, templateData) {
@@ -215,7 +250,7 @@ createContinuousScrollText: function(htmlStory, templateData) {
         console.log('Bottom captions setup:', this.captionChunks.length, 'chunks');
     },
 
-        // NEW: Start bottom caption progression
+    // NEW: Start bottom caption progression
     startBottomCaptionTimer: function() {
         if (!this.captionChunks.length) return;
         
@@ -241,41 +276,6 @@ createContinuousScrollText: function(htmlStory, templateData) {
         }, chunkDuration);
         
         console.log('Bottom caption timer started:', chunkDuration + 'ms per chunk');
-    },
-
-        // Get plain text and break into sentences for better spacing
-        const plainText = tempDiv.textContent || tempDiv.innerText || '';
-        
-        // Split into sentences and add spacing
-        const sentences = plainText.split(/([.!?]+)/);
-        const processedSentences = [];
-        
-        for (let i = 0; i < sentences.length; i += 2) {
-            const sentence = sentences[i];
-            const punctuation = sentences[i + 1] || '';
-            
-            if (sentence && sentence.trim()) {
-                const words = sentence.trim().split(/\s+/);
-                
-                // Create highlighted text for this sentence
-                const highlightedSentence = words.map(word => {
-                    const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
-                    const isFilled = filledWords.has(cleanWord);
-                    
-                   if (isFilled) {
-                        return `<span style="color: #FFDD04; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); margin: 0 6px;">${word}</span>`;
-                    }
-                    return word;
-                }).join(' ');
-                
-                processedSentences.push(highlightedSentence + punctuation);
-            }
-        }
-        
- // Join sentences with better spacing and add end indicator
-        this.scrollText = processedSentences.join(' &nbsp;&nbsp; ') + 
-            ' &nbsp;&nbsp;&nbsp;&nbsp; <span style="color: #00BBF9; font-weight: 900; font-size: 1.2em; text-shadow: 3px 3px 6px rgba(0,0,0,0.9);">👏 THE END 👏</span>';
-        console.log('Created continuous scroll text with sentence spacing, filled word highlighting, and end indicator');
     },
 
     // Create caption overlay container
@@ -441,10 +441,6 @@ createContinuousScrollText: function(htmlStory, templateData) {
             // Continue drawing
             requestAnimationFrame(drawFrame);
         };
-            
-            // Continue drawing
-            requestAnimationFrame(drawFrame);
-        };
         
         this.isRecording = true;
         drawFrame();
@@ -605,151 +601,8 @@ createContinuousScrollText: function(htmlStory, templateData) {
         }
     },
 
-
-    // NEW: Show logo watermark during recording
-    showLogoWatermark: function() {
-        const watermark = document.getElementById('logo-watermark');
-        if (watermark) {
-            watermark.style.display = 'block';
-            console.log('Logo watermark shown');
-        }
-    },
-
-    // NEW: Hide logo watermark
-    hideLogoWatermark: function() {
-        const watermark = document.getElementById('logo-watermark');
-        if (watermark) {
-            watermark.style.display = 'none';
-            console.log('Logo watermark hidden');
-        }
-    },
-    
-    // NEW: Remove logo watermark
-    removeLogoWatermark: function() {
-        const watermark = document.getElementById('logo-watermark');
-        if (watermark) {
-            watermark.remove();
-            console.log('Logo watermark removed');
-        }
-    },
-
-    // NEW: Update caption text with current chunk
-    updateCaptionText: function() {
-        const captionTextEl = document.getElementById('caption-text');
-        if (!captionTextEl || !this.captionChunks.length) return;
-        
-        // Get previous, current, and next chunks
-        const prevIndex = this.currentChunkIndex > 0 ? this.currentChunkIndex - 1 : null;
-        const currentIndex = this.currentChunkIndex;
-        const nextIndex = this.currentChunkIndex < this.captionChunks.length - 1 ? this.currentChunkIndex + 1 : null;
-        
-        // Create 3-line karaoke display
-        let karaokeHTML = '';
-        
-        // Previous line (dimmed)
-        if (prevIndex !== null) {
-            const prevChunk = this.captionChunks[prevIndex];
-            karaokeHTML += `<div class="caption-line caption-previous">${this.formatChunkText(prevChunk, false)}</div>`;
-        } else {
-            karaokeHTML += `<div class="caption-line caption-previous" style="opacity: 0;">&nbsp;</div>`;
-        }
-        
-        // Current line (highlighted)
-        const currentChunk = this.captionChunks[currentIndex];
-        karaokeHTML += `<div class="caption-line caption-current">${this.formatChunkText(currentChunk, true)}</div>`;
-        
-        // Next line (preview)
-        if (nextIndex !== null) {
-            const nextChunk = this.captionChunks[nextIndex];
-            karaokeHTML += `<div class="caption-line caption-next">${this.formatChunkText(nextChunk, false)}</div>`;
-        } else {
-            karaokeHTML += `<div class="caption-line caption-next" style="opacity: 0;">&nbsp;</div>`;
-        }
-        
-        // Apply with smooth transition
-        captionTextEl.style.opacity = '0';
-        setTimeout(() => {
-            captionTextEl.innerHTML = karaokeHTML;
-            captionTextEl.style.opacity = '1';
-        }, 150);
-    },
-
-    // NEW: Format chunk text with Unicode-safe filled word highlighting
-    formatChunkText: function(chunk, isCurrentLine) {
-        if (!chunk) return '';
-        
-        if (!isCurrentLine) {
-            // For non-current lines, just return plain text
-            return chunk.words.map(w => w.text).join(' ');
-        }
-        
-        // For current line, group consecutive highlighted words into phrases
-        const words = chunk.words;
-        const chunkText = words.map(w => w.text).join(' ');
-        
-        // FIXED: Unicode-safe phrase matching
-        const normalizedChunkText = chunkText.normalize('NFD').toLowerCase();
-        
-        // First, mark which words should be highlighted
-        const highlightMap = words.map((wordObj, index) => {
-            // Check if this individual word should be highlighted
-            if (wordObj.isFilled) return true;
-            
-            // Check for phrase matching with Unicode support
-            if (chunk.filledPhrases) {
-                for (const phrase of chunk.filledPhrases) {
-                    if (phrase.includes(' ') && normalizedChunkText.includes(phrase)) {
-                        const phraseWords = phrase.split(/\s+/);
-                        // FIXED: Unicode-safe word comparison
-                        const currentWord = wordObj.text.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
-                        if (phraseWords.includes(currentWord)) {
-                            return true;
-                        }
-                    }
-                }
-            }
-            
-            return false;
-        });
-        
-        // Now group consecutive highlighted words
-        let formattedText = '';
-        let i = 0;
-        
-        while (i < words.length) {
-            if (highlightMap[i]) {
-                // Start of highlighted phrase - collect all consecutive highlighted words
-                let phraseWords = [];
-                while (i < words.length && highlightMap[i]) {
-                    phraseWords.push(words[i].text);
-                    i++;
-                }
-                
-                // Create single highlighted span for the entire phrase
-                const phraseText = phraseWords.join(' ');
-                formattedText += `<span style="color: #FE5946; background: rgba(254, 89, 70, 0.3); padding: 2px 6px; border-radius: 4px; font-weight: 700;">${phraseText}</span>`;
-                
-                // Add space after phrase if not at end
-                if (i < words.length) {
-                    formattedText += ' ';
-                }
-            } else {
-                // Regular word - not highlighted
-                formattedText += words[i].text;
-                
-                // Add space after word if not at end
-                if (i < words.length - 1) {
-                    formattedText += ' ';
-                }
-                i++;
-            }
-        }
-        
-        return formattedText;
-    },
-
-      // Continuous scroll function
-     startContinuousScroll: function() {
+    // Continuous scroll function
+    startContinuousScroll: function() {
         const scrollingText = document.getElementById('scrolling-text');
         if (!scrollingText) {
             console.error('Scrolling text element not found!');
@@ -807,7 +660,7 @@ createContinuousScrollText: function(htmlStory, templateData) {
     },
 
     // UPDATED: Hide caption overlay
-        hideCaptionOverlay: function() {
+    hideCaptionOverlay: function() {
         this.stopContinuousScroll();
         
         const overlay = document.getElementById('caption-overlay');
@@ -822,7 +675,7 @@ createContinuousScrollText: function(htmlStory, templateData) {
     },
 
     // UPDATED: Remove caption overlay
-       removeCaptionOverlay: function() {
+    removeCaptionOverlay: function() {
         this.stopContinuousScroll();
         
         const overlay = document.getElementById('caption-overlay');
@@ -858,139 +711,130 @@ createContinuousScrollText: function(htmlStory, templateData) {
         console.error('Camera error:', err);
     },
 
-    // UPDATED: Start recording video with scrolling captions
+    // UPDATED: Start recording video with countdown and captions
     startRecording: function() {
-    // Start countdown first
-    this.showCountdown(() => {
-        // Original recording logic after countdown
-        this.actuallyStartRecording();
-    });
-},
+        // Start countdown first
+        this.showCountdown(() => {
+            // Original recording logic after countdown
+            this.actuallyStartRecording();
+        });
+    },
 
-// ADD this new function after startRecording:
-actuallyStartRecording: function() {
-    window.ChortleState.recordedChunks = [];
-    
-    // FIXED: Initialize countdown timer properly
-    window.ChortleState.recordingSeconds = window.ChortleConfig.APP.maxRecordingTime;
+    // Start actual recording after countdown
+    actuallyStartRecording: function() {
+        window.ChortleState.recordedChunks = [];
+        
+        // FIXED: Initialize countdown timer properly
+        window.ChortleState.recordingSeconds = window.ChortleConfig.APP.maxRecordingTime;
 
-    // Request wake lock to prevent screen sleep
-    window.ChortleUtils.requestWakeLock();
+        // Request wake lock to prevent screen sleep
+        window.ChortleUtils.requestWakeLock();
 
-    // Create MediaRecorder with canvas stream (includes watermark)
-    const canvasStream = this.startCanvasRecording();
-    if (!canvasStream) {
-        window.ChortleApp.showError('Failed to setup video recording with watermark');
-        return;
-    }
-    
-    const mimeType = MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4';
-    window.ChortleState.mediaRecorder = new MediaRecorder(canvasStream, { 
-        mimeType,
-        videoBitsPerSecond: 2500000 // 2.5 Mbps for good quality
-    });
-
-    // Handle data availability
-    window.ChortleState.mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-            window.ChortleState.recordedChunks.push(event.data);
+        // Create MediaRecorder with canvas stream (includes watermark)
+        const canvasStream = this.startCanvasRecording();
+        if (!canvasStream) {
+            window.ChortleApp.showError('Failed to setup video recording with watermark');
+            return;
         }
-    };
+        
+        const mimeType = MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4';
+        window.ChortleState.mediaRecorder = new MediaRecorder(canvasStream, { 
+            mimeType,
+            videoBitsPerSecond: 2500000 // 2.5 Mbps for good quality
+        });
 
-    // Handle recording stop
-    window.ChortleState.mediaRecorder.onstop = () => {
-        this.handleRecordingStop();
-    };
+        // Handle data availability
+        window.ChortleState.mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                window.ChortleState.recordedChunks.push(event.data);
+            }
+        };
 
-    // Start recording
-    window.ChortleState.mediaRecorder.start();
+        // Handle recording stop
+        window.ChortleState.mediaRecorder.onstop = () => {
+            this.handleRecordingStop();
+        };
 
-    // Update UI
-    document.getElementById('start-recording').style.display = 'none';
-    document.getElementById('stop-recording').style.display = 'inline-block';
-    document.getElementById('recording-timer').style.display = 'inline-block';
+        // Start recording
+        window.ChortleState.mediaRecorder.start();
 
-    // UPDATED: Show scrolling caption overlay during recording
-    this.showCaptionOverlay();
+        // Update UI
+        document.getElementById('start-recording').style.display = 'none';
+        document.getElementById('stop-recording').style.display = 'inline-block';
+        document.getElementById('recording-timer').style.display = 'inline-block';
 
-    // UPDATED: Show scrolling caption overlay during recording
-    this.showCaptionOverlay();
-    
-    // NEW: Start bottom caption progression for burned-in captions
-    this.startBottomCaptionTimer();
-    
-    // NEW: Show logo watermark during recording
-    this.showLogoWatermark();
+        // UPDATED: Show scrolling caption overlay during recording
+        this.showCaptionOverlay();
+        
+        // NEW: Start bottom caption progression for burned-in captions
+        this.startBottomCaptionTimer();
 
-    // NEW: Show logo watermark during recording
-    this.showLogoWatermark();
+        // FIXED: Start countdown timer
+        this.startTimer();
 
-    // FIXED: Start countdown timer
-    this.startTimer();
+        // Haptic feedback
+        window.ChortleUtils.vibrate(100);
 
-    // Haptic feedback
-    window.ChortleUtils.vibrate(100);
+        console.log('Recording started with scrolling caption overlay and bottom captions');
+    },
 
-    console.log('Recording started with scrolling caption overlay');
-},
+    // Show countdown before recording
+    showCountdown: function(callback) {
+        // Create countdown overlay
+        const countdownDiv = document.createElement('div');
+        countdownDiv.id = 'countdown-overlay';
+        countdownDiv.className = 'countdown-overlay';
+        
+        const recordingArea = document.getElementById('recording-area');
+        recordingArea.appendChild(countdownDiv);
+        
+        let count = 3;
+        
+        const updateCountdown = () => {
+            if (count > 0) {
+                countdownDiv.innerHTML = `<div class="countdown-number">${count}</div>`;
+                this.playCountdownBeep();
+                count--;
+                setTimeout(updateCountdown, 1000);
+            } else {
+                countdownDiv.innerHTML = `<div class="countdown-go">GO!</div>`;
+                this.playCountdownBeep(true); // Different sound for GO
+                
+                setTimeout(() => {
+                    countdownDiv.remove();
+                    callback(); // Start actual recording
+                }, 500);
+            }
+        };
+        
+        updateCountdown();
+    },
 
-// ADD this new countdown function:
-showCountdown: function(callback) {
-    // Create countdown overlay
-    const countdownDiv = document.createElement('div');
-    countdownDiv.id = 'countdown-overlay';
-    countdownDiv.className = 'countdown-overlay';
-    
-    const recordingArea = document.getElementById('recording-area');
-    recordingArea.appendChild(countdownDiv);
-    
-    let count = 3;
-    
-    const updateCountdown = () => {
-        if (count > 0) {
-            countdownDiv.innerHTML = `<div class="countdown-number">${count}</div>`;
-            this.playCountdownBeep();
-            count--;
-            setTimeout(updateCountdown, 1000);
-        } else {
-            countdownDiv.innerHTML = `<div class="countdown-go">GO!</div>`;
-            this.playCountdownBeep(true); // Different sound for GO
+    // Play countdown audio
+    playCountdownBeep: function(isGo = false) {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
             
-            setTimeout(() => {
-                countdownDiv.remove();
-                callback(); // Start actual recording
-            }, 500);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Different frequencies for countdown vs GO
+            oscillator.frequency.setValueAtTime(isGo ? 800 : 600, audioContext.currentTime);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + (isGo ? 0.3 : 0.15));
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + (isGo ? 0.3 : 0.15));
+        } catch (error) {
+            // Silent fallback if audio fails
+            console.log('Audio not available for countdown');
         }
-    };
-    
-    updateCountdown();
-},
-
-// ADD countdown audio function:
-playCountdownBeep: function(isGo = false) {
-    try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        // Different frequencies for countdown vs GO
-        oscillator.frequency.setValueAtTime(isGo ? 800 : 600, audioContext.currentTime);
-        oscillator.type = 'sine';
-        
-        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + (isGo ? 0.3 : 0.15));
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + (isGo ? 0.3 : 0.15));
-    } catch (error) {
-        // Silent fallback if audio fails
-        console.log('Audio not available for countdown');
-    }
-},
+    },
 
     // FIXED: Start recording timer with proper countdown
     startTimer: function() {
@@ -1135,15 +979,15 @@ playCountdownBeep: function(isGo = false) {
 
         try {
             // Upload video to Cloudinary (single step)
-                this.updateUploadProgress(10, 'Starting upload...');
-                const uploadResult = await this.uploadToCloudinary(videoBlob);
-                const videoId = uploadResult.videoId;
-                
-                console.log('Cloudinary upload completed, ID:', videoId);
-                
-                if (!videoId) {
-                    throw new Error('No video ID returned from Cloudinary');
-                }
+            this.updateUploadProgress(10, 'Starting upload...');
+            const uploadResult = await this.uploadToCloudinary(videoBlob);
+            const videoId = uploadResult.videoId;
+            
+            console.log('Cloudinary upload completed, ID:', videoId);
+            
+            if (!videoId) {
+                throw new Error('No video ID returned from Cloudinary');
+            }
 
             // Step 3: Finalize
             this.updateUploadProgress(95, 'Finalizing upload...');
@@ -1410,7 +1254,7 @@ playCountdownBeep: function(isGo = false) {
         }
     },
 
-       // Setup video player with Cloudinary support
+    // Setup video player with Cloudinary support
     setupVideoPlayer: function(videoId) {
         const playerContainer = document.getElementById('api-video-player');
     
@@ -1471,7 +1315,7 @@ playCountdownBeep: function(isGo = false) {
         `;
     },
 
-       // Show fallback options if video loading fails
+    // Show fallback options if video loading fails
     showVideoFallback: function(videoId, container) {
         const directUrl = `https://res.cloudinary.com/${window.ChortleConfig.CLOUDINARY.cloudName}/video/upload/${videoId}.mp4`;
         
@@ -1524,7 +1368,6 @@ playCountdownBeep: function(isGo = false) {
         // UPDATED: Stop caption scrolling and remove overlay
         this.removeCaptionOverlay();
         
-
         // Clear caption timer
         if (this.captionTimer) {
             clearInterval(this.captionTimer);
