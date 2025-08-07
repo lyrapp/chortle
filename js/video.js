@@ -189,8 +189,8 @@ createContinuousScrollText: function(htmlStory, templateData) {
                     const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '').normalize('NFD').toLowerCase();
                     const isFilled = filledWords.has(cleanWord);
                     
-                    if (isFilled) {
-                        return `<span style="color: #FE5946; background: rgba(254, 89, 70, 0.4); padding: 4px 10px; border-radius: 8px; font-weight: 800; margin: 0 2px;">${word}</span>`;
+                   if (isFilled) {
+                        return `<span style="color: #FFDD04; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); margin: 0 6px;">${word}</span>`;
                     }
                     return word;
                 }).join(' ');
