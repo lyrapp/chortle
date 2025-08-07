@@ -715,61 +715,128 @@ createContinuousScrollText: function(htmlStory, templateData) {
 
     // UPDATED: Start recording video with scrolling captions
     startRecording: function() {
-        window.ChortleState.recordedChunks = [];
-        
-        // FIXED: Initialize countdown timer properly
-        window.ChortleState.recordingSeconds = window.ChortleConfig.APP.maxRecordingTime;
+    // Start countdown first
+    this.showCountdown(() => {
+        // Original recording logic after countdown
+        this.actuallyStartRecording();
+    });
+},
 
-        // Request wake lock to prevent screen sleep
-        window.ChortleUtils.requestWakeLock();
+// ADD this new function after startRecording:
+actuallyStartRecording: function() {
+    window.ChortleState.recordedChunks = [];
+    
+    // FIXED: Initialize countdown timer properly
+    window.ChortleState.recordingSeconds = window.ChortleConfig.APP.maxRecordingTime;
 
-        // Create MediaRecorder with canvas stream (includes watermark)
-        const canvasStream = this.startCanvasRecording();
-        if (!canvasStream) {
-            window.ChortleApp.showError('Failed to setup video recording with watermark');
-            return;
+    // Request wake lock to prevent screen sleep
+    window.ChortleUtils.requestWakeLock();
+
+    // Create MediaRecorder with canvas stream (includes watermark)
+    const canvasStream = this.startCanvasRecording();
+    if (!canvasStream) {
+        window.ChortleApp.showError('Failed to setup video recording with watermark');
+        return;
+    }
+    
+    const mimeType = MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4';
+    window.ChortleState.mediaRecorder = new MediaRecorder(canvasStream, { 
+        mimeType,
+        videoBitsPerSecond: 2500000 // 2.5 Mbps for good quality
+    });
+
+    // Handle data availability
+    window.ChortleState.mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+            window.ChortleState.recordedChunks.push(event.data);
         }
+    };
+
+    // Handle recording stop
+    window.ChortleState.mediaRecorder.onstop = () => {
+        this.handleRecordingStop();
+    };
+
+    // Start recording
+    window.ChortleState.mediaRecorder.start();
+
+    // Update UI
+    document.getElementById('start-recording').style.display = 'none';
+    document.getElementById('stop-recording').style.display = 'inline-block';
+    document.getElementById('recording-timer').style.display = 'inline-block';
+
+    // UPDATED: Show scrolling caption overlay during recording
+    this.showCaptionOverlay();
+
+    // NEW: Show logo watermark during recording
+    this.showLogoWatermark();
+
+    // FIXED: Start countdown timer
+    this.startTimer();
+
+    // Haptic feedback
+    window.ChortleUtils.vibrate(100);
+
+    console.log('Recording started with scrolling caption overlay');
+},
+
+// ADD this new countdown function:
+showCountdown: function(callback) {
+    // Create countdown overlay
+    const countdownDiv = document.createElement('div');
+    countdownDiv.id = 'countdown-overlay';
+    countdownDiv.className = 'countdown-overlay';
+    
+    const recordingArea = document.getElementById('recording-area');
+    recordingArea.appendChild(countdownDiv);
+    
+    let count = 3;
+    
+    const updateCountdown = () => {
+        if (count > 0) {
+            countdownDiv.innerHTML = `<div class="countdown-number">${count}</div>`;
+            this.playCountdownBeep();
+            count--;
+            setTimeout(updateCountdown, 1000);
+        } else {
+            countdownDiv.innerHTML = `<div class="countdown-go">GO!</div>`;
+            this.playCountdownBeep(true); // Different sound for GO
+            
+            setTimeout(() => {
+                countdownDiv.remove();
+                callback(); // Start actual recording
+            }, 500);
+        }
+    };
+    
+    updateCountdown();
+},
+
+// ADD countdown audio function:
+playCountdownBeep: function(isGo = false) {
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
         
-        const mimeType = MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4';
-        window.ChortleState.mediaRecorder = new MediaRecorder(canvasStream, { 
-            mimeType,
-            videoBitsPerSecond: 2500000 // 2.5 Mbps for good quality
-        });
-
-        // Handle data availability
-        window.ChortleState.mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-                window.ChortleState.recordedChunks.push(event.data);
-            }
-        };
-
-        // Handle recording stop
-        window.ChortleState.mediaRecorder.onstop = () => {
-            this.handleRecordingStop();
-        };
-
-        // Start recording
-        window.ChortleState.mediaRecorder.start();
-
-        // Update UI
-        document.getElementById('start-recording').style.display = 'none';
-        document.getElementById('stop-recording').style.display = 'inline-block';
-        document.getElementById('recording-timer').style.display = 'inline-block';
-
-        // UPDATED: Show scrolling caption overlay during recording
-        this.showCaptionOverlay();
-
-        // NEW: Show logo watermark during recording
-        this.showLogoWatermark();
-
-        // FIXED: Start countdown timer
-        this.startTimer();
-
-        // Haptic feedback
-        window.ChortleUtils.vibrate(100);
-
-        console.log('Recording started with scrolling caption overlay');
-    },
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        // Different frequencies for countdown vs GO
+        oscillator.frequency.setValueAtTime(isGo ? 800 : 600, audioContext.currentTime);
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + (isGo ? 0.3 : 0.15));
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + (isGo ? 0.3 : 0.15));
+    } catch (error) {
+        // Silent fallback if audio fails
+        console.log('Audio not available for countdown');
+    }
+},
 
     // FIXED: Start recording timer with proper countdown
     startTimer: function() {
