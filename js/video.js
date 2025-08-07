@@ -189,29 +189,30 @@ window.ChortleVideo = {
         console.log('Created continuous scroll text with filled word highlighting');
     },
 
-    // NEW: Create caption overlay container
-       createCaptionOverlay: function() {
-        // Remove existing overlay if any
-        const existingOverlay = document.getElementById('caption-overlay');
-        if (existingOverlay) {
-            existingOverlay.remove();
-        }
-    
-        // Create overlay container
-        const overlay = document.createElement('div');
-        overlay.id = 'caption-overlay';
-        overlay.className = 'caption-overlay';
+        // Create caption overlay container
+        createCaptionOverlay: function() {
+            // Remove existing overlay if any
+            const existingOverlay = document.getElementById('caption-overlay');
+            if (existingOverlay) {
+                existingOverlay.remove();
+            }
         
-        // Create scrolling text container
-        const scrollContainer = document.createElement('div');
-        scrollContainer.id = 'scroll-container';
-        scrollContainer.style.cssText = `
-            height: 100%;
+            // Create overlay container
+            const overlay = document.createElement('div');
+            overlay.id = 'caption-overlay';
+            overlay.className = 'caption-overlay';
+            
+            // Create scrolling text container
+            const scrollContainer = document.createElement('div');
+            scrollContainer.id = 'scroll-container';
+            scrollContainer.style.cssText = `
+                height: 100%;
             overflow: hidden;
             position: relative;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
+            padding-top: 10px;
         `;
         
         // Create text element that will scroll
@@ -221,11 +222,12 @@ window.ChortleVideo = {
             position: absolute;
             width: 100%;
             text-align: center;
-            line-height: 1.4;
+            line-height: 1.5;
             font-weight: 600;
             transform: translateY(100%);
-            white-space: nowrap;
-            overflow: visible;
+            white-space: normal;
+            word-wrap: break-word;
+            padding: 0 10px;
         `;
         
         scrollContainer.appendChild(scrollingText);
@@ -249,29 +251,29 @@ window.ChortleVideo = {
                 display: none;
                 backdrop-filter: blur(5px);
                 transition: opacity 0.3s ease;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
             `;
             
-            // Mobile-optimized positioning and larger text
+            // Mobile-optimized positioning and much larger text
             if (window.ChortleUtils.isMobile()) {
                 overlay.style.bottom = '140px';
                 overlay.style.left = '10px';
                 overlay.style.right = '10px';
-                overlay.style.height = '120px';
-                overlay.style.fontSize = '1.3rem'; // Increased from 1.1rem
-                overlay.style.padding = '15px 20px';
+                overlay.style.height = '140px';
+                overlay.style.fontSize = '1.6rem'; // Much larger
+                overlay.style.padding = '20px';
             } else {
                 overlay.style.bottom = '120px';
                 overlay.style.left = '20px';
                 overlay.style.right = '20px';
-                overlay.style.height = '140px';
-                overlay.style.fontSize = '1.5rem'; // Increased from 1.2rem
-                overlay.style.padding = '20px 25px';
+                overlay.style.height = '160px';
+                overlay.style.fontSize = '1.8rem'; // Much larger
+                overlay.style.padding = '25px';
             }
             
             recordingArea.appendChild(overlay);
             
-            console.log('Continuous scroll caption overlay created with larger text');
+            console.log('Continuous scroll caption overlay created with much larger text');
         }
     },
 
@@ -411,9 +413,14 @@ window.ChortleVideo = {
     },
 
     // NEW: Show caption overlay with scrolling animation
-        showCaptionOverlay: function() {
+    showCaptionOverlay: function() {
         const overlay = document.getElementById('caption-overlay');
         const scrollingText = document.getElementById('scrolling-text');
+        
+        console.log('Showing caption overlay...');
+        console.log('Overlay element:', overlay);
+        console.log('Scrolling text element:', scrollingText);
+        console.log('Scroll text content:', this.scrollText);
         
         if (overlay && scrollingText && this.scrollText) {
             // Set the text content
@@ -423,10 +430,18 @@ window.ChortleVideo = {
             overlay.style.display = 'block';
             overlay.style.opacity = '1';
             
+            console.log('Caption overlay visible, starting scroll...');
+            
             // Start continuous scroll animation
             this.startContinuousScroll();
             
             console.log('Caption overlay shown - continuous scroll started');
+        } else {
+            console.error('Missing elements for caption overlay:', {
+                overlay: !!overlay,
+                scrollingText: !!scrollingText,
+                scrollText: !!this.scrollText
+            });
         }
     },
 
@@ -574,31 +589,43 @@ window.ChortleVideo = {
     },
 
       // Continuous scroll function
-    startContinuousScroll: function() {
+     startContinuousScroll: function() {
         const scrollingText = document.getElementById('scrolling-text');
-        if (!scrollingText) return;
+        if (!scrollingText) {
+            console.error('Scrolling text element not found!');
+            return;
+        }
         
-        // Reset position
+        // Debug: Check if we have text content
+        console.log('Scroll text content:', this.scrollText?.substring(0, 100) + '...');
+        console.log('Scrolling text element:', scrollingText);
+        
+        // Reset position to start from bottom
         scrollingText.style.transform = 'translateY(100%)';
+        scrollingText.style.transition = 'none';
+        
+        // Force a reflow to ensure the reset takes effect
+        scrollingText.offsetHeight;
         
         // Calculate scroll duration based on text length and comfortable reading pace
-        // Aim for about 200 words per minute
+        // Aim for about 180 words per minute (slightly slower)
         const wordCount = this.scrollText.split(' ').length;
-        const wordsPerMinute = 200;
+        const wordsPerMinute = 180;
         const durationMs = (wordCount / wordsPerMinute) * 60 * 1000;
         
         // Minimum duration to ensure it's not too fast
-        const finalDuration = Math.max(durationMs, 15000); // At least 15 seconds
+        const finalDuration = Math.max(durationMs, 20000); // At least 20 seconds
         
         console.log(`Starting continuous scroll: ${wordCount} words, ${finalDuration/1000}s duration`);
         
-        // Apply CSS animation
-        scrollingText.style.transition = `transform ${finalDuration}ms linear`;
-        
         // Start scrolling after a brief delay
         setTimeout(() => {
+            // Apply CSS animation
+            scrollingText.style.transition = `transform ${finalDuration}ms linear`;
             scrollingText.style.transform = 'translateY(-100%)';
-        }, 500);
+            
+            console.log('Scroll animation started');
+        }, 1000); // Longer delay to ensure everything is ready
         
         // Store animation info for cleanup
         this.scrollAnimation = {
