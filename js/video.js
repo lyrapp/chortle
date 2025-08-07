@@ -250,32 +250,45 @@ window.ChortleVideo = {
         console.log('Bottom captions setup:', this.captionChunks.length, 'chunks');
     },
 
-    // NEW: Start bottom caption progression
+    // NEW: Start bottom caption progression with word-based timing
     startBottomCaptionTimer: function() {
         if (!this.captionChunks.length) return;
         
-        // Calculate timing: spread captions evenly across recording time
-        const totalDuration = window.ChortleConfig.APP.maxRecordingTime * 1000; // Convert to ms
-        const chunkDuration = totalDuration / this.captionChunks.length;
+        // Use realistic reading-aloud speed: 150 words per minute
+        const wordsPerMinute = 150;
+        const msPerWord = (60 * 1000) / wordsPerMinute; // ~400ms per word
         
-        this.captionTimer = setInterval(() => {
-            this.currentCaptionIndex++;
-            
-            if (this.currentCaptionIndex < this.captionChunks.length) {
-                // Process markdown-style highlighting
-                let captionText = this.captionChunks[this.currentCaptionIndex];
-                
-                // Convert **word** to highlighted format (we'll keep it simple for canvas)
+        let currentIndex = 0;
+        
+        const advanceCaption = () => {
+            if (currentIndex < this.captionChunks.length) {
+                // Process current chunk
+                let captionText = this.captionChunks[currentIndex];
                 captionText = captionText.replace(/\*\*(.*?)\*\*/g, '$1');
-                
                 this.bottomCaptionText = captionText;
-            } else {
-                // Show "THE END" message
-                this.bottomCaptionText = "👏 THE END 👏";
+                
+                // Calculate delay based on word count in this chunk
+                const wordCount = captionText.split(' ').length;
+                const chunkDuration = Math.max(wordCount * msPerWord, 1500); // Min 1.5 seconds per chunk
+                
+                currentIndex++;
+                
+                // Schedule next caption
+                if (currentIndex < this.captionChunks.length) {
+                    setTimeout(advanceCaption, chunkDuration);
+                } else {
+                    // Show "THE END" for remaining time
+                    setTimeout(() => {
+                        this.bottomCaptionText = "👏 THE END 👏";
+                    }, chunkDuration);
+                }
             }
-        }, chunkDuration);
+        };
         
-        console.log('Bottom caption timer started:', chunkDuration + 'ms per chunk');
+        // Start immediately
+        advanceCaption();
+        
+        console.log('Bottom caption timer started with word-based timing');
     },
 
     // Create caption overlay container
