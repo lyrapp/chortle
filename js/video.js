@@ -1509,6 +1509,7 @@ cleanup: function() {
 
     console.log('Video cleanup complete with caption system and props reset');
 }
+},
 
 // Export for debugging
 if (window.ChortleDebug) {
