@@ -1,11 +1,11 @@
-/* Chortle v5.3 - Updated Configuration */
+/* Chortle v5.3 - Fixed Configuration */
 
 window.ChortleConfig = {
     // Cloudinary configuration
     CLOUDINARY: {
-        cloudName: 'di5vqhebx', // Your actual cloud name
+        cloudName: 'di5vqhebx',
         apiKey: '466825116782547',
-        uploadEndpoint: 'https://api.cloudinary.com/v1_1/di5vqhebx/upload', // Updated with correct cloud name
+        uploadEndpoint: 'https://api.cloudinary.com/v1_1/di5vqhebx/upload',
         uploadPreset: 'chortle_videos'
     },
     
@@ -17,7 +17,7 @@ window.ChortleConfig = {
         supportedVideoTypes: ['video/webm', 'video/mp4']
     },
     
-    // Props Configuration (v5.3) - FIXED: Removed duplicate
+    // Props Configuration (v5.3)
     FEATURES: {
         propsEnabled: true, // Master toggle - set to true to enable props
         propsDebug: true, // Development logging
@@ -30,7 +30,6 @@ window.ChortleConfig = {
         autoScrollDelay: 300,
         copySuccessTimeout: 2000,
         errorDisplayTimeout: 8000,
-        // NEW: Caption overlay settings
         captionOverlay: {
             enabled: true,
             fontSize: '1.1em',
@@ -63,7 +62,7 @@ window.ChortleState = {
     
     // UI state
     isLoading: false,
-    currentPage: 'template-selection-page'
+    currentPage: 'intro-page'
 };
 
 // Utility Functions
@@ -94,7 +93,7 @@ window.ChortleUtils = {
         }
     },
     
-    // NEW: Native sharing with fallback to copy
+    // Native sharing with fallback to copy
     shareUrl: async function(url, title = 'Check out my Chortle!') {
         // Try native Web Share API first (mobile browsers)
         if (navigator.share) {
@@ -214,126 +213,126 @@ window.ChortleUtils = {
         return true;
     },
     
-// URL encoding/decoding (FIXED to handle Unicode and better debugging)
-encodeChortleData: function(data) {
-    try {
-        console.log('🔍 Encoding chortle data:', data);
-        
-        if (!data || typeof data !== 'object') {
-            console.error('❌ Invalid data for encoding:', data);
-            return null;
-        }
-        
-        // FIXED: Handle link data vs chortle data differently
-        if (data.videoId && data.chortle) {
-            console.log('📹 Encoding link data with video ID');
-            const jsonString = JSON.stringify(data);
-            console.log('📝 Link JSON string length:', jsonString.length);
+    // URL encoding/decoding (Unicode-safe)
+    encodeChortleData: function(data) {
+        try {
+            console.log('🔍 Encoding chortle data:', data);
             
-            // Use Unicode-safe encoding
-            const encodedData = this.unicodeSafeEncode(jsonString);
-            console.log('✅ Encoded link data successfully');
-            return encodedData;
-        }
-        
-        // This is chortle data, check for template
-        if (!data.template) {
-            console.error('❌ Missing template in data:', data);
-            console.error('🔍 Available keys:', Object.keys(data));
-            return null;
-        }
-        
-        console.log(`📋 Template: ${data.template}`);
-        
-        // Clean the data to remove any problematic values
-        const cleanData = {};
-        Object.keys(data).forEach(key => {
-            const value = data[key];
-            console.log(`🔍 Processing field ${key}:`, typeof value, value);
-            
-            // Only include string and number values
-            if (typeof value === 'string' || typeof value === 'number') {
-                // Check for problematic characters
-                if (typeof value === 'string') {
-                    const hasUnicode = /[^\x00-\x7F]/.test(value);
-                    if (hasUnicode) {
-                        console.log(`🌏 Unicode detected in ${key}:`, value);
-                    }
-                }
-                cleanData[key] = value;
-            } else {
-                console.warn('⚠️ Skipping non-serializable value:', key, typeof value, value);
+            if (!data || typeof data !== 'object') {
+                console.error('❌ Invalid data for encoding:', data);
+                return null;
             }
-        });
-        
-        console.log('🧹 Cleaned data:', cleanData);
-        
-        const jsonString = JSON.stringify(cleanData);
-        console.log('📝 JSON string length:', jsonString.length);
-        console.log('📝 JSON preview:', jsonString.substring(0, 100) + '...');
-        
-        // Use Unicode-safe encoding instead of btoa
-        const encodedData = this.unicodeSafeEncode(jsonString);
-        console.log('✅ Encoded data successfully, length:', encodedData?.length);
-        
-        return encodedData;
-    } catch (error) {
-        console.error('❌ Error encoding chortle data:', error);
-        console.error('🔍 Error stack:', error.stack);
-        console.error('📊 Data that failed to encode:', data);
-        this.logError(error, 'encoding chortle data');
-        return null;
-    }
-},
-
-// NEW: Unicode-safe base64 encoding
-unicodeSafeEncode: function(str) {
-    try {
-        // Convert Unicode string to UTF-8 bytes, then to base64
-        const utf8Bytes = new TextEncoder().encode(str);
-        const binaryString = Array.from(utf8Bytes, byte => String.fromCharCode(byte)).join('');
-        return btoa(binaryString);
-    } catch (error) {
-        console.error('❌ Unicode encoding failed:', error);
-        console.error('🔍 String preview:', str.substring(0, 50));
-        return null;
-    }
-},
-
-// NEW: Unicode-safe base64 decoding  
-unicodeSafeDecode: function(encodedStr) {
-    try {
-        const binaryString = atob(encodedStr);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
+            
+            // Handle link data vs chortle data differently
+            if (data.videoId && data.chortle) {
+                console.log('📹 Encoding link data with video ID');
+                const jsonString = JSON.stringify(data);
+                console.log('📝 Link JSON string length:', jsonString.length);
+                
+                // Use Unicode-safe encoding
+                const encodedData = this.unicodeSafeEncode(jsonString);
+                console.log('✅ Encoded link data successfully');
+                return encodedData;
+            }
+            
+            // This is chortle data, check for template
+            if (!data.template) {
+                console.error('❌ Missing template in data:', data);
+                console.error('🔍 Available keys:', Object.keys(data));
+                return null;
+            }
+            
+            console.log(`📋 Template: ${data.template}`);
+            
+            // Clean the data to remove any problematic values
+            const cleanData = {};
+            Object.keys(data).forEach(key => {
+                const value = data[key];
+                console.log(`🔍 Processing field ${key}:`, typeof value, value);
+                
+                // Only include string and number values
+                if (typeof value === 'string' || typeof value === 'number') {
+                    // Check for problematic characters
+                    if (typeof value === 'string') {
+                        const hasUnicode = /[^\x00-\x7F]/.test(value);
+                        if (hasUnicode) {
+                            console.log(`🌏 Unicode detected in ${key}:`, value);
+                        }
+                    }
+                    cleanData[key] = value;
+                } else {
+                    console.warn('⚠️ Skipping non-serializable value:', key, typeof value, value);
+                }
+            });
+            
+            console.log('🧹 Cleaned data:', cleanData);
+            
+            const jsonString = JSON.stringify(cleanData);
+            console.log('📝 JSON string length:', jsonString.length);
+            console.log('📝 JSON preview:', jsonString.substring(0, 100) + '...');
+            
+            // Use Unicode-safe encoding instead of btoa
+            const encodedData = this.unicodeSafeEncode(jsonString);
+            console.log('✅ Encoded data successfully, length:', encodedData?.length);
+            
+            return encodedData;
+        } catch (error) {
+            console.error('❌ Error encoding chortle data:', error);
+            console.error('🔍 Error stack:', error.stack);
+            console.error('📊 Data that failed to encode:', data);
+            this.logError(error, 'encoding chortle data');
+            return null;
         }
-        return new TextDecoder().decode(bytes);
-    } catch (error) {
-        console.error('❌ Unicode decoding failed:', error);
-        return null;
-    }
-},
-    
+    },
+
+    // Unicode-safe base64 encoding
+    unicodeSafeEncode: function(str) {
+        try {
+            // Convert Unicode string to UTF-8 bytes, then to base64
+            const utf8Bytes = new TextEncoder().encode(str);
+            const binaryString = Array.from(utf8Bytes, byte => String.fromCharCode(byte)).join('');
+            return btoa(binaryString);
+        } catch (error) {
+            console.error('❌ Unicode encoding failed:', error);
+            console.error('🔍 String preview:', str.substring(0, 50));
+            return null;
+        }
+    },
+
+    // Unicode-safe base64 decoding  
+    unicodeSafeDecode: function(encodedStr) {
+        try {
+            const binaryString = atob(encodedStr);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return new TextDecoder().decode(bytes);
+        } catch (error) {
+            console.error('❌ Unicode decoding failed:', error);
+            return null;
+        }
+    },
+        
     decodeChortleData: function(encodedData) {
-    try {
-        console.log('🔍 Decoding chortle data, length:', encodedData.length);
-        const jsonString = this.unicodeSafeDecode(encodedData);
-        if (!jsonString) {
-            throw new Error('Failed to decode base64');
+        try {
+            console.log('🔍 Decoding chortle data, length:', encodedData.length);
+            const jsonString = this.unicodeSafeDecode(encodedData);
+            if (!jsonString) {
+                throw new Error('Failed to decode base64');
+            }
+            console.log('📝 Decoded JSON preview:', jsonString.substring(0, 100) + '...');
+            const data = JSON.parse(jsonString);
+            console.log('✅ Successfully decoded:', data);
+            return data;
+        } catch (error) {
+            console.error('❌ Error decoding chortle data:', error);
+            this.logError(error, 'decoding chortle data');
+            return null;
         }
-        console.log('📝 Decoded JSON preview:', jsonString.substring(0, 100) + '...');
-        const data = JSON.parse(jsonString);
-        console.log('✅ Successfully decoded:', data);
-        return data;
-    } catch (error) {
-        console.error('❌ Error decoding chortle data:', error);
-        this.logError(error, 'decoding chortle data');
-        return null;
-    }
-},
+    },
     
-    // NEW: Format Chortle text for caption overlay
+    // Format Chortle text for caption overlay
     formatTextForCaptions: function(text) {
         // Remove HTML tags and convert to plain text for caption display
         const tempDiv = document.createElement('div');
@@ -341,7 +340,7 @@ unicodeSafeDecode: function(encodedStr) {
         return tempDiv.textContent || tempDiv.innerText || '';
     },
     
-    // NEW: Split text into caption chunks
+    // Split text into caption chunks
     splitIntoChunks: function(text, maxChunkLength = 150) {
         const sentences = text.split(/[.!?]+/).filter(s => s.trim());
         const chunks = [];
@@ -399,7 +398,7 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
                 recordingTimer: null,
                 recordingSeconds: 0,
                 isLoading: false,
-                currentPage: 'template-selection-page'
+                currentPage: 'intro-page'
             });
         }
     };
