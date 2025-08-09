@@ -174,7 +174,7 @@ window.ChortleProps = {
         }, 1000 / this.detectionFrameRate);
     },
 
-    // Process face detection results
+     // Process face detection results
     processFaceResults: function(results) {
         if (!results.detections || results.detections.length === 0) {
             // No face detected
@@ -187,7 +187,7 @@ window.ChortleProps = {
         this.faceResults = {
             bbox: face.boundingBox,
             landmarks: face.landmarks,
-            confidence: face.score[0]
+            confidence: face.score || 0.5  // FIXED: Handle undefined score
         };
         
         // Debug logging (can be removed in production)
