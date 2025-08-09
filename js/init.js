@@ -1,4 +1,4 @@
-/* Chortle v5.2 - App Initialization with Mobile Fixes */
+/* Chortle v5.3 - App Initialization with Props Support */
 
 // MOBILE DEBUG: Add mobile-specific logging
 const isMobileDevice = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -85,7 +85,8 @@ function checkModulesLoaded() {
         'ChortleTemplates',
         'ChortleWizard',
         'ChortleVideo',
-        'ChortleApp'
+        'ChortleApp',
+        'ChortleProps'  // Added props module
     ];
     
     const missingModules = requiredModules.filter(module => !window[module]);
@@ -111,6 +112,14 @@ function initializeModules() {
             logMobile('✓ Templates loaded:', Object.keys(window.ChortleTemplates.templates).length + ' templates');
         } else {
             throw new Error('ChortleTemplates not loaded properly');
+        }
+        
+        // Props system (v5.3)
+        if (window.ChortleProps) {
+            logMobile('✓ Props module loaded');
+            // Props initialize themselves via DOMContentLoaded if enabled
+        } else {
+            logMobile('⚠️ Props module not loaded (optional)');
         }
         
         // App (main logic)
@@ -469,6 +478,8 @@ function setupDevelopmentHelpers() {
                 console.log('Version:', window.ChortleConfig?.APP?.version || 'UNKNOWN');
                 console.log('Device:', isMobileDevice ? 'Mobile' : 'Desktop');
                 console.log('Templates loaded:', Object.keys(window.ChortleTemplates?.templates || {}).length);
+                console.log('Props enabled:', window.ChortleConfig?.FEATURES?.propsEnabled || false);
+                console.log('Props initialized:', window.ChortleProps?.isInitialized || false);
                 console.log('Current state:', window.ChortleState);
                 console.log('Browser support:', window.ChortleApp?.checkBrowserSupport?.());
                 console.log('Performance timings:', window.performance?.getEntriesByType?.('measure') || []);
@@ -524,12 +535,22 @@ function setupDevelopmentHelpers() {
                 console.log('Share result:', result);
             },
             
+            // Test props system
+            testProps: function(templateKey = 'silly-story') {
+                if (window.ChortleProps) {
+                    return window.ChortleProps.testProps(templateKey);
+                } else {
+                    console.error('Props system not loaded');
+                }
+            },
+            
             // Show all available debug functions
             help: function() {
                 console.group('🛠️ Chortle Debug Commands');
                 console.log('ChortleDebug.logInitialization() - Show initialization info');
                 console.log('ChortleDebug.testTemplate() - Generate test chortle');
                 console.log('ChortleDebug.testGetStartedButton() - Test button functionality');
+                console.log('ChortleDebug.testProps() - Test props system');
                 console.log('ChortleDebug.reset() - Reset app state');
                 console.log('ChortleDebug.getState() - Get current app state');
                 console.log('ChortleDebug.testNativeSharing() - Test sharing functionality');
