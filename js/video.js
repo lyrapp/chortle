@@ -110,34 +110,89 @@ window.ChortleVideo = {
         }
     },
     
-    // NEW: Enable props for current template
-    enablePropsForCurrentTemplate: function() {
-        if (!window.ChortleProps || !window.ChortleProps.isInitialized) {
-            console.log('Props system not available');
-            return;
-        }
+  // NEW: Enable props for current template (FIXED)
+enablePropsForCurrentTemplate: function() {
+    console.log('🎭 Attempting to enable props...');
     
-        const chortleData = this.getCurrentChortleData();
-        if (!chortleData || !chortleData.template) {
-            console.log('No template data for props');
-            return;
-        }
+    if (!window.ChortleProps) {
+        console.log('❌ ChortleProps not available');
+        return;
+    }
     
-        // Enable props for this template
-        const propsEnabled = window.ChortleProps.enablePropsForTemplate(chortleData.template);
-        if (propsEnabled) {
-            console.log('🎭 Props enabled for template:', chortleData.template);
-            
-            // Start face detection when camera preview is ready
-            const preview = document.getElementById('camera-preview');
+    if (!window.ChortleProps.isInitialized) {
+        console.log('❌ Props system not initialized');
+        return;
+    }
+
+    const chortleData = this.getCurrentChortleData();
+    console.log('📋 Chortle data for props:', chortleData);
+    
+    if (!chortleData || !chortleData.template) {
+        console.log('❌ No template data for props');
+        return;
+    }
+
+    // Check if this template has props
+    const hasProp = window.ChortleProps.hasPropsForTemplate(chortleData.template);
+    console.log(`🎯 Template '${chortleData.template}' has props:`, hasProp);
+    
+    if (!hasProp) {
+        console.log('📝 No props defined for this template');
+        return;
+    }
+
+    // Enable props for this template
+    const propsEnabled = window.ChortleProps.enablePropsForTemplate(chortleData.template);
+    console.log('🎭 Props enabled result:', propsEnabled);
+    
+    if (propsEnabled) {
+        console.log('✅ Props enabled for template:', chortleData.template);
+        
+        // Start face detection when camera preview is ready
+        const preview = document.getElementById('camera-preview');
+        if (preview && preview.videoWidth > 0) {
+            // Camera is already ready
+            this.startPropsDetection(preview);
+        } else {
+            // Wait for camera to be ready
             preview.addEventListener('loadedmetadata', () => {
                 setTimeout(() => {
-                    window.ChortleProps.startFaceDetection(preview);
-                    console.log('🔍 Face detection started for props');
-                }, 1000); // Give camera time to stabilize
+                    this.startPropsDetection(preview);
+                }, 1000);
             });
         }
-    },
+    } else {
+        console.log('❌ Failed to enable props');
+    }
+},
+
+// NEW: Start props face detection
+startPropsDetection: function(preview) {
+    console.log('🔍 Starting face detection for props...');
+    console.log('📺 Video element ready:', {
+        width: preview.videoWidth,
+        height: preview.videoHeight,
+        playing: !preview.paused
+    });
+    
+    if (window.ChortleProps && window.ChortleProps.isEnabled) {
+        window.ChortleProps.startFaceDetection(preview);
+        console.log('✅ Face detection started');
+        
+        // Debug: Check face detection every few seconds
+        this.propsDebugInterval = setInterval(() => {
+            const debugInfo = window.ChortleProps.getDebugInfo();
+            console.log('🔍 Props debug:', {
+                enabled: debugInfo.isEnabled,
+                faceDetected: debugInfo.faceDetected,
+                confidence: debugInfo.faceConfidence,
+                propImage: debugInfo.propImage
+            });
+        }, 3000);
+    } else {
+        console.log('❌ Props not enabled, cannot start face detection');
+    }
+},
 
     setupScrollingCaptionOverlay: function() {
         const chortleData = this.getCurrentChortleData();
@@ -1436,6 +1491,12 @@ cleanup: function() {
     if (window.ChortleProps) {
         window.ChortleProps.stopFaceDetection();
         window.ChortleProps.disableProps();
+    }
+
+    // Stop props debug interval
+    if (this.propsDebugInterval) {
+        clearInterval(this.propsDebugInterval);
+        this.propsDebugInterval = null;
     }
 
     // Cleanup canvas recording
