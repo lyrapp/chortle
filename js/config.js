@@ -11,10 +11,17 @@ window.ChortleConfig = {
     
     // App Settings
     APP: {
-        maxRecordingTime: 60, // UPDATED: Extended to 60 seconds
-        version: '5.2',
-        maxFileSize: 50 * 1024 * 1024, // 50MB
+        maxRecordingTime: 60,
+        version: '5.3',
+        maxFileSize: 50 * 1024 * 1024,
         supportedVideoTypes: ['video/webm', 'video/mp4']
+    },
+    
+    // Props Configuration (v5.3)
+    FEATURES: {
+        propsEnabled: true,
+        propsDebug: true,
+        faceDetectionTimeout: 5000
     },
     
     // UI Configuration
