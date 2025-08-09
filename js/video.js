@@ -49,12 +49,12 @@ window.ChortleVideo = {
         }
     },
 
-    // Start camera for recording with vertical video support
+   // Start camera for recording with vertical video support and props
     startCamera: async function() {
         const button = document.getElementById('start-camera');
         button.classList.add('btn-loading');
         button.disabled = true;
-
+    
         try {
             // UPDATED: Vertical video constraints optimized for mobile
             const constraints = {
@@ -71,7 +71,7 @@ window.ChortleVideo = {
                 }
             };
             window.ChortleState.stream = await navigator.mediaDevices.getUserMedia(constraints);
-
+    
             const preview = document.getElementById('camera-preview');
             preview.srcObject = window.ChortleState.stream;
             preview.play().catch(e => console.log('Autoplay prevented:', e));
@@ -93,17 +93,49 @@ window.ChortleVideo = {
             
             // UPDATED: Setup scrolling caption overlay system
             this.setupScrollingCaptionOverlay();
-
-            // NEW: Setup canvas recording with watermark
+    
+            // NEW: Setup canvas recording with watermark and props
             this.setupCanvasRecording();
-
-            console.log('Camera started with vertical recording format');
-
+    
+            // NEW: Enable props for current template
+            this.enablePropsForCurrentTemplate();
+    
+            console.log('Camera started with vertical recording format and props support');
+    
         } catch (err) {
             this.handleCameraError(err);
         } finally {
             button.classList.remove('btn-loading');
             button.disabled = false;
+        }
+    },
+    
+    // NEW: Enable props for current template
+    enablePropsForCurrentTemplate: function() {
+        if (!window.ChortleProps || !window.ChortleProps.isInitialized) {
+            console.log('Props system not available');
+            return;
+        }
+    
+        const chortleData = this.getCurrentChortleData();
+        if (!chortleData || !chortleData.template) {
+            console.log('No template data for props');
+            return;
+        }
+    
+        // Enable props for this template
+        const propsEnabled = window.ChortleProps.enablePropsForTemplate(chortleData.template);
+        if (propsEnabled) {
+            console.log('🎭 Props enabled for template:', chortleData.template);
+            
+            // Start face detection when camera preview is ready
+            const preview = document.getElementById('camera-preview');
+            preview.addEventListener('loadedmetadata', () => {
+                setTimeout(() => {
+                    window.ChortleProps.startFaceDetection(preview);
+                    console.log('🔍 Face detection started for props');
+                }, 1000); // Give camera time to stabilize
+            });
         }
     },
 
@@ -418,7 +450,7 @@ window.ChortleVideo = {
         img.src = 'chortle-wordmark.png';
     },
 
-    // NEW: Start canvas recording loop
+     // NEW: Start canvas recording loop with props
     startCanvasRecording: function() {
         const preview = document.getElementById('camera-preview');
         const canvas = this.recordingCanvas;
@@ -433,22 +465,30 @@ window.ChortleVideo = {
         canvas.width = preview.videoWidth || 720;
         canvas.height = preview.videoHeight || 1280;
         
-        // Start drawing loop
+        // Start drawing loop with props support
         const drawFrame = () => {
             if (!this.isRecording) return;
             
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Draw video frame
-            ctx.drawImage(preview, 0, 0, canvas.width, canvas.height);
+            // Draw video frame (mirrored for recording like preview)
+            ctx.save();
+            ctx.scale(-1, 1); // Mirror horizontally
+            ctx.drawImage(preview, -canvas.width, 0, canvas.width, canvas.height);
+            ctx.restore();
             
             // Draw watermark if loaded
             if (this.watermarkImage) {
                 this.drawWatermark(ctx, canvas.width, canvas.height);
             }
             
-            // NEW: Draw bottom captions
+            // NEW: Draw props if available
+            if (window.ChortleProps && window.ChortleProps.isEnabled) {
+                window.ChortleProps.drawPropOnCanvas(canvas, ctx);
+            }
+            
+            // Draw bottom captions
             this.drawBottomCaptions(ctx, canvas.width, canvas.height);
             
             // Continue drawing
@@ -467,7 +507,7 @@ window.ChortleVideo = {
             canvasStream.addTrack(track);
         });
         
-        console.log('Canvas recording started with watermark');
+        console.log('Canvas recording started with watermark and props support');
         return canvasStream;
     },
 
@@ -1364,45 +1404,50 @@ window.ChortleVideo = {
         }
     },
 
-    // UPDATED: Cleanup video resources
-    cleanup: function() {
-        // Stop camera stream
-        if (window.ChortleState.stream) {
-            window.ChortleState.stream.getTracks().forEach(track => track.stop());
-            window.ChortleState.stream = null;
-        }
-
-        // Clear recording timer
-        if (window.ChortleState.recordingTimer) {
-            clearInterval(window.ChortleState.recordingTimer);
-            window.ChortleState.recordingTimer = null;
-        }
-
-        // UPDATED: Stop caption scrolling and remove overlay
-        this.removeCaptionOverlay();
-        
-        // Clear caption timer
-        if (this.captionTimer) {
-            clearInterval(this.captionTimer);
-            this.captionTimer = null;
-        }
-
-        // Reset caption state
-        this.captionChunks = [];
-        this.currentCaptionIndex = 0;
-        this.bottomCaptionText = '';
-
-        // NEW: Cleanup canvas recording
-        this.cleanupCanvas();
-
-        // Reset state
-        window.ChortleState.mediaRecorder = null;
-        window.ChortleState.recordedChunks = [];
-        window.ChortleState.recordingSeconds = 0;
-
-        console.log('Video cleanup complete with caption system reset');
+// UPDATED: Cleanup video resources with props
+cleanup: function() {
+    // Stop camera stream
+    if (window.ChortleState.stream) {
+        window.ChortleState.stream.getTracks().forEach(track => track.stop());
+        window.ChortleState.stream = null;
     }
-};
+
+    // Clear recording timer
+    if (window.ChortleState.recordingTimer) {
+        clearInterval(window.ChortleState.recordingTimer);
+        window.ChortleState.recordingTimer = null;
+    }
+
+    // UPDATED: Stop caption scrolling and remove overlay
+    this.removeCaptionOverlay();
+    
+    // Clear caption timer
+    if (this.captionTimer) {
+        clearInterval(this.captionTimer);
+        this.captionTimer = null;
+    }
+
+    // Reset caption state
+    this.captionChunks = [];
+    this.currentCaptionIndex = 0;
+    this.bottomCaptionText = '';
+
+    // NEW: Cleanup props
+    if (window.ChortleProps) {
+        window.ChortleProps.stopFaceDetection();
+        window.ChortleProps.disableProps();
+    }
+
+    // Cleanup canvas recording
+    this.cleanupCanvas();
+
+    // Reset state
+    window.ChortleState.mediaRecorder = null;
+    window.ChortleState.recordedChunks = [];
+    window.ChortleState.recordingSeconds = 0;
+
+    console.log('Video cleanup complete with caption system and props reset');
+}
 
 // Export for debugging
 if (window.ChortleDebug) {
