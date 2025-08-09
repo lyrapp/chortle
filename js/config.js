@@ -1,4 +1,4 @@
-/* Chortle v5.2 - Updated Configuration */
+/* Chortle v5.3 - Updated Configuration */
 
 window.ChortleConfig = {
     // Cloudinary configuration
@@ -17,11 +17,11 @@ window.ChortleConfig = {
         supportedVideoTypes: ['video/webm', 'video/mp4']
     },
     
-    // Props Configuration (v5.3)
+    // Props Configuration (v5.3) - FIXED: Removed duplicate
     FEATURES: {
-        propsEnabled: true,
-        propsDebug: true,
-        faceDetectionTimeout: 5000
+        propsEnabled: true, // Master toggle - set to true to enable props
+        propsDebug: true, // Development logging
+        faceDetectionTimeout: 5000 // Fallback timer
     },
     
     // UI Configuration
@@ -42,13 +42,6 @@ window.ChortleConfig = {
         }
     }
 };
-
-    // Props Configuration (v5.3)
-    FEATURES: {
-        propsEnabled: false, // Master toggle - set to true to enable props
-        propsDebug: true, // Development logging
-        faceDetectionTimeout: 5000 // Fallback timer
-    },
 
 // Global App State
 window.ChortleState = {
