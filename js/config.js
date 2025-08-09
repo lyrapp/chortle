@@ -36,6 +36,13 @@ window.ChortleConfig = {
     }
 };
 
+    // Props Configuration (v5.3)
+    FEATURES: {
+        propsEnabled: false, // Master toggle - set to true to enable props
+        propsDebug: true, // Development logging
+        faceDetectionTimeout: 5000 // Fallback timer
+    },
+
 // Global App State
 window.ChortleState = {
     // Template system
