@@ -17,11 +17,11 @@ window.ChortleConfig = {
         supportedVideoTypes: ['video/webm', 'video/mp4']
     },
     
-    // Props Configuration (v5.3)
+    // Props Configuration (v5.3) - DISABLED due to MediaPipe issues
     FEATURES: {
-        propsEnabled: true, // Master toggle - set to true to enable props
-        propsDebug: true, // Development logging
-        faceDetectionTimeout: 5000 // Fallback timer
+        propsEnabled: false, // Disabled - MediaPipe has memory issues
+        propsDebug: false,
+        faceDetectionTimeout: 5000
     },
     
     // UI Configuration
