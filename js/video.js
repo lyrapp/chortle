@@ -1095,7 +1095,7 @@ startPropsDetection: function(preview) {
             recordingArea.classList.remove('fullscreen-recording');
         } else {
             recordingArea.classList.remove('desktop-recording');
-        }
+        },
 
     // UPDATED: Re-record video
     reRecord: function() {
