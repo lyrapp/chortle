@@ -589,10 +589,11 @@ startPropsDetection: function(preview) {
                 this.drawWatermark(ctx, canvas.width, canvas.height);
             }
             
-            // NEW: Draw props if available
-            if (window.ChortleProps && window.ChortleProps.isEnabled) {
-                window.ChortleProps.drawPropOnCanvas(canvas, ctx);
-            }
+        // NEW: Draw props if available - FIXED
+        if (window.ChortleProps && window.ChortleProps.isEnabled && window.ChortleProps.propImage) {
+            console.log('🎨 Drawing prop on canvas frame');
+            window.ChortleProps.drawPropOnCanvas(canvas, ctx);
+        }
             
             // Draw bottom captions
             this.drawBottomCaptions(ctx, canvas.width, canvas.height);
