@@ -1101,7 +1101,7 @@ startPropsDetection: function(preview) {
         this.removeCaptionOverlay();
 
         console.log('Recording completed and processed');
-    }, // <-- This closes the handleRecordingStop function
+    },
 
     // UPDATED: Re-record video
     reRecord: function() {
