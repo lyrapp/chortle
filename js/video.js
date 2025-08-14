@@ -132,9 +132,6 @@ enablePropsForCurrentTemplate: function() {
         return;
     }
 
-    // NEW: Enable props for current template
-    this.enablePropsForCurrentTemplate();
-    
     // NEW: Show props on live preview too
     this.showPropsOnPreview();
 
