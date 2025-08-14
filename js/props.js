@@ -196,85 +196,72 @@ window.ChortleProps = {
         }
     },
 
-    // Draw prop on canvas
+     // Draw prop on canvas - FIXED POSITIONING VERSION
     drawPropOnCanvas: function(canvas, ctx) {
         console.log('🎨 Drawing prop called:', {
             enabled: this.isEnabled,
             propImage: !!this.propImage,
-            faceResults: !!this.faceResults,
             canvasSize: `${canvas.width}x${canvas.height}`
         });
-    
-    if (!this.isEnabled || !this.propImage || !this.faceResults) {
-        console.log('❌ Prop drawing skipped - missing requirements');
-        return; // No prop to draw or no face detected
-    }
-
-        if (!this.isEnabled || !this.propImage || !this.faceResults) {
-            return; // No prop to draw or no face detected
+        
+        if (!this.isEnabled || !this.propImage) {
+            console.log('❌ Prop drawing skipped - missing requirements');
+            return;
         }
         
         try {
-            const face = this.faceResults;
+            // FIXED POSITIONING - center-top of video (works without face detection)
             const canvasWidth = canvas.width;
             const canvasHeight = canvas.height;
             
-            // Calculate prop position and size based on face bounding box
-            const bbox = face.bbox;
-            const faceX = bbox.xCenter * canvasWidth;
-            const faceY = bbox.yCenter * canvasHeight;
-            const faceWidth = bbox.width * canvasWidth;
-            const faceHeight = bbox.height * canvasHeight;
+            // Position prop at center-top
+            const propWidth = canvasWidth * 0.3; // 30% of video width
+            const propHeight = (this.propImage.height / this.propImage.width) * propWidth;
+            const propX = (canvasWidth - propWidth) / 2; // Center horizontally
+            const propY = canvasHeight * 0.1; // 10% from top
             
-            // Position prop based on type (simplified positioning)
-            let propX, propY, propWidth, propHeight;
+            console.log('🎨 Drawing prop at:', { propX, propY, propWidth, propHeight });
             
-            // Default prop sizing (can be refined per prop type)
-            propWidth = faceWidth * 1.2; // Slightly larger than face
-            propHeight = (this.propImage.height / this.propImage.width) * propWidth;
-            
-            // Position at top of face (works for hats, glasses, etc.)
-            propX = faceX - propWidth / 2;
-            propY = faceY - faceHeight / 2 - propHeight * 0.1;
-            
-            // Draw prop with some transparency
+            // Draw prop
             ctx.globalAlpha = 0.9;
             ctx.drawImage(this.propImage, propX, propY, propWidth, propHeight);
             ctx.globalAlpha = 1.0;
+            
+            console.log('✅ Prop drawn successfully');
             
         } catch (error) {
             console.error('❌ Error drawing prop:', error);
         }
     },
-
-    // Stop face detection
-    stopFaceDetection: function() {
-        console.log('🛑 Stopping face detection');
-        this.detectionActive = false;
-        this.faceResults = null;
-    },
-
-    // Disable props
-    disableProps: function() {
-        console.log('🚫 Disabling props');
-        this.stopFaceDetection();
-        this.isEnabled = false;
-        this.currentProp = null;
-        this.propImage = null;
-    },
-
-    // Handle props errors gracefully
-    handlePropsError: function(message) {
-        console.warn('Props error:', message);
-        
-        // Disable props on error to prevent breaking main app
-        this.disableProps();
-        
-        // Show discrete error message (only in debug mode)
-        if (window.ChortleConfig?.FEATURES?.propsDebug && window.ChortleApp?.showError) {
-            window.ChortleApp.showError(`Props: ${message}`);
-        }
-    },
+    
+        // Stop face detection
+        stopFaceDetection: function() {
+            console.log('🛑 Stopping face detection');
+            this.detectionActive = false;
+            this.faceResults = null;
+        },
+    
+        // Disable props
+        disableProps: function() {
+            console.log('🚫 Disabling props');
+            this.stopFaceDetection();
+            this.isEnabled = false;
+            this.currentProp = null;
+            this.propImage = null;
+        },
+    
+        // Handle props errors gracefully
+        handlePropsError: function(message) {
+            console.warn('Props error:', message);
+            
+            // Disable props on error to prevent breaking main app
+            this.disableProps();
+            
+            // Show discrete error message (only in debug mode)
+            if (window.ChortleConfig?.FEATURES?.propsDebug && window.ChortleApp?.showError) {
+                window.ChortleApp.showError(`Props: ${message}`);
+            }
+        },
 
     // Check if props are available for template
     hasPropsForTemplate: function(templateKey) {
