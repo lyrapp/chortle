@@ -80,15 +80,21 @@ window.ChortleVideo = {
             document.getElementById('camera-setup').style.display = 'none';
             document.getElementById('recording-area').style.display = 'block';
             
-            // Make recording area full-screen like Snapchat/TikTok
+            // Desktop vs Mobile recording layout
             const recordingArea = document.getElementById('recording-area');
-            recordingArea.classList.add('fullscreen-recording');
+            const isMobile = window.ChortleUtils.isMobile();
             
-            // Hide other page elements during recording
-            document.querySelector('.header').style.display = 'none';
-            const completedStory = document.getElementById('completed-story');
-            if (completedStory) {
-                completedStory.style.display = 'none';
+            if (isMobile) {
+                // Mobile: fullscreen recording
+                recordingArea.classList.add('fullscreen-recording');
+                document.querySelector('.header').style.display = 'none';
+                const completedStory = document.getElementById('completed-story');
+                if (completedStory) {
+                    completedStory.style.display = 'none';
+                }
+            } else {
+                // Desktop: contained recording
+                recordingArea.classList.add('desktop-recording');
             }
             
             // UPDATED: Setup scrolling caption overlay system
