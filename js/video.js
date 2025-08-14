@@ -1086,7 +1086,7 @@ startPropsDetection: function(preview) {
             window.ChortleState.stream.getTracks().forEach(track => track.stop());
         }
         
-        // Restore normal layout
+         // Restore normal layout
         const recordingArea = document.getElementById('recording-area');
         const isMobile = window.ChortleUtils.isMobile();
         
@@ -1095,7 +1095,13 @@ startPropsDetection: function(preview) {
             recordingArea.classList.remove('fullscreen-recording');
         } else {
             recordingArea.classList.remove('desktop-recording');
-        },
+        }
+
+        // UPDATED: Remove scrolling caption overlay
+        this.removeCaptionOverlay();
+
+        console.log('Recording completed and processed');
+    }, // <-- This closes the handleRecordingStop function
 
     // UPDATED: Re-record video
     reRecord: function() {
