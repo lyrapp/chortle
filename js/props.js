@@ -196,7 +196,7 @@ window.ChortleProps = {
         }
     },
 
-     // Draw prop on canvas - FIXED POSITIONING VERSION
+    // Draw prop on canvas - FIXED POSITIONING VERSION
     drawPropOnCanvas: function(canvas, ctx) {
         console.log('🎨 Drawing prop called:', {
             enabled: this.isEnabled,
