@@ -198,6 +198,18 @@ window.ChortleProps = {
 
     // Draw prop on canvas
     drawPropOnCanvas: function(canvas, ctx) {
+        console.log('🎨 Drawing prop called:', {
+            enabled: this.isEnabled,
+            propImage: !!this.propImage,
+            faceResults: !!this.faceResults,
+            canvasSize: `${canvas.width}x${canvas.height}`
+        });
+    
+    if (!this.isEnabled || !this.propImage || !this.faceResults) {
+        console.log('❌ Prop drawing skipped - missing requirements');
+        return; // No prop to draw or no face detected
+    }
+
         if (!this.isEnabled || !this.propImage || !this.faceResults) {
             return; // No prop to draw or no face detected
         }
