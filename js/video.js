@@ -132,6 +132,12 @@ enablePropsForCurrentTemplate: function() {
         return;
     }
 
+    // NEW: Enable props for current template
+    this.enablePropsForCurrentTemplate();
+    
+    // NEW: Show props on live preview too
+    this.showPropsOnPreview();
+
     // Check if this template has props
     const hasProp = window.ChortleProps.hasPropsForTemplate(chortleData.template);
     console.log(`🎯 Template '${chortleData.template}' has props:`, hasProp);
