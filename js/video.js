@@ -110,7 +110,6 @@ window.ChortleVideo = {
         }
     },
     
-  // NEW: Enable props for current template (FIXED)
 enablePropsForCurrentTemplate: function() {
     console.log('🎭 Attempting to enable props...');
     
@@ -132,7 +131,7 @@ enablePropsForCurrentTemplate: function() {
         return;
     }
 
-    // NEW: Show props on live preview too
+    // Show props on live preview too
     this.showPropsOnPreview();
 
     // Check if this template has props
@@ -154,10 +153,8 @@ enablePropsForCurrentTemplate: function() {
         // Start face detection when camera preview is ready
         const preview = document.getElementById('camera-preview');
         if (preview && preview.videoWidth > 0) {
-            // Camera is already ready
             this.startPropsDetection(preview);
         } else {
-            // Wait for camera to be ready
             preview.addEventListener('loadedmetadata', () => {
                 setTimeout(() => {
                     this.startPropsDetection(preview);
