@@ -1087,15 +1087,15 @@ startPropsDetection: function(preview) {
         }
         
         // Restore normal layout
-        document.querySelector('.header').style.display = 'block';
         const recordingArea = document.getElementById('recording-area');
-        recordingArea.classList.remove('fullscreen-recording');
+        const isMobile = window.ChortleUtils.isMobile();
         
-        // UPDATED: Remove scrolling caption overlay
-        this.removeCaptionOverlay();
-
-        console.log('Recording completed and processed');
-    },
+        if (isMobile) {
+            document.querySelector('.header').style.display = 'block';
+            recordingArea.classList.remove('fullscreen-recording');
+        } else {
+            recordingArea.classList.remove('desktop-recording');
+        }
 
     // UPDATED: Re-record video
     reRecord: function() {
