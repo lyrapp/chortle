@@ -29,30 +29,30 @@ window.ChortleProps = {
         'cooking-disaster': 'chef-hat.png'
     },
 
-    // Initialize props system
-    initialize: async function() {
-        console.log('🎭 Initializing Chortle Props System v5.3');
-        
-        try {
-            // Check if props are enabled
-            if (!window.ChortleConfig?.FEATURES?.propsEnabled) {
-                console.log('Props disabled by feature flag');
+        // Initialize props system
+        initialize: async function() {
+            console.log('🎭 Initializing Chortle Props System v5.3');
+            
+            try {
+                // Check if props are enabled
+                if (!window.ChortleConfig?.FEATURES?.propsEnabled) {
+                    console.log('Props disabled by feature flag');
+                    return false;
+                }
+                
+                // Skip MediaPipe for now - just enable basic props
+                console.log('⚠️ Skipping MediaPipe for testing - using fixed positioning');
+                
+                this.isInitialized = true;
+                console.log('✅ Props system initialized successfully (without face detection)');
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Props initialization failed:', error);
+                this.handlePropsError('Failed to initialize props system');
                 return false;
             }
-            
-            // Load MediaPipe Face Detection
-            await this.loadFaceDetection();
-            
-            this.isInitialized = true;
-            console.log('✅ Props system initialized successfully');
-            return true;
-            
-        } catch (error) {
-            console.error('❌ Props initialization failed:', error);
-            this.handlePropsError('Failed to initialize props system');
-            return false;
-        }
-    },
+        },
 
     // Load MediaPipe Face Detection library
     loadFaceDetection: async function() {
