@@ -172,50 +172,58 @@ enablePropsForCurrentTemplate: function() {
     }
 },
 
-    // NEW: Show props overlay on live preview
-    showPropsOnPreview: function() {
-        if (!window.ChortleProps || !window.ChortleProps.isEnabled) {
-            return;
-        }
+// NEW: Show props overlay on live preview
+showPropsOnPreview: function() {
+    if (!window.ChortleProps || !window.ChortleProps.isEnabled) {
+        return;
+    }
+    
+    const preview = document.getElementById('camera-preview');
+    if (!preview) return;
+    
+    // FIXED: Ensure recording area has relative positioning
+    const recordingArea = document.getElementById('recording-area');
+    if (recordingArea) {
+        recordingArea.style.position = 'relative';
+    }
+    
+    // Create props overlay on top of video preview
+    let propsOverlay = document.getElementById('props-preview-overlay');
+    if (!propsOverlay) {
+        propsOverlay = document.createElement('div');
+        propsOverlay.id = 'props-preview-overlay';
+        propsOverlay.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 15;
+            border: 2px solid red;
+        `;
         
-        const preview = document.getElementById('camera-preview');
-        if (!preview) return;
-        
-        // Create props overlay on top of video preview
-        let propsOverlay = document.getElementById('props-preview-overlay');
-        if (!propsOverlay) {
-            propsOverlay = document.createElement('div');
-            propsOverlay.id = 'props-preview-overlay';
-            propsOverlay.style.cssText = `
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                pointer-events: none;
-                z-index: 5;
-            `;
-            
-            // Add to recording area
-            const recordingArea = document.getElementById('recording-area');
-            recordingArea.appendChild(propsOverlay);
-        }
-        
-        // Show fixed prop position on preview
-        const chortleData = this.getCurrentChortleData();
-        if (chortleData && window.ChortleProps.hasPropsForTemplate(chortleData.template)) {
-            const propFile = window.ChortleProps.getPropForTemplate(chortleData.template);
-            propsOverlay.innerHTML = `
-                <img src="props/${propFile}" 
-                     style="position: absolute; 
-                            top: 10%; 
-                            left: 35%; 
-                            width: 30%; 
-                            opacity: 0.9;
-                            transform: scaleX(-1);">
-            `;
-        }
-    },
+        recordingArea.appendChild(propsOverlay);
+    }
+    
+    // Show fixed prop position on preview
+    const chortleData = this.getCurrentChortleData();
+    if (chortleData && window.ChortleProps.hasPropsForTemplate(chortleData.template)) {
+        const propFile = window.ChortleProps.getPropForTemplate(chortleData.template);
+        propsOverlay.innerHTML = `
+            <img src="props/${propFile}" 
+                 style="position: absolute; 
+                        top: 10%; 
+                        left: 35%; 
+                        width: 30%; 
+                        opacity: 1;
+                        z-index: 20;
+                        border: 2px solid blue;
+                        transform: scaleX(-1);">
+        `;
+        console.log('✅ Props preview overlay created with prop:', propFile);
+    }
+},
     
 // NEW: Start props face detection
 startPropsDetection: function(preview) {
