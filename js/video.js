@@ -175,13 +175,17 @@ enablePropsForCurrentTemplate: function() {
 // NEW: Show props overlay on live preview
 showPropsOnPreview: function() {
     if (!window.ChortleProps || !window.ChortleProps.isEnabled) {
+        console.log('Props not enabled or not available');
         return;
     }
     
     const preview = document.getElementById('camera-preview');
-    if (!preview) return;
+    if (!preview) {
+        console.log('Camera preview not found');
+        return;
+    }
     
-    // FIXED: Ensure recording area has relative positioning
+    // Ensure recording area has relative positioning
     const recordingArea = document.getElementById('recording-area');
     if (recordingArea) {
         recordingArea.style.position = 'relative';
@@ -200,27 +204,34 @@ showPropsOnPreview: function() {
             bottom: 0;
             pointer-events: none;
             z-index: 15;
-            border: 2px solid red;
         `;
         
         recordingArea.appendChild(propsOverlay);
+        console.log('Created props preview overlay');
     }
     
     // Show fixed prop position on preview
     const chortleData = this.getCurrentChortleData();
     if (chortleData && window.ChortleProps.hasPropsForTemplate(chortleData.template)) {
         const propFile = window.ChortleProps.getPropForTemplate(chortleData.template);
+        console.log('Adding prop to preview:', propFile);
+        
         propsOverlay.innerHTML = `
             <img src="props/${propFile}" 
                  style="position: absolute; 
                         top: 35%; 
                         left: 35%; 
                         width: 30%; 
-                        opacity: 1;
+                        height: auto;
+                        opacity: 0.9;
                         z-index: 20;
-                        border: 2px solid blue;
+                        transform: scaleX(-1);"
+                 onerror="console.error('Failed to load prop:', this.src)"
+                 onload="console.log('Prop loaded successfully:', this.src)">
         `;
         console.log('✅ Props preview overlay created with prop:', propFile);
+    } else {
+        console.log('No prop available for current template');
     }
 },
     
