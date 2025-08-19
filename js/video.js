@@ -186,68 +186,92 @@ window.ChortleVideo = {
             console.log('🎭 === PROPS DEBUG END ===');
         },
 
-// NEW: Show props overlay on live preview
-showPropsOnPreview: function() {
-    if (!window.ChortleProps || !window.ChortleProps.isEnabled) {
-        console.log('Props not enabled or not available');
-        return;
-    }
-    
-    const preview = document.getElementById('camera-preview');
-    if (!preview) {
-        console.log('Camera preview not found');
-        return;
-    }
-    
-    // Ensure recording area has relative positioning
-    const recordingArea = document.getElementById('recording-area');
-    if (recordingArea) {
+    // NEW: Show props overlay on live preview
+    showPropsOnPreview: function() {
+        console.log('🎭 showPropsOnPreview called');
+        
+        if (!window.ChortleProps || !window.ChortleProps.isEnabled) {
+            console.log('Props not enabled or not available');
+            return;
+        }
+        
+        const chortleData = this.getCurrentChortleData();
+        if (!chortleData || !window.ChortleProps.hasPropsForTemplate(chortleData.template)) {
+            console.log('No prop available for current template');
+            return;
+        }
+        
+        const propFile = window.ChortleProps.getPropForTemplate(chortleData.template);
+        console.log('🎭 Setting up preview overlay for prop:', propFile);
+        
+        // Remove existing overlay
+        const existingOverlay = document.getElementById('props-preview-overlay');
+        if (existingOverlay) {
+            existingOverlay.remove();
+        }
+        
+        // Find the camera preview
+        const preview = document.getElementById('camera-preview');
+        const recordingArea = document.getElementById('recording-area');
+        
+        if (!preview || !recordingArea) {
+            console.log('❌ Preview or recording area not found');
+            return;
+        }
+        
+        // Ensure recording area has relative positioning
         recordingArea.style.position = 'relative';
-    }
-    
-    // Create props overlay on top of video preview
-    let propsOverlay = document.getElementById('props-preview-overlay');
-    if (!propsOverlay) {
-        propsOverlay = document.createElement('div');
+        
+        // Create props overlay
+        const propsOverlay = document.createElement('div');
         propsOverlay.id = 'props-preview-overlay';
         propsOverlay.style.cssText = `
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            z-index: 15;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            pointer-events: none !important;
+            z-index: 25 !important;
+            background: rgba(255, 0, 0, 0.1) !important;
         `;
         
+        // Create the prop image
+        const propImg = document.createElement('img');
+        propImg.src = propFile;
+        propImg.style.cssText = `
+            position: absolute !important;
+            top: 35% !important;
+            left: 35% !important;
+            width: 30% !important;
+            height: auto !important;
+            opacity: 0.9 !important;
+            z-index: 30 !important;
+            transform: scaleX(-1) !important;
+            border: 2px solid lime !important;
+        `;
+        
+        propImg.onload = () => {
+            console.log('✅ Prop image loaded for preview:', propFile);
+        };
+        
+        propImg.onerror = () => {
+            console.error('❌ Failed to load prop for preview:', propFile);
+        };
+        
+        propsOverlay.appendChild(propImg);
         recordingArea.appendChild(propsOverlay);
-        console.log('Created props preview overlay');
-    }
-    
-    // Show fixed prop position on preview
-    const chortleData = this.getCurrentChortleData();
-    if (chortleData && window.ChortleProps.hasPropsForTemplate(chortleData.template)) {
-        const propFile = window.ChortleProps.getPropForTemplate(chortleData.template);
-        console.log('Adding prop to preview:', propFile);
         
-        propsOverlay.innerHTML = `
-            <img src="props/${propFile}" 
-                 style="position: absolute; 
-                        top: 35%; 
-                        left: 35%; 
-                        width: 30%; 
-                        height: auto;
-                        opacity: 0.9;
-                        z-index: 20;
-                        transform: scaleX(-1);"
-                 onerror="console.error('Failed to load prop:', this.src)"
-                 onload="console.log('Prop loaded successfully:', this.src)">
-        `;
-        console.log('✅ Props preview overlay created with prop:', propFile);
-    } else {
-        console.log('No prop available for current template');
-    }
-},
+        console.log('✅ Props preview overlay created');
+        
+        // Debug: log overlay position
+        setTimeout(() => {
+            const rect = propsOverlay.getBoundingClientRect();
+            console.log('🎭 Overlay position:', rect);
+            console.log('🎭 Overlay parent:', propsOverlay.parentElement);
+            console.log('🎭 Overlay visible:', window.getComputedStyle(propsOverlay).display !== 'none');
+        }, 100);
+    },
     
 // NEW: Start props face detection
 startPropsDetection: function(preview) {
