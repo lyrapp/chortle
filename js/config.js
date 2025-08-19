@@ -19,7 +19,7 @@ window.ChortleConfig = {
     
     // Props Configuration (v5.3) - RE-ENABLED for debugging
     FEATURES: {
-        propsEnabled: false, // Disabled until face detection is fixed
+        propsEnabled: true, // Testing with placeholders
         propsDebug: true,   // Enable debug logging
         faceDetectionTimeout: 5000
     },
