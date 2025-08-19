@@ -213,13 +213,12 @@ showPropsOnPreview: function() {
         propsOverlay.innerHTML = `
             <img src="props/${propFile}" 
                  style="position: absolute; 
-                        top: 10%; 
+                        top: 35%; 
                         left: 35%; 
                         width: 30%; 
                         opacity: 1;
                         z-index: 20;
                         border: 2px solid blue;
-                        transform: scaleX(-1);">
         `;
         console.log('✅ Props preview overlay created with prop:', propFile);
     }
