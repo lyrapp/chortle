@@ -49,128 +49,142 @@ window.ChortleVideo = {
         }
     },
 
-   // Start camera for recording with vertical video support and props
-    startCamera: async function() {
-        const button = document.getElementById('start-camera');
-        button.classList.add('btn-loading');
-        button.disabled = true;
-    
-        try {
-            // UPDATED: Vertical video constraints optimized for mobile
-            const constraints = {
-                video: {
-                    facingMode: 'user',
-                    frameRate: { ideal: 30 }
-                    // Let device choose natural dimensions
-                },
-                audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    autoGainControl: true,
-                    sampleRate: 44100
+           // Start camera for recording with vertical video support and props
+            startCamera: async function() {
+                const button = document.getElementById('start-camera');
+                button.classList.add('btn-loading');
+                button.disabled = true;
+            
+                try {
+                    // UPDATED: Vertical video constraints optimized for mobile
+                    const constraints = {
+                        video: {
+                            facingMode: 'user',
+                            frameRate: { ideal: 30 }
+                            // Let device choose natural dimensions
+                        },
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            autoGainControl: true,
+                            sampleRate: 44100
+                        }
+                    };
+                    window.ChortleState.stream = await navigator.mediaDevices.getUserMedia(constraints);
+            
+                    const preview = document.getElementById('camera-preview');
+                    preview.srcObject = window.ChortleState.stream;
+                    preview.play().catch(e => console.log('Autoplay prevented:', e));
+                    
+                    // Show recording area and make it full-screen
+                    document.getElementById('camera-setup').style.display = 'none';
+                    document.getElementById('recording-area').style.display = 'block';
+                    
+                    // Desktop vs Mobile recording layout
+                    const recordingArea = document.getElementById('recording-area');
+                    const isMobile = window.ChortleUtils.isMobile();
+                    
+                    if (isMobile) {
+                        // Mobile: fullscreen recording
+                        recordingArea.classList.add('fullscreen-recording');
+                        document.querySelector('.header').style.display = 'none';
+                        const completedStory = document.getElementById('completed-story');
+                        if (completedStory) {
+                            completedStory.style.display = 'none';
+                        }
+                    } else {
+                        // Desktop: contained recording
+                        recordingArea.classList.add('desktop-recording');
+                    }
+                    
+                    // UPDATED: Setup scrolling caption overlay system
+                    this.setupScrollingCaptionOverlay();
+            
+                    // NEW: Setup canvas recording with watermark and props
+                    this.setupCanvasRecording();
+            
+                    // NEW: Enable props for current template
+                    this.enablePropsForCurrentTemplate();
+            
+                    console.log('Camera started with vertical recording format and props support');
+            
+                } catch (err) {
+                    this.handleCameraError(err);
+                } finally {
+                    button.classList.remove('btn-loading');
+                    button.disabled = false;
                 }
-            };
-            window.ChortleState.stream = await navigator.mediaDevices.getUserMedia(constraints);
-    
-            const preview = document.getElementById('camera-preview');
-            preview.srcObject = window.ChortleState.stream;
-            preview.play().catch(e => console.log('Autoplay prevented:', e));
+            },
             
-            // Show recording area and make it full-screen
-            document.getElementById('camera-setup').style.display = 'none';
-            document.getElementById('recording-area').style.display = 'block';
+        enablePropsForCurrentTemplate: function() {
+            console.log('🎭 === PROPS DEBUG START ===');
+            console.log('🎭 Attempting to enable props...');
             
-            // Desktop vs Mobile recording layout
-            const recordingArea = document.getElementById('recording-area');
-            const isMobile = window.ChortleUtils.isMobile();
+            // Check if props module exists
+            if (!window.ChortleProps) {
+                console.log('❌ ChortleProps module not available');
+                return;
+            }
+            console.log('✅ ChortleProps module found');
             
-            if (isMobile) {
-                // Mobile: fullscreen recording
-                recordingArea.classList.add('fullscreen-recording');
-                document.querySelector('.header').style.display = 'none';
-                const completedStory = document.getElementById('completed-story');
-                if (completedStory) {
-                    completedStory.style.display = 'none';
-                }
+            // Check if props are enabled in config
+            if (!window.ChortleConfig?.FEATURES?.propsEnabled) {
+                console.log('❌ Props disabled in config');
+                return;
+            }
+            console.log('✅ Props enabled in config');
+            
+            // Check if props system is initialized
+            if (!window.ChortleProps.isInitialized) {
+                console.log('❌ Props system not initialized, attempting to initialize...');
+                // Try to initialize now
+                window.ChortleProps.initialize().then(result => {
+                    console.log('Props initialization result:', result);
+                    if (result) {
+                        // Retry enabling props after initialization
+                        setTimeout(() => this.enablePropsForCurrentTemplate(), 1000);
+                    }
+                });
+                return;
+            }
+            console.log('✅ Props system initialized');
+        
+            const chortleData = this.getCurrentChortleData();
+            console.log('📋 Chortle data for props:', chortleData);
+            
+            if (!chortleData || !chortleData.template) {
+                console.log('❌ No template data for props');
+                return;
+            }
+            console.log('✅ Template data found:', chortleData.template);
+        
+            // Check if this template has props
+            const hasProp = window.ChortleProps.hasPropsForTemplate(chortleData.template);
+            console.log(`🎯 Template '${chortleData.template}' has props:`, hasProp);
+            
+            if (!hasProp) {
+                console.log('📝 No props defined for this template');
+                return;
+            }
+        
+            // Enable props for this template
+            const propsEnabled = window.ChortleProps.enablePropsForTemplate(chortleData.template);
+            console.log('🎭 Props enabled result:', propsEnabled);
+            
+            if (propsEnabled) {
+                console.log('✅ Props enabled for template:', chortleData.template);
+                
+                // Show props on live preview
+                setTimeout(() => {
+                    this.showPropsOnPreview();
+                }, 500);
+                
             } else {
-                // Desktop: contained recording
-                recordingArea.classList.add('desktop-recording');
+                console.log('❌ Failed to enable props');
             }
             
-            // UPDATED: Setup scrolling caption overlay system
-            this.setupScrollingCaptionOverlay();
-    
-            // NEW: Setup canvas recording with watermark and props
-            this.setupCanvasRecording();
-    
-            // NEW: Enable props for current template
-            this.enablePropsForCurrentTemplate();
-    
-            console.log('Camera started with vertical recording format and props support');
-    
-        } catch (err) {
-            this.handleCameraError(err);
-        } finally {
-            button.classList.remove('btn-loading');
-            button.disabled = false;
-        }
-    },
-    
-enablePropsForCurrentTemplate: function() {
-    console.log('🎭 Attempting to enable props...');
-    
-    if (!window.ChortleProps) {
-        console.log('❌ ChortleProps not available');
-        return;
-    }
-    
-    if (!window.ChortleProps.isInitialized) {
-        console.log('❌ Props system not initialized');
-        return;
-    }
-
-    const chortleData = this.getCurrentChortleData();
-    console.log('📋 Chortle data for props:', chortleData);
-    
-    if (!chortleData || !chortleData.template) {
-        console.log('❌ No template data for props');
-        return;
-    }
-
-    // Show props on live preview too
-    this.showPropsOnPreview();
-
-    // Check if this template has props
-    const hasProp = window.ChortleProps.hasPropsForTemplate(chortleData.template);
-    console.log(`🎯 Template '${chortleData.template}' has props:`, hasProp);
-    
-    if (!hasProp) {
-        console.log('📝 No props defined for this template');
-        return;
-    }
-
-    // Enable props for this template
-    const propsEnabled = window.ChortleProps.enablePropsForTemplate(chortleData.template);
-    console.log('🎭 Props enabled result:', propsEnabled);
-    
-    if (propsEnabled) {
-        console.log('✅ Props enabled for template:', chortleData.template);
-        
-        // Start face detection when camera preview is ready
-        const preview = document.getElementById('camera-preview');
-        if (preview && preview.videoWidth > 0) {
-            this.startPropsDetection(preview);
-        } else {
-            preview.addEventListener('loadedmetadata', () => {
-                setTimeout(() => {
-                    this.startPropsDetection(preview);
-                }, 1000);
-            });
-        }
-    } else {
-        console.log('❌ Failed to enable props');
-    }
-},
+            console.log('🎭 === PROPS DEBUG END ===');
+        },
 
 // NEW: Show props overlay on live preview
 showPropsOnPreview: function() {
