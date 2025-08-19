@@ -247,10 +247,9 @@ window.ChortleVideo = {
             height: auto !important;
             opacity: 0.9 !important;
             z-index: 30 !important;
-            transform: scaleX(-1) !important;
             border: 2px solid lime !important;
         `;
-        
+                
         propImg.onload = () => {
             console.log('✅ Prop image loaded for preview:', propFile);
         };
