@@ -186,91 +186,74 @@ window.ChortleVideo = {
             console.log('🎭 === PROPS DEBUG END ===');
         },
 
-    // NEW: Show props overlay on live preview
-    showPropsOnPreview: function() {
-        console.log('🎭 showPropsOnPreview called');
-        
-        if (!window.ChortleProps || !window.ChortleProps.isEnabled) {
-            console.log('Props not enabled or not available');
-            return;
-        }
-        
-        const chortleData = this.getCurrentChortleData();
-        if (!chortleData || !window.ChortleProps.hasPropsForTemplate(chortleData.template)) {
-            console.log('No prop available for current template');
-            return;
-        }
-        
-        const propFile = window.ChortleProps.getPropForTemplate(chortleData.template);
-        console.log('🎭 Setting up preview overlay for prop:', propFile);
-        
-        // Remove existing overlay
-        const existingOverlay = document.getElementById('props-preview-overlay');
-        if (existingOverlay) {
-            existingOverlay.remove();
-        }
-        
-        // Find the camera preview
-        const preview = document.getElementById('camera-preview');
-        const recordingArea = document.getElementById('recording-area');
-        
-        if (!preview || !recordingArea) {
-            console.log('❌ Preview or recording area not found');
-            return;
-        }
-        
-        // Ensure recording area has relative positioning
-        recordingArea.style.position = 'relative';
-        
-        // Create props overlay
-        const propsOverlay = document.createElement('div');
-        propsOverlay.id = 'props-preview-overlay';
-        propsOverlay.style.cssText = `
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-            pointer-events: none !important;
-            z-index: 25 !important;
-            background: rgba(255, 0, 0, 0.1) !important;
-        `;
-        
-        // Create the prop image
-        const propImg = document.createElement('img');
-        propImg.src = propFile;
-        propImg.style.cssText = `
-            position: absolute !important;
-            top: 35% !important;
-            left: 35% !important;
-            width: 30% !important;
-            height: auto !important;
-            opacity: 0.9 !important;
-            z-index: 30 !important;
-            border: 2px solid lime !important;
-        `;
-                
-        propImg.onload = () => {
-            console.log('✅ Prop image loaded for preview:', propFile);
-        };
-        
-        propImg.onerror = () => {
-            console.error('❌ Failed to load prop for preview:', propFile);
-        };
-        
-        propsOverlay.appendChild(propImg);
-        recordingArea.appendChild(propsOverlay);
-        
-        console.log('✅ Props preview overlay created');
-        
-        // Debug: log overlay position
-        setTimeout(() => {
-            const rect = propsOverlay.getBoundingClientRect();
-            console.log('🎭 Overlay position:', rect);
-            console.log('🎭 Overlay parent:', propsOverlay.parentElement);
-            console.log('🎭 Overlay visible:', window.getComputedStyle(propsOverlay).display !== 'none');
-        }, 100);
-    },
+         // NEW: Show props overlay on live preview
+        showPropsOnPreview: function() {
+            console.log('🎭 showPropsOnPreview called');
+            
+            if (!window.ChortleProps || !window.ChortleProps.isEnabled || !window.ChortleProps.propImage) {
+                console.log('Props not enabled or prop image not loaded');
+                return;
+            }
+            
+            console.log('🎭 Using loaded prop image for preview');
+            
+            // Remove existing overlay
+            const existingOverlay = document.getElementById('props-preview-overlay');
+            if (existingOverlay) {
+                existingOverlay.remove();
+            }
+            
+            // Find the camera preview
+            const preview = document.getElementById('camera-preview');
+            const recordingArea = document.getElementById('recording-area');
+            
+            if (!preview || !recordingArea) {
+                console.log('❌ Preview or recording area not found');
+                return;
+            }
+            
+            // Ensure recording area has relative positioning
+            recordingArea.style.position = 'relative';
+            
+            // Create props overlay
+            const propsOverlay = document.createElement('div');
+            propsOverlay.id = 'props-preview-overlay';
+            propsOverlay.style.cssText = `
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                pointer-events: none !important;
+                z-index: 25 !important;
+            `;
+            
+            // Create the prop image using the same loaded image as canvas
+            const propImg = document.createElement('img');
+            propImg.src = window.ChortleProps.propImage.src; // Use the same loaded image
+            propImg.style.cssText = `
+                position: absolute !important;
+                top: 35% !important;
+                left: 35% !important;
+                width: 30% !important;
+                height: auto !important;
+                opacity: 0.9 !important;
+                z-index: 30 !important;
+            `;
+            
+            propImg.onload = () => {
+                console.log('✅ Prop image loaded for preview');
+            };
+            
+            propImg.onerror = () => {
+                console.error('❌ Failed to load prop for preview');
+            };
+            
+            propsOverlay.appendChild(propImg);
+            recordingArea.appendChild(propsOverlay);
+            
+            console.log('✅ Props preview overlay created using loaded image');
+        },
     
 // NEW: Start props face detection
 startPropsDetection: function(preview) {
