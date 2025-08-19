@@ -210,15 +210,15 @@ window.ChortleProps = {
         }
         
         try {
-            // FIXED POSITIONING - center-top of video (works without face detection)
-            const canvasWidth = canvas.width;
-            const canvasHeight = canvas.height;
-            
-            // Position prop at center-top
-            const propWidth = canvasWidth * 0.3; // 30% of video width
-            const propHeight = (this.propImage.height / this.propImage.width) * propWidth;
-            const propX = (canvasWidth - propWidth) / 2; // Center horizontally
-            const propY = canvasHeight * 0.1; // 10% from top
+        // FIXED POSITIONING - center-middle of video (avoids captions)
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        
+        // Position prop at center-middle (avoid caption area)
+        const propWidth = canvasWidth * 0.3; // 30% of video width
+        const propHeight = (this.propImage.height / this.propImage.width) * propWidth;
+        const propX = (canvasWidth - propWidth) / 2; // Center horizontally
+        const propY = canvasHeight * 0.35; // 35% from top (matches preview)
             
             console.log('🎨 Drawing prop at:', { propX, propY, propWidth, propHeight });
             
