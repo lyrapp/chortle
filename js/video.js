@@ -642,7 +642,12 @@ startPropsDetection: function(preview) {
         
         this.isRecording = true;
         drawFrame();
-        
+ 
+        // NEW: Draw background if available
+        if (window.ChortleBackgrounds && window.ChortleBackgrounds.isEnabled && window.ChortleBackgrounds.currentBackground) {
+            window.ChortleBackgrounds.drawBackgroundOnCanvas(canvas, ctx);
+        }
+       
         // Get stream from canvas
         const canvasStream = canvas.captureStream(30); // 30 FPS
         
