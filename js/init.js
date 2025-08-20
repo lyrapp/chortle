@@ -86,7 +86,7 @@ function checkModulesLoaded() {
         'ChortleWizard',
         'ChortleVideo',
         'ChortleApp',
-        'ChortleProps'  // Added props module
+        'ChortleProps',  // Added props module
         'ChortleBackgrounds'  // NEW: Add backgrounds module
     ];
     
