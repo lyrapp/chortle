@@ -10,6 +10,7 @@ window.ChortleBackgrounds = {
     
     // Segmentation state
     segmentationActive: false,
+    currentSegmentationMask: null,  // ← ADD THIS LINE
     performanceMonitor: {
         frameCount: 0,
         startTime: 0,
@@ -130,7 +131,7 @@ window.ChortleBackgrounds = {
     },
 
     // Enable backgrounds for current template
-    enableBackgroundsForTemplate: function(templateKey) {
+        enableBackgroundsForTemplate: function(templateKey) {
         console.log('🎨 Enabling backgrounds for template:', templateKey);
         
         if (!this.isInitialized) {
@@ -141,10 +142,13 @@ window.ChortleBackgrounds = {
         const backgroundFile = this.templateBackgrounds[templateKey];
         if (!backgroundFile) {
             console.log('No background defined for template:', templateKey);
+            this.isEnabled = false;
+            this.currentBackground = null;
             return false;
         }
         
-        // Load background image
+        // Set current background
+        this.currentBackground = backgroundFile;
         this.loadBackgroundImage(backgroundFile);
         this.isEnabled = true;
         
@@ -236,25 +240,47 @@ window.ChortleBackgrounds = {
         }
     },
 
-    // Draw background composite on canvas
+      // Draw background composite on canvas
     drawBackgroundOnCanvas: function(canvas, ctx, videoElement) {
-        if (!this.isEnabled || !this.backgroundImage || !this.currentSegmentationMask) {
+        if (!this.isEnabled || !this.backgroundImage) {
             // Draw normal video if backgrounds not available
-            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            if (videoElement) {
+                ctx.save();
+                ctx.scale(-1, 1); // Mirror horizontally like preview
+                ctx.drawImage(videoElement, -canvas.width, 0, canvas.width, canvas.height);
+                ctx.restore();
+            }
             return;
         }
         
         try {
+            // If no segmentation mask yet, just show background with video overlay
+            if (!this.currentSegmentationMask) {
+                // Draw background first
+                ctx.drawImage(this.backgroundImage, 0, 0, canvas.width, canvas.height);
+                
+                // Draw semi-transparent video on top until segmentation starts
+                if (videoElement) {
+                    ctx.globalAlpha = 0.8;
+                    ctx.save();
+                    ctx.scale(-1, 1); // Mirror horizontally
+                    ctx.drawImage(videoElement, -canvas.width, 0, canvas.width, canvas.height);
+                    ctx.restore();
+                    ctx.globalAlpha = 1.0;
+                }
+                return;
+            }
+            
             // Create temporary canvas for segmentation processing
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = canvas.width;
             tempCanvas.height = canvas.height;
             const tempCtx = tempCanvas.getContext('2d');
             
-            // Draw background
+            // Draw background first
             tempCtx.drawImage(this.backgroundImage, 0, 0, canvas.width, canvas.height);
             
-            // Create segmentation mask
+            // Create segmentation mask canvas
             const maskCanvas = document.createElement('canvas');
             maskCanvas.width = this.currentSegmentationMask.width;
             maskCanvas.height = this.currentSegmentationMask.height;
@@ -276,13 +302,18 @@ window.ChortleBackgrounds = {
             
             maskCtx.putImageData(imageData, 0, 0);
             
-            // Apply segmentation composite
+            // Apply segmentation composite - remove background where person is
             tempCtx.globalCompositeOperation = 'destination-out';
             tempCtx.drawImage(maskCanvas, 0, 0, canvas.width, canvas.height);
             
             // Draw person on top
             tempCtx.globalCompositeOperation = 'destination-over';
-            tempCtx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            if (videoElement) {
+                tempCtx.save();
+                tempCtx.scale(-1, 1); // Mirror horizontally
+                tempCtx.drawImage(videoElement, -canvas.width, 0, canvas.width, canvas.height);
+                tempCtx.restore();
+            }
             
             // Draw final composite to main canvas
             ctx.drawImage(tempCanvas, 0, 0);
@@ -290,7 +321,12 @@ window.ChortleBackgrounds = {
         } catch (error) {
             console.error('❌ Error drawing background composite:', error);
             // Fallback to normal video
-            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            if (videoElement) {
+                ctx.save();
+                ctx.scale(-1, 1); // Mirror horizontally
+                ctx.drawImage(videoElement, -canvas.width, 0, canvas.width, canvas.height);
+                ctx.restore();
+            }
         }
     },
 
