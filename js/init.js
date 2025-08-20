@@ -87,6 +87,7 @@ function checkModulesLoaded() {
         'ChortleVideo',
         'ChortleApp',
         'ChortleProps'  // Added props module
+        'ChortleBackgrounds'  // NEW: Add backgrounds module
     ];
     
     const missingModules = requiredModules.filter(module => !window[module]);
@@ -122,6 +123,14 @@ function initializeModules() {
             logMobile('⚠️ Props module not loaded (optional)');
         }
         
+         // NEW: Backgrounds system (v5.4)
+        if (window.ChortleBackgrounds) {
+            logMobile('✓ Backgrounds module loaded');
+            // Backgrounds initialize themselves when enabled
+        } else {
+            logMobile('⚠️ Backgrounds module not loaded (optional)');
+        }
+
         // App (main logic)
         if (window.ChortleApp && typeof window.ChortleApp.initialize === 'function') {
             window.ChortleApp.initialize();
