@@ -17,6 +17,12 @@ window.ChortleConfig = {
         supportedVideoTypes: ['video/webm', 'video/mp4']
     },
     
+    // Props Configuration (v5.3) - RE-ENABLED for debugging
+    FEATURES: {
+        propsEnabled: true, // Testing with placeholders
+        propsDebug: true,   // Enable debug logging
+        faceDetectionTimeout: 5000,
+
         // Props Configuration (v5.3) - DISABLED for backgrounds development
         FEATURES: {
             propsEnabled: false, // Disabled while working on backgrounds
