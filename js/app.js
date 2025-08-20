@@ -40,11 +40,6 @@ window.ChortleApp = {
         // Template button click handlers are added dynamically in renderTemplates
     },
 
-    // NEW: Auto-load background for selected template
-    if (window.ChortleBackgrounds && window.ChortleConfig.FEATURES.backgroundsEnabled) {
-        window.ChortleBackgrounds.loadBackgroundForTemplate(templateKey);
-    }
-
     // Render templates based on current filters
     renderTemplates: function() {
         const container = document.getElementById('template-container');
@@ -100,6 +95,12 @@ window.ChortleApp = {
         if (!window.ChortleTemplates.validateTemplate(templateKey)) {
             this.showError('Invalid template selected');
             return;
+        }
+
+
+        // NEW: Auto-load background for selected template
+        if (window.ChortleBackgrounds && window.ChortleConfig.FEATURES.backgroundsEnabled) {
+            window.ChortleBackgrounds.loadBackgroundForTemplate(templateKey);
         }
 
         // Setup wizard
