@@ -26,12 +26,18 @@ window.ChortleConfig = {
         segmentationQualityThreshold: 12, // ADD this - Minimum FPS before fallback
     },
 
-        // Props Configuration (v5.3) - DISABLED for backgrounds development
-        FEATURES: {
-            propsEnabled: false, // Disabled while working on backgrounds
-            propsDebug: false,   // Reduce console noise
-            faceDetectionTimeout: 5000
-        },
+    // Feature Configuration (v5.4)
+    FEATURES: {
+        // Props system (disabled while working on backgrounds)
+        propsEnabled: false,
+        propsDebug: false,
+        faceDetectionTimeout: 5000,
+        
+        // NEW: Background system features
+        backgroundsEnabled: false,  // Master toggle for development
+        backgroundsDebug: true,     // Development logging  
+        backgroundLoadTimeout: 10000  // 10 second timeout for loading
+    },
 
     // UI Configuration
     UI: {
