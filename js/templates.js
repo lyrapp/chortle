@@ -9,6 +9,7 @@ templates: {
         description: 'A spooky tale of ghostly roommate troubles',
         icon: 'icons/ghost-story.png',
         propImage: 'ghost-hat.png',
+        backgroundImage: 'spooky-mansion.jpg',
         template: `I've been living with a ghost in my <span class="filled-word">{place}</span>. Last night, he <span class="filled-word">{verb1}</span> so <span class="filled-word">{adverb}</span> that I <span class="filled-word">{verb2}</span> my <span class="filled-word">{bodypart1}</span>. He won't leave me alone and even <span class="filled-word">{verb3}</span> me as I am sleeping. I needed to get rid of him, so I bought a <span class="filled-word">{object}</span> to put in his <span class="filled-word">{adjective1}</span> <span class="filled-word">{bodypart2}</span>. After that, he was really <span class="filled-word">{adjective2}</span>. That'll teach him a lesson.`,
         fields: [
             { name: 'place', label: 'A place to live', type: 'text', suggestions: ['attic', 'basement', 'closet'] },
@@ -30,6 +31,7 @@ templates: {
         description: 'Share your wildest dreams with everyone',
         icon: 'icons/sweet-dreams.png',
         propImage: 'sleep-mask.png',
+        backgroundImage: 'dreamy-clouds.jpg',
         template: `Sometimes, I dream about <span class="filled-word">{noun}</span>. When I do, it makes me say <span class="filled-word">{exclamation}</span>! I just can't stop dreaming about it because it's so <span class="filled-word">{adjective1}</span> and makes my <span class="filled-word">{bodypart}</span> <span class="filled-word">{verb}</span>. I like to tell everyone my dreams, especially <span class="filled-word">{person}</span>, because they totally understand how <span class="filled-word">{adjective2}</span> I feel. I hope your dreams are as <span class="filled-word">{adjective3}</span> as mine.`,
         fields: [
             { name: 'noun', label: 'Something to dream about', type: 'text', suggestions: ['flying pizza', 'talking cats', 'chocolate rivers'] },
@@ -49,6 +51,7 @@ templates: {
         description: 'A wacky day at the zoo with unexpected animals',
         icon: 'icons/silly-story.png',
         propImage: 'animal-ears.png',
+        backgroundImage: 'zoo-safari.jpg',
        template: `Yesterday, <span class="filled-word">{name}</span> went to the <span class="filled-word">{adjective1}</span> zoo. They saw a <span class="filled-word">{animal}</span> that <span class="filled-word">{verb1}</span> all the way to <span class="filled-word">{place}</span>. It was so <span class="filled-word">{adjective2}</span> that <span class="filled-word">{name}</span> watched it for <span class="filled-word">{number}</span> hours straight! The <span class="filled-word">{animal}</span> even waved goodbye when they left.`,
         fields: [
             { name: 'name', label: "A person's name", type: 'text', suggestions: ['Alex', 'Sam', 'Taylor'] },
@@ -67,6 +70,7 @@ templates: {
         description: 'The most ridiculous job interview ever',
         icon: 'icons/job-interview.png',
         propImage: 'tie.png',
+        backgroundImage: 'office-building.jpg',
         template: `"So, <span class="filled-word">{yourname}</span>, tell us about yourself." "Well, I'm really good at <span class="filled-word">{skill}</span> and I'm very <span class="filled-word">{adjective1}</span>. I want to be your next <span class="filled-word">{jobtitle}</span>!" The interviewer picked up a <span class="filled-word">{object}</span> and started <span class="filled-word">{verb1}</span> while scratching their <span class="filled-word">{bodypart}</span>. "You're hired!" they said.`,
         fields: [
             { name: 'yourname', label: 'Your name', type: 'text', suggestions: ['Chris', 'Jordan', 'Casey'] },
@@ -85,6 +89,7 @@ templates: {
         description: 'A vacation that takes an unexpected turn',
         icon: 'icons/vacation.png',
         propImage: 'sunglasses.png',
+        backgroundImage: 'tropical-beach.jpg',        
         template: `Last summer, I took a trip to <span class="filled-word">{place}</span> by <span class="filled-word">{transport}</span>. The weather was <span class="filled-word">{adjective1}</span> and I ate <span class="filled-word">{food}</span> for breakfast every day. I spent most of my time <span class="filled-word">{activity}</span> with <span class="filled-word">{celebrity}</span>. It made me feel so <span class="filled-word">{feeling}</span> that I never wanted to come home!`,
         fields: [
             { name: 'place', label: 'A strange place', type: 'text', suggestions: ['the Moon', 'a giant shoe', 'underwater'] },
@@ -103,6 +108,7 @@ templates: {
         description: 'How an ordinary person became extraordinary',
         icon: 'icons/superhero.png',
         propImage: 'superhero-mask.png',
+        backgroundImage: 'superhero-city.jpg',        
         template: `Meet <span class="filled-word">{heroname}</span>, the <span class="filled-word">{adjective1}</span> superhero! After being bitten by a radioactive <span class="filled-word">{object}</span>, they gained the power of <span class="filled-word">{power}</span>. Now they protect <span class="filled-word">{city}</span> from the evil villain <span class="filled-word">{villain}</span>. But beware - their one weakness is <span class="filled-word">{weakness}</span>!`,
         fields: [
             { name: 'heroname', label: 'A superhero name', type: 'text', suggestions: ['Captain Awesome', 'The Flying Burrito', 'Dr. Thunder'] },
@@ -121,6 +127,7 @@ templates: {
         description: 'A heartfelt (and hilarious) declaration of love',
         icon: 'icons/love-letter.png',
         propImage: 'heart-glasses.png',
+        backgroundImage: 'romantic-garden.jpg',        
         template: `My dearest <span class="filled-word">{crushname}</span>, you are more <span class="filled-word">{adjective1}</span> than a <span class="filled-word">{animal}</span> in <span class="filled-word">{season}</span>. When I first saw you <span class="filled-word">{verb1}</span> in the <span class="filled-word">{place}</span>, my heart started <span class="filled-word">{verb2}</span> like a <span class="filled-word">{machine}</span>. Will you <span class="filled-word">{romanticact}</span> with me under the <span class="filled-word">{adjective2}</span> moon? Forever yours, <span class="filled-word">{yourname}</span>`,
         fields: [
             { name: 'crushname', label: "Your crush's name", type: 'text', suggestions: ['Robin', 'Jamie', 'Pat'] },
@@ -143,6 +150,7 @@ templates: {
         description: 'When romance goes hilariously wrong',
         icon: 'icons/first-date.png',
         propImage: 'bowtie.png',
+        backgroundImage: 'elegant-restaurant.jpg',                
         template: `I picked up <span class="filled-word">{datename}</span> in my <span class="filled-word">{adjective1}</span> <span class="filled-word">{vehicle}</span>. We went to a <span class="filled-word">{adjective2}</span> restaurant where I accidentally <span class="filled-word">{verb1}</span> the <span class="filled-word">{food}</span> all over their <span class="filled-word">{clothing}</span>. Then we went <span class="filled-word">{activity}</span>, but I was so nervous I kept <span class="filled-word">{verb2}</span> every <span class="filled-word">{timeperiod}</span>. Surprisingly, they said yes to a second date!`,
         fields: [
             { name: 'datename', label: "Your date's name", type: 'text', suggestions: ['Morgan', 'Riley', 'Avery'] },
@@ -164,6 +172,7 @@ templates: {
         description: 'Breaking news from outer space',
         icon: 'icons/alien-invasion.png',
         propImage: 'alien-hat.png',
+        backgroundImage: 'alien-spaceship.jpg',                        
         template: `BREAKING NEWS: Aliens have landed in <span class="filled-word">{city}</span>! The <span class="filled-word">{adjective1}</span> creatures are <span class="filled-word">{color}</span> and have <span class="filled-word">{number}</span> <span class="filled-word">{bodypart}</span>. They arrived in a giant <span class="filled-word">{object}</span> and immediately started <span class="filled-word">{verb1}</span> all the <span class="filled-word">{pluralnoun}</span>. Their leader, who speaks only in <span class="filled-word">{language}</span>, demands <span class="filled-word">{demand}</span>. The president is reportedly <span class="filled-word">{verb2}</span> in response.`,
         fields: [
             { name: 'city', label: 'A city', type: 'text', suggestions: ['Miami', 'Tokyo', 'your town'] },
@@ -186,6 +195,7 @@ templates: {
         description: 'Gordon Ramsay would not approve',
         icon: 'icons/cooking-disaster.png',
         propImage: 'chef-hat.png', 
+        backgroundImage: 'kitchen-restaurant.jpg',                        
         template: `Welcome to "<span class="filled-word">{showname}</span>" with Chef <span class="filled-word">{chefname}</span>! Today we're making <span class="filled-word">{adjective1}</span> <span class="filled-word">{dish}</span>. First, you take <span class="filled-word">{number}</span> cups of <span class="filled-word">{ingredient1}</span> and <span class="filled-word">{verb1}</span> it with a <span class="filled-word">{tool}</span>. Then add <span class="filled-word">{ingredient2}</span> until it turns <span class="filled-word">{color}</span>. Oh no! The kitchen is on fire! Quickly, <span class="filled-word">{verb2}</span> the <span class="filled-word">{ingredient3}</span>!`,
         fields: [
             { name: 'showname', label: 'A cooking show name', type: 'text', suggestions: ['Kitchen Chaos', 'Cooking with Chaos', 'Disaster Chef'] },
