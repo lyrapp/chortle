@@ -75,6 +75,9 @@ window.ChortleVideo = {
                     const preview = document.getElementById('camera-preview');
                     preview.srcObject = window.ChortleState.stream;
                     preview.play().catch(e => console.log('Autoplay prevented:', e));
+
+                    // NEW: Start camera preview with background support
+                    this.startCameraPreview();
                     
                     // Show recording area and make it full-screen
                     document.getElementById('camera-setup').style.display = 'none';
