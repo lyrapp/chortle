@@ -21,7 +21,9 @@ window.ChortleConfig = {
         backgroundsEnabled: false, // Master toggle - start disabled
         backgroundsDebug: true,    // Development logging
         segmentationTimeout: 8000, // Fallback timer for AI loading
-        performanceMonitoring: true // Track fps/memory impact
+        performanceMonitoring: true, // Track fps/memory impact
+        segmentationFPS: 15,      // ADD this - Target FPS for background segmentation
+        segmentationQualityThreshold: 12, // ADD this - Minimum FPS before fallback
     },
 
         // Props Configuration (v5.3) - DISABLED for backgrounds development
@@ -30,7 +32,7 @@ window.ChortleConfig = {
             propsDebug: false,   // Reduce console noise
             faceDetectionTimeout: 5000
         },
-    
+
     // UI Configuration
     UI: {
         animationDuration: 300,
