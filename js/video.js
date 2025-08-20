@@ -615,7 +615,12 @@ startPropsDetection: function(preview) {
             
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
+          
+            // NEW: Draw background if available
+            if (window.ChortleBackgrounds && window.ChortleBackgrounds.isEnabled && window.ChortleBackgrounds.currentBackground) {
+                window.ChortleBackgrounds.drawBackgroundOnCanvas(canvas, ctx);
+            }
+  
             // Draw video frame (mirrored for recording like preview)
             ctx.save();
             ctx.scale(-1, 1); // Mirror horizontally
@@ -642,11 +647,6 @@ startPropsDetection: function(preview) {
         
         this.isRecording = true;
         drawFrame();
- 
-        // NEW: Draw background if available
-        if (window.ChortleBackgrounds && window.ChortleBackgrounds.isEnabled && window.ChortleBackgrounds.currentBackground) {
-            window.ChortleBackgrounds.drawBackgroundOnCanvas(canvas, ctx);
-        }
        
         // Get stream from canvas
         const canvasStream = canvas.captureStream(30); // 30 FPS
