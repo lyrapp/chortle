@@ -112,6 +112,30 @@ window.ChortleApp = {
         }
     },
 
+    // Handle template selection
+    selectTemplate: function(templateKey) {
+        console.log('Template selected:', templateKey);
+        
+        // Validate template
+        if (!window.ChortleTemplates.validateTemplate(templateKey)) {
+            this.showError('Invalid template selected');
+            return;
+        }
+    
+        // NEW: Auto-load background for selected template
+        if (window.ChortleBackgrounds && window.ChortleConfig.FEATURES.backgroundsEnabled) {
+            window.ChortleBackgrounds.loadBackgroundForTemplate(templateKey);
+        }
+    
+        // Setup wizard
+        const success = window.ChortleWizard.setup(templateKey);
+        if (success) {
+            this.showPage('wizard-page');
+        } else {
+            this.showError('Failed to setup wizard for template');
+        }
+    },
+
     // Setup category filtering
     setupCategoryFilters: function() {
         // Category filtering disabled - always show all templates
