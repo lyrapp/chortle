@@ -17,34 +17,25 @@ window.ChortleConfig = {
         supportedVideoTypes: ['video/webm', 'video/mp4']
     },
     
+    // Feature Configuration (v5.4)
+    FEATURES: {
+        // Props system (disabled while working on backgrounds)
+        propsEnabled: false,
+        propsDebug: false,
+        faceDetectionTimeout: 5000,
+        
+        // NEW: Background system features
+        backgroundsEnabled: false,  // Master toggle for development
+        backgroundsDebug: true,     // Development logging  
+        backgroundLoadTimeout: 10000,  // 10 second timeout for loading
+        
         // NEW: Background Segmentation Feature (v5.4)
-        backgroundsEnabled: false, // Master toggle - start disabled
-        backgroundsDebug: true,    // Development logging
         segmentationTimeout: 8000, // Fallback timer for AI loading
         performanceMonitoring: true, // Track fps/memory impact
-        segmentationFPS: 15,      // ADD this - Target FPS for background segmentation
-        segmentationQualityThreshold: 12, // ADD this - Minimum FPS before fallback
+        segmentationFPS: 15,      // Target FPS for background segmentation
+        segmentationQualityThreshold: 12 // Minimum FPS before fallback
     },
-
-        // Feature Configuration (v5.4)
-        FEATURES: {
-            // Props system (disabled while working on backgrounds)
-            propsEnabled: false,
-            propsDebug: false,
-            faceDetectionTimeout: 5000,
-            
-            // NEW: Background system features
-            backgroundsEnabled: false,  // Master toggle for development
-            backgroundsDebug: true,     // Development logging  
-            backgroundLoadTimeout: 10000,  // 10 second timeout for loading
-            
-            // NEW: Background Segmentation Feature (v5.4)
-            segmentationTimeout: 8000, // Fallback timer for AI loading
-            performanceMonitoring: true, // Track fps/memory impact
-            segmentationFPS: 15,      // Target FPS for background segmentation
-            segmentationQualityThreshold: 12 // Minimum FPS before fallback
-        },
-
+    
     // UI Configuration
     UI: {
         animationDuration: 300,
