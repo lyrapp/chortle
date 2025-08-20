@@ -25,7 +25,7 @@ window.ChortleConfig = {
         faceDetectionTimeout: 5000,
         
         // NEW: Background system features
-        backgroundsEnabled: false,  // Master toggle for development
+        backgroundsEnabled: true,  // Master toggle for development
         backgroundsDebug: true,     // Development logging  
         backgroundLoadTimeout: 10000,  // 10 second timeout for loading
         
