@@ -100,7 +100,7 @@ window.ChortleApp = {
 
         // NEW: Auto-load background for selected template
         if (window.ChortleBackgrounds && window.ChortleConfig.FEATURES.backgroundsEnabled) {
-            window.ChortleBackgrounds.loadBackgroundsForTemplate(templateKey);
+            window.ChortleBackgrounds.enableBackgroundsForTemplate(templateKey);
         }
 
         // Setup wizard
