@@ -1,4 +1,4 @@
-/* Chortle v5.4 - AI Background Segmentation System */
+/* Chortle v5.4 - AI Background Segmentation System - FIXED */
 
 window.ChortleBackgrounds = {
     // Background system state
@@ -10,7 +10,7 @@ window.ChortleBackgrounds = {
     
     // Segmentation state
     segmentationActive: false,
-    currentSegmentationMask: null,  // ← ADD THIS LINE
+    currentSegmentationMask: null,
     performanceMonitor: {
         frameCount: 0,
         startTime: 0,
@@ -131,7 +131,7 @@ window.ChortleBackgrounds = {
     },
 
     // Enable backgrounds for current template
-        enableBackgroundsForTemplate: function(templateKey) {
+    enableBackgroundsForTemplate: function(templateKey) {
         console.log('🎨 Enabling backgrounds for template:', templateKey);
         
         if (!this.isInitialized) {
@@ -195,138 +195,60 @@ window.ChortleBackgrounds = {
         }
         
         // Continue loop at target frame rate
-        setTimeout(() => {
-            this.segmentationLoop(videoElement);
-        }, 1000 / this.targetFPS);
+        setTimeout(() => this.segmentationLoop(videoElement), 1000 / this.targetFPS);
     },
 
-    // Process segmentation results
+    // Process segmentation results from MediaPipe
     processSegmentationResults: function(results) {
-        // Store segmentation mask for canvas rendering
+        if (!this.segmentationActive) return;
+        
+        // Store current segmentation mask
         this.currentSegmentationMask = results.segmentationMask;
         
         // Update performance monitoring
         this.updatePerformanceMonitoring();
         
-        // Check if performance is acceptable
-        if (this.performanceMonitor.currentFPS < this.qualityThreshold) {
-            console.warn('⚠️ Background segmentation performance below threshold');
-            // Could implement automatic quality reduction here
+        // If FPS drops too low, disable backgrounds
+        if (this.performanceMonitor.averageFPS < this.qualityThreshold) {
+            console.warn('⚠️ Performance below threshold, considering fallback');
         }
     },
 
-    // Start performance monitoring
-    startPerformanceMonitoring: function() {
-        this.performanceMonitor.frameCount = 0;
-        this.performanceMonitor.startTime = performance.now();
-    },
-
-    // Update performance metrics
-    updatePerformanceMonitoring: function() {
-        this.performanceMonitor.frameCount++;
-        const elapsed = (performance.now() - this.performanceMonitor.startTime) / 1000;
-        
-        if (elapsed > 0) {
-            this.performanceMonitor.currentFPS = this.performanceMonitor.frameCount / elapsed;
-            
-            // Update average FPS (exponential moving average)
-            if (this.performanceMonitor.averageFPS === 0) {
-                this.performanceMonitor.averageFPS = this.performanceMonitor.currentFPS;
-            } else {
-                this.performanceMonitor.averageFPS = 
-                    (this.performanceMonitor.averageFPS * 0.9) + 
-                    (this.performanceMonitor.currentFPS * 0.1);
-            }
-        }
-    },
-
-      // Draw background composite on canvas
-    drawBackgroundOnCanvas: function(canvas, ctx, videoElement) {
-        if (!this.isEnabled || !this.backgroundImage) {
-            // Draw normal video if backgrounds not available
-            if (videoElement) {
-                ctx.save();
-                ctx.scale(-1, 1); // Mirror horizontally like preview
-                ctx.drawImage(videoElement, -canvas.width, 0, canvas.width, canvas.height);
-                ctx.restore();
-            }
+    // Apply background to canvas during recording
+    applyBackgroundToCanvas: function(canvas, ctx, videoElement) {
+        if (!this.isEnabled || !this.backgroundImage || !this.currentSegmentationMask) {
+            // No background processing, just draw video
+            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
             return;
         }
-        
+
         try {
-            // If no segmentation mask yet, just show background with video overlay
-            if (!this.currentSegmentationMask) {
-                // Draw background first
-                ctx.drawImage(this.backgroundImage, 0, 0, canvas.width, canvas.height);
-                
-                // Draw semi-transparent video on top until segmentation starts
-                if (videoElement) {
-                    ctx.globalAlpha = 0.8;
-                    ctx.save();
-                    ctx.scale(-1, 1); // Mirror horizontally
-                    ctx.drawImage(videoElement, -canvas.width, 0, canvas.width, canvas.height);
-                    ctx.restore();
-                    ctx.globalAlpha = 1.0;
-                }
-                return;
-            }
-            
             // Create temporary canvas for segmentation processing
             const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
             tempCanvas.width = canvas.width;
             tempCanvas.height = canvas.height;
-            const tempCtx = tempCanvas.getContext('2d');
-            
+
             // Draw background first
             tempCtx.drawImage(this.backgroundImage, 0, 0, canvas.width, canvas.height);
-            
-            // Create segmentation mask canvas
-            const maskCanvas = document.createElement('canvas');
-            maskCanvas.width = this.currentSegmentationMask.width;
-            maskCanvas.height = this.currentSegmentationMask.height;
-            const maskCtx = maskCanvas.getContext('2d');
-            
-            // Convert segmentation mask to image data
-            const imageData = maskCtx.createImageData(maskCanvas.width, maskCanvas.height);
-            const data = imageData.data;
-            
-            for (let i = 0; i < this.currentSegmentationMask.data.length; i++) {
-                const pixelIndex = i * 4;
-                const maskValue = this.currentSegmentationMask.data[i] * 255;
-                
-                data[pixelIndex] = maskValue;     // R
-                data[pixelIndex + 1] = maskValue; // G
-                data[pixelIndex + 2] = maskValue; // B
-                data[pixelIndex + 3] = 255;       // A
-            }
-            
-            maskCtx.putImageData(imageData, 0, 0);
-            
-            // Apply segmentation composite - remove background where person is
-            tempCtx.globalCompositeOperation = 'destination-out';
-            tempCtx.drawImage(maskCanvas, 0, 0, canvas.width, canvas.height);
-            
-            // Draw person on top
-            tempCtx.globalCompositeOperation = 'destination-over';
-            if (videoElement) {
-                tempCtx.save();
-                tempCtx.scale(-1, 1); // Mirror horizontally
-                tempCtx.drawImage(videoElement, -canvas.width, 0, canvas.width, canvas.height);
-                tempCtx.restore();
-            }
-            
-            // Draw final composite to main canvas
+
+            // Draw video with mask applied
+            tempCtx.globalCompositeOperation = 'source-over';
+            tempCtx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+            // Apply segmentation mask to remove background from person
+            tempCtx.globalCompositeOperation = 'destination-in';
+            tempCtx.drawImage(this.currentSegmentationMask, 0, 0, canvas.width, canvas.height);
+
+            // Composite the result onto the main canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(this.backgroundImage, 0, 0, canvas.width, canvas.height);
             ctx.drawImage(tempCanvas, 0, 0);
-            
+
         } catch (error) {
-            console.error('❌ Error drawing background composite:', error);
+            console.error('❌ Background compositing failed:', error);
             // Fallback to normal video
-            if (videoElement) {
-                ctx.save();
-                ctx.scale(-1, 1); // Mirror horizontally
-                ctx.drawImage(videoElement, -canvas.width, 0, canvas.width, canvas.height);
-                ctx.restore();
-            }
+            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
         }
     },
 
@@ -339,27 +261,87 @@ window.ChortleBackgrounds = {
 
     // Disable backgrounds
     disableBackgrounds: function() {
-        console.log('🚫 Disabling backgrounds');
+        console.log('🎨 Disabling backgrounds');
         this.stopSegmentation();
         this.isEnabled = false;
         this.currentBackground = null;
         this.backgroundImage = null;
     },
 
-    // Handle background errors gracefully
+    // Handle background-related errors
     handleBackgroundError: function(message) {
-        console.warn('Background error:', message);
+        console.error('❌ Background Error:', message);
         
-        // Disable backgrounds on error to prevent breaking main app
+        // Disable backgrounds on error
         this.disableBackgrounds();
         
-        // Show discrete error message (only in debug mode)
-        if (window.ChortleConfig?.FEATURES?.backgroundsDebug && window.ChortleApp?.showError) {
-            window.ChortleApp.showError(`Backgrounds: ${message}`);
+        // Show user-friendly message if in debug mode
+        if (window.ChortleConfig?.FEATURES?.backgroundsDebug) {
+            this.showUserMessage(`Background feature temporarily disabled: ${message}`, 'warning');
         }
     },
 
-    // Check if backgrounds are available for template
+    // Show message to user
+    showUserMessage: function(message, type = 'info') {
+        // Create or update user notification
+        let notification = document.getElementById('background-notification');
+        if (!notification) {
+            notification = document.createElement('div');
+            notification.id = 'background-notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 16px;
+                border-radius: 6px;
+                z-index: 9999;
+                font-size: 14px;
+                max-width: 300px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            document.body.appendChild(notification);
+        }
+
+        // Style based on type
+        const styles = {
+            info: { background: '#d1ecf1', color: '#0c5460', border: '1px solid #bee5eb' },
+            warning: { background: '#fff3cd', color: '#856404', border: '1px solid #ffeaa7' },
+            error: { background: '#f8d7da', color: '#721c24', border: '1px solid #f5c6cb' },
+            success: { background: '#d4edda', color: '#155724', border: '1px solid #c3e6cb' }
+        };
+
+        const style = styles[type] || styles.info;
+        Object.assign(notification.style, style);
+        notification.textContent = message;
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    },
+
+    // Start performance monitoring
+    startPerformanceMonitoring: function() {
+        this.performanceMonitor.startTime = Date.now();
+        this.performanceMonitor.frameCount = 0;
+        this.performanceMonitor.currentFPS = 0;
+        this.performanceMonitor.averageFPS = 0;
+    },
+
+    // Update performance monitoring
+    updatePerformanceMonitoring: function() {
+        this.performanceMonitor.frameCount++;
+        const elapsed = (Date.now() - this.performanceMonitor.startTime) / 1000;
+        
+        if (elapsed > 0) {
+            this.performanceMonitor.currentFPS = this.performanceMonitor.frameCount / elapsed;
+            this.performanceMonitor.averageFPS = this.performanceMonitor.currentFPS;
+        }
+    },
+
+    // Check if background is available for template
     hasBackgroundForTemplate: function(templateKey) {
         return !!this.templateBackgrounds[templateKey];
     },
@@ -382,6 +364,12 @@ window.ChortleBackgrounds = {
         }
         
         this.isInitialized = false;
+
+        // Remove user notifications
+        const notification = document.getElementById('background-notification');
+        if (notification) {
+            notification.remove();
+        }
     },
 
     // Get performance metrics
@@ -403,8 +391,13 @@ window.ChortleBackgrounds = {
             hasSegmentation: !!this.segmentation,
             segmentationActive: this.segmentationActive,
             backgroundImage: !!this.backgroundImage,
+            hasMask: !!this.currentSegmentationMask,
             performance: this.getPerformanceMetrics(),
-            templateBackgrounds: Object.keys(this.templateBackgrounds)
+            templateBackgrounds: Object.keys(this.templateBackgrounds),
+            config: {
+                backgroundsEnabled: window.ChortleConfig?.FEATURES?.backgroundsEnabled,
+                backgroundsDebug: window.ChortleConfig?.FEATURES?.backgroundsDebug
+            }
         };
     }
 };
@@ -419,7 +412,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Small delay to ensure config is loaded
     setTimeout(() => {
         if (window.ChortleConfig?.FEATURES?.backgroundsEnabled) {
-            window.ChortleBackgrounds.initialize();
+            window.ChortleBackgrounds.initialize().then(success => {
+                if (success) {
+                    console.log('🎨 Background system ready');
+                } else {
+                    console.log('⚠️ Background system failed to initialize');
+                }
+            });
+        } else {
+            console.log('🎨 Background system disabled by feature flag');
         }
     }, 100);
 });
