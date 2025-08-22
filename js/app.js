@@ -1,4 +1,4 @@
-/* Chortle v5.6 - App Logic with Native Sharing (Fixed Syntax Only) */
+/* Chortle v5.7 - App Logic with Native Sharing (Fixed Share Buttons) */
 
 window.ChortleApp = {
     // Initialize the main app (renamed from init to match init.js expectations)
@@ -152,56 +152,112 @@ window.ChortleApp = {
         });
     },
 
-    // Setup share page functionality
+    // Setup share page functionality  
     setupSharePage: function() {
-        // Share button with native sharing
-        const shareBtn = document.getElementById('share-chortle');
+        // UPDATED: Share button with native sharing
+        const shareBtn = document.getElementById('share-btn');
         if (shareBtn) {
-            shareBtn.addEventListener('click', () => this.shareChortle());
+            shareBtn.addEventListener('click', () => this.generateAndShareLink());
         }
 
-        // Copy link button (fallback)
+        // UPDATED: Copy link button (fallback)
         const copyBtn = document.getElementById('copy-link');
         if (copyBtn) {
             copyBtn.addEventListener('click', () => this.copyShareLink());
         }
+
+        // Create new chortle button
+        const createNewBtn = document.getElementById('create-new-chortle');
+        if (createNewBtn) {
+            createNewBtn.addEventListener('click', () => this.createNewChortle());
+        }
     },
 
-    // Share chortle with native sharing or fallback
-    shareChortle: async function() {
-        const shareBtn = document.getElementById('share-chortle');
-        const linkInput = document.getElementById('generated-link');
-        
-        if (!linkInput || !linkInput.value) {
-            this.showError('No link to share');
-            return;
-        }
-
+    // UPDATED: Generate and immediately share link with native sharing
+    generateAndShareLink: async function() {
+        const shareBtn = document.getElementById('share-btn');
+        const originalText = shareBtn.textContent;
         shareBtn.classList.add('btn-loading');
         shareBtn.disabled = true;
 
         try {
-            const result = await window.ChortleUtils.shareUrl(linkInput.value, 'Check out my Chortle!');
+            // Debug current state
+            console.log('Share button clicked');
+            console.log('Current wizard state:', window.ChortleState);
             
-            if (result.success) {
-                if (result.method === 'clipboard') {
-                    // Show copy success feedback
-                    const originalText = shareBtn.textContent;
-                    shareBtn.textContent = '✅ Link Copied!';
+            const wizardData = window.ChortleWizard.getWizardData();
+            console.log('Retrieved wizard data:', wizardData);
+            
+            if (!wizardData || Object.keys(wizardData).length === 0) {
+                throw new Error('No wizard data available');
+            }
+            
+            // Generate the shareable link
+            const encodedData = window.ChortleUtils.encodeChortleData(wizardData);
+            if (!encodedData) {
+                throw new Error('Failed to encode chortle data');
+            }
+            
+            const shareableUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
+            console.log('Generated share URL:', shareableUrl);
+            
+            // Try native sharing first, then clipboard fallback
+            const shareResult = await window.ChortleUtils.shareUrl(shareableUrl, 'Check out my Chortle!');
+            
+            if (shareResult.success) {
+                if (shareResult.method === 'native') {
+                    // Native sharing succeeded
+                    shareBtn.textContent = '✅ Shared Successfully!';
                     shareBtn.style.background = '#28a745';
-
+                    
                     setTimeout(() => {
                         shareBtn.textContent = originalText;
                         shareBtn.style.background = '';
-                    }, window.ChortleConfig.UI.copySuccessTimeout);
+                    }, 3000);
+                } else if (shareResult.method === 'clipboard') {
+                    // Fallback to clipboard succeeded
+                    shareBtn.textContent = '📋 Copied to Clipboard!';
+                    shareBtn.style.background = '#17a2b8';
+                    
+                    // Also show the link section for manual sharing
+                    document.getElementById('generated-link').value = shareableUrl;
+                    document.getElementById('link-section').classList.add('active');
+                    
+                    setTimeout(() => {
+                        shareBtn.textContent = originalText;
+                        shareBtn.style.background = '';
+                    }, 3000);
                 }
-                // For native sharing, no additional feedback needed
             } else {
-                this.showError('Failed to share. Please copy the link manually.');
+                // Both native and clipboard failed - show link manually
+                throw new Error('Sharing and clipboard access failed');
             }
+
         } catch (error) {
             console.error('Share error:', error);
-            this.showError('Share failed. Please try again.');
+            
+            // Fallback: show link section for manual copying
+            try {
+                const wizardData = window.ChortleWizard.getWizardData();
+                const encodedData = window.ChortleUtils.encodeChortleData(wizardData);
+                const shareableUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
+                
+                document.getElementById('generated-link').value = shareableUrl;
+                document.getElementById('link-section').classList.add('active');
+                
+                shareBtn.textContent = '📱 Link Ready Below';
+                shareBtn.style.background = '#ffc107';
+                shareBtn.style.color = '#000';
+                
+                setTimeout(() => {
+                    shareBtn.textContent = originalText;
+                    shareBtn.style.background = '';
+                    shareBtn.style.color = '';
+                }, 3000);
+                
+            } catch (fallbackError) {
+                this.showError('Failed to generate sharing link. Please try again.');
+            }
         } finally {
             shareBtn.classList.remove('btn-loading');
             shareBtn.disabled = false;
@@ -213,6 +269,11 @@ window.ChortleApp = {
         const linkInput = document.getElementById('generated-link');
         const copyBtn = document.getElementById('copy-link');
 
+        if (!linkInput || !linkInput.value) {
+            this.showError('No link to copy');
+            return;
+        }
+
         window.ChortleUtils.copyToClipboard(linkInput.value).then(success => {
             if (success) {
                 const originalText = copyBtn.textContent;
@@ -222,7 +283,7 @@ window.ChortleApp = {
                 setTimeout(() => {
                     copyBtn.textContent = originalText;
                     copyBtn.style.background = '';
-                }, window.ChortleConfig.UI.copySuccessTimeout);
+                }, window.ChortleConfig.UI.copySuccessTimeout || 3000);
             } else {
                 alert('Copy failed. Please manually copy this link:\n\n' + linkInput.value);
             }
@@ -513,4 +574,4 @@ window.ChortleApp.init = function() {
     return this.initialize();
 };
 
-console.log('📱 Chortle App v5.6 loaded successfully');
+console.log('📱 Chortle App v5.7 loaded successfully');
