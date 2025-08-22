@@ -440,7 +440,7 @@ showCompletedChortle: function(data) {
     window.ChortleState.currentChortleData = data; // Store the FULL data including template
 
     console.log('Generated story displayed and chortle data stored');
-},
+}
 
     // Update chortle status when video is completed (placeholder - history disabled)
     updateChortleStatus: function(chortleData, videoUrl) {
