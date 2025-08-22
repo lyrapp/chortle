@@ -34,16 +34,6 @@ window.ChortleApp = {
 
     // Setup all event listeners
     setupEventListeners: function() {
-        // Template selection
-        document.addEventListener('click', (e) => {
-            if (e.target.matches('.template-card')) {
-                const templateId = e.target.dataset.template;
-                if (templateId) {
-                    this.selectTemplate(templateId);
-                }
-            }
-        });
-
         // Share button
         const shareBtn = document.getElementById('share-chortle');
         if (shareBtn) {
@@ -124,26 +114,31 @@ window.ChortleApp = {
 
     // Render template cards
     renderTemplates: function() {
-        const container = document.getElementById('template-grid');
+        const container = document.getElementById('template-container');
         if (!container) {
-            console.error('Template grid container not found');
+            console.error('Template container not found');
             return;
         }
 
         const templates = window.ChortleTemplates.getAllTemplates();
-        const isMobile = window.ChortleUtils.isSmallScreen();
         
-        container.innerHTML = Object.keys(templates).map(templateId => {
+        container.innerHTML = '';
+        
+        Object.keys(templates).forEach(templateId => {
             const template = templates[templateId];
-            return `
-                <div class="template-card" data-template="${templateId}">
-                    <div class="template-icon">${this.getTemplateIcon(template.category)}</div>
-                    <h3>${template.title}</h3>
-                    <p class="template-description">${template.description}</p>
-                    <div class="template-category">${template.category}</div>
-                </div>
+            const button = document.createElement('button');
+            button.className = 'template-btn';
+            button.dataset.template = templateId;
+            button.innerHTML = `
+                <div class="template-icon">${this.getTemplateIcon(template.category)}</div>
+                <h3>${template.title}</h3>
+                <p class="template-description">${template.description}</p>
+                <div class="template-category">${template.category}</div>
             `;
-        }).join('');
+            
+            button.addEventListener('click', () => this.selectTemplate(templateId));
+            container.appendChild(button);
+        });
 
         console.log(`Rendered ${Object.keys(templates).length} templates`);
     },
