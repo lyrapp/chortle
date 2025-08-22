@@ -1,10 +1,10 @@
 // Chortle App - Main Application Logic
-// Version 5.3 - Fixed syntax errors and improved error handling
+// Version 5.4 - Fixed syntax errors in showCompletedChortle function
 
 window.ChortleApp = {
     // Initialize the application
     init: function() {
-        console.log('🚀 Initializing Chortle App v5.3...');
+        console.log('🚀 Initializing Chortle App v5.4...');
         
         // Setup error handling first
         this.setupErrorHandling();
@@ -213,18 +213,20 @@ window.ChortleApp = {
         }
     },
 
-    // Show completed chortle
+    // Show completed chortle - FIXED SYNTAX ERROR
     showCompletedChortle: function(data) {
         console.log('Showing completed chortle');
         
         if (!data || !data.template) {
-            this.showError('Invalid chortle data');
+            this.showError('Invalid chortle data. This link may be corrupted.');
             return;
         }
 
         const template = data.template;
         const templateData = { ...data };
         delete templateData.template;
+
+        console.log('Looking for template:', template);
 
         const templateObj = window.ChortleTemplates.getTemplate(template);
         if (!templateObj) {
@@ -233,6 +235,7 @@ window.ChortleApp = {
             return;
         }
 
+        console.log('Template found, showing reading view');
         this.showPage('reading-view');
 
         // Enable backgrounds if available
@@ -249,12 +252,18 @@ window.ChortleApp = {
 
         // Store the complete chortle data for video recording
         window.ChortleState.currentChortleData = data;
-        window.ChortleState.currentStory = story;
 
         // Setup share link
         this.setupShareLink(data);
 
-        console.log('Completed chortle displayed successfully');
+        console.log('Generated story displayed and chortle data stored');
+    },
+
+    // Update chortle status when video is completed
+    updateChortleStatus: function(chortleData, videoUrl) {
+        // History system disabled - this is a placeholder function
+        console.log('History disabled: would update chortle status');
+        return;
     },
 
     // Setup reading view
@@ -557,15 +566,42 @@ window.ChortleApp = {
             webShare: !!(navigator.share)
         };
 
-        console.log('Browser support:', features);
+        console.log('Browser support check:', features);
+
+        // Warn about missing critical features
+        if (!features.mediaRecorder || !features.getUserMedia) {
+            console.warn('Video recording not supported in this browser');
+        }
+
+        if (!features.localStorage) {
+            console.warn('localStorage not supported - history will not be saved');
+        }
+
+        if (features.webShare) {
+            console.log('✅ Native sharing supported');
+        } else {
+            console.log('ℹ️ Native sharing not supported - will use clipboard fallback');
+        }
+
         return features;
     },
 
-    // Update chortle status when video is completed
-    updateChortleStatus: function(chortleData, videoUrl) {
-        console.log('Updating chortle status:', chortleData, videoUrl);
-        // This is a placeholder - history system may be disabled
-        return;
+    // Handle app visibility changes (for cleanup)
+    handleVisibilityChange: function() {
+        if (document.hidden) {
+            // App hidden - cleanup if needed
+            console.log('App hidden - performing cleanup');
+        } else {
+            // App visible
+            console.log('App visible');
+        }
+    },
+
+    // Handle window beforeunload (cleanup)
+    handleBeforeUnload: function() {
+        if (window.ChortleVideo) {
+            window.ChortleVideo.cleanup();
+        }
     }
 };
 
@@ -634,4 +670,4 @@ Chortle Debug Commands:
     }
 };
 
-console.log('📱 Chortle App v5.3 loaded successfully');
+console.log('📱 Chortle App v5.4 loaded successfully');
