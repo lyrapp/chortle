@@ -425,6 +425,13 @@ showCompletedChortle: function(data) {
     console.log('Template found, showing reading view');
     this.showPage('reading-view');
 
+    // In showCompletedChortle() function, add this after template validation:
+    if (templateObj) {
+        // ADD THIS LINE:
+        if (window.ChortleBackgrounds && window.ChortleConfig.FEATURES.backgroundsEnabled) {
+            window.ChortleBackgrounds.enableBackgroundsForTemplate(template);
+        }
+        
     // Render the completed story
     const story = window.ChortleTemplates.renderTemplate(template, templateData);
     document.getElementById('completed-story').innerHTML = story;
