@@ -597,62 +597,75 @@ startPropsDetection: function(preview) {
         img.src = 'chortle-wordmark.png';
     },
 
-     // NEW: Start canvas recording loop with props
-     startCanvasRecording: function() {
-        const preview = document.getElementById('camera-preview');
-        const canvas = this.recordingCanvas;
-        const ctx = this.canvasContext;
+         // NEW: Start canvas recording loop with props
+         startCanvasRecording: function() {
+            const preview = document.getElementById('camera-preview');
+            const canvas = this.recordingCanvas;
+            const ctx = this.canvasContext;
+            
+            if (!preview || !canvas || !ctx) {
+                console.error('Canvas recording setup incomplete');
+                return null;
+            }
+            
+            // Update canvas size to match video
+            canvas.width = preview.videoWidth || 720;
+            canvas.height = preview.videoHeight || 1280;
+            
+            // Start background segmentation if enabled
+            if (window.ChortleBackgrounds && window.ChortleBackgrounds.isEnabled) {
+                window.ChortleBackgrounds.startSegmentation(preview);
+            }
+            
+            // Start drawing loop
+           const drawFrame = () => {
+        if (!this.isRecording) return;
         
-        if (!preview || !canvas || !ctx) {
-            console.error('Canvas recording setup incomplete');
-            return null;
-        }
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Update canvas size to match video
-        canvas.width = preview.videoWidth || 720;
-        canvas.height = preview.videoHeight || 1280;
-        
-        // Start background segmentation if enabled
+        // NEW: Apply background if available (FIXED function name)
         if (window.ChortleBackgrounds && window.ChortleBackgrounds.isEnabled) {
-            window.ChortleBackgrounds.startSegmentation(preview);
+            // Use the correct function name: applyBackgroundToCanvas
+            window.ChortleBackgrounds.applyBackgroundToCanvas(canvas, ctx, preview);
+        } else {
+            // Draw normal video frame (mirrored for recording like preview)
+            ctx.save();
+            ctx.scale(-1, 1); // Mirror horizontally
+            ctx.drawImage(preview, -canvas.width, 0, canvas.width, canvas.height);
+            ctx.restore();
         }
         
-        // Start drawing loop
-        const drawFrame = () => {
-            if (!this.isRecording) return;
-            
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-          
-            // NEW: Draw background if available - FIXED
-            if (window.ChortleBackgrounds && window.ChortleBackgrounds.isEnabled && window.ChortleBackgrounds.backgroundImage) {
-                window.ChortleBackgrounds.drawBackgroundOnCanvas(canvas, ctx, preview);
-            } else {
-                // Draw normal video frame (mirrored for recording like preview)
-                ctx.save();
-                ctx.scale(-1, 1); // Mirror horizontally
-                ctx.drawImage(preview, -canvas.width, 0, canvas.width, canvas.height);
-                ctx.restore();
-            }
-            
-            // Draw watermark if loaded
-            if (this.watermarkImage) {
-                this.drawWatermark(ctx, canvas.width, canvas.height);
-            }
-            
-            // Draw props if available
-            if (window.ChortleProps && window.ChortleProps.isEnabled && window.ChortleProps.propImage) {
-                console.log('🎨 Drawing prop on canvas frame');
-                window.ChortleProps.drawPropOnCanvas(canvas, ctx);
-            }
-                
-            // Draw bottom captions
-            this.drawBottomCaptions(ctx, canvas.width, canvas.height);
-            
-            // Continue drawing
-            requestAnimationFrame(drawFrame);
-        };
+        // Draw watermark if loaded
+        if (this.watermarkImage) {
+            this.drawWatermark(ctx, canvas.width, canvas.height);
+        }
         
+        // Draw props if available
+        if (window.ChortleProps && window.ChortleProps.isEnabled && window.ChortleProps.propImage) {
+            console.log('🎨 Drawing prop on canvas frame');
+            window.ChortleProps.drawPropOnCanvas(canvas, ctx);
+        }
+            
+        // Draw bottom captions
+        this.drawBottomCaptions(ctx, canvas.width, canvas.height);
+        
+        // Continue drawing
+        requestAnimationFrame(drawFrame);
+    };
+
+        // When a template is selected, enable backgrounds
+        function enableBackgroundsForSelectedTemplate(templateKey) {
+            if (window.ChortleBackgrounds && window.ChortleBackgrounds.isInitialized) {
+                const success = window.ChortleBackgrounds.enableBackgroundsForTemplate(templateKey);
+                if (success) {
+                    console.log(`🎨 Background enabled for template: ${templateKey}`);
+                } else {
+                    console.log(`⚠️ No background available for template: ${templateKey}`);
+                }
+            }
+        }
+             
         this.isRecording = true;
         drawFrame();
         
@@ -750,17 +763,17 @@ startPropsDetection: function(preview) {
         // Draw background preview loop
         const drawPreview = () => {
             if (!window.ChortleBackgrounds?.isEnabled || !window.ChortleBackgrounds?.backgroundImage) {
-                // Hide overlay if no background
+                // Hide overlay when backgrounds not active
                 overlay.style.display = 'none';
                 requestAnimationFrame(drawPreview);
                 return;
             }
             
             overlay.style.display = 'block';
-            
-            // Clear and draw background composite
             ctx.clearRect(0, 0, overlay.width, overlay.height);
-            window.ChortleBackgrounds.drawBackgroundOnCanvas(overlay, ctx, videoElement);
+            
+            // Apply background to preview overlay (FIXED function name)
+            window.ChortleBackgrounds.applyBackgroundToCanvas(overlay, ctx, videoElement);
             
             requestAnimationFrame(drawPreview);
         };
