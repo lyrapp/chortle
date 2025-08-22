@@ -1,10 +1,10 @@
 // Chortle App - Main Application Logic
-// Version 5.4 - Fixed syntax errors in showCompletedChortle function
+// Version 5.5 - Fixed initialization method name to match init.js expectations
 
 window.ChortleApp = {
     // Initialize the application
-    init: function() {
-        console.log('🚀 Initializing Chortle App v5.4...');
+    initialize: function() {
+        console.log('🚀 Initializing Chortle App v5.5...');
         
         // Setup error handling first
         this.setupErrorHandling();
@@ -25,6 +25,11 @@ window.ChortleApp = {
         }
         
         console.log('✅ Chortle App initialized successfully');
+    },
+
+    // Alternative init method for backward compatibility
+    init: function() {
+        return this.initialize();
     },
 
     // Setup all event listeners
@@ -670,4 +675,4 @@ Chortle Debug Commands:
     }
 };
 
-console.log('📱 Chortle App v5.4 loaded successfully');
+console.log('📱 Chortle App v5.5 loaded successfully');
