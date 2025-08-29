@@ -1,7 +1,7 @@
-/* Chortle v5.7 - App Logic with Native Sharing (Fixed Share Buttons) */
+/* Chortle v5.7 - App Logic with Native Sharing + Background Integration */
 
 window.ChortleApp = {
-    // Initialize the main app (renamed from init to match init.js expectations)
+    // Initialize the main app
     initialize: function() {
         console.log('Initializing Chortle App v' + window.ChortleConfig.APP.version);
         
@@ -87,7 +87,7 @@ window.ChortleApp = {
         }
     },
 
-    // Handle template selection
+    // Handle template selection - FIXED with background integration
     selectTemplate: function(templateKey) {
         console.log('Template selected:', templateKey);
         
@@ -97,9 +97,18 @@ window.ChortleApp = {
             return;
         }
 
-        // NEW: Auto-load background for selected template
-        if (window.ChortleBackgrounds && window.ChortleConfig.FEATURES.backgroundsEnabled) {
-            window.ChortleBackgrounds.enableBackgroundsForTemplate(templateKey);
+        // FIXED: Enable backgrounds for selected template
+        if (window.ChortleBackgrounds && window.ChortleConfig?.FEATURES?.backgroundsEnabled) {
+            console.log('🎨 Enabling backgrounds for template:', templateKey);
+            const backgroundEnabled = window.ChortleBackgrounds.enableBackgroundsForTemplate(templateKey);
+            
+            if (backgroundEnabled) {
+                console.log('✅ Background system activated for', templateKey);
+            } else {
+                console.log('ℹ️ No background available for', templateKey);
+            }
+        } else {
+            console.log('ℹ️ Background system not available or disabled');
         }
 
         // Setup wizard
@@ -152,243 +161,159 @@ window.ChortleApp = {
         });
     },
 
-    // Setup share page functionality  
+    // Setup share page functionality
     setupSharePage: function() {
-        // UPDATED: Share button with native sharing
-        const shareBtn = document.getElementById('share-btn');
-        if (shareBtn) {
-            shareBtn.addEventListener('click', () => this.generateAndShareLink());
+        // Setup create link button (in wizard)
+        const createLinkBtn = document.getElementById('create-link-btn');
+        if (createLinkBtn) {
+            createLinkBtn.addEventListener('click', () => {
+                this.createSharableLink();
+            });
         }
 
-        // UPDATED: Copy link button (fallback)
-        const copyBtn = document.getElementById('copy-link');
+        // Setup copy button
+        const copyBtn = document.getElementById('copy-link-btn');
         if (copyBtn) {
-            copyBtn.addEventListener('click', () => this.copyShareLink());
+            copyBtn.addEventListener('click', () => {
+                this.copyToClipboard();
+            });
         }
 
-        // Create new chortle button
-        const createNewBtn = document.getElementById('create-new-chortle');
-        if (createNewBtn) {
-            createNewBtn.addEventListener('click', () => this.createNewChortle());
+        // Setup native share button
+        const shareBtn = document.getElementById('native-share-btn');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', () => {
+                this.shareNatively();
+            });
         }
-    },
 
-    // UPDATED: Generate and immediately share link with native sharing
-    generateAndShareLink: async function() {
-        const shareBtn = document.getElementById('share-btn');
-        const originalText = shareBtn.textContent;
-        shareBtn.classList.add('btn-loading');
-        shareBtn.disabled = true;
+        // Setup new chortle button
+        const newChortleBtn = document.getElementById('new-chortle-btn');
+        if (newChortleBtn) {
+            newChortleBtn.addEventListener('click', () => {
+                this.createNewChortle();
+            });
+        }
 
-        try {
-            // Debug current state
-            console.log('Share button clicked');
-            console.log('Current wizard state:', window.ChortleState);
-            
-            const wizardData = window.ChortleWizard.getWizardData();
-            console.log('Retrieved wizard data:', wizardData);
-            
-            if (!wizardData || Object.keys(wizardData).length === 0) {
-                throw new Error('No wizard data available');
-            }
-            
-            // Generate the shareable link
-            const encodedData = window.ChortleUtils.encodeChortleData(wizardData);
-            if (!encodedData) {
-                throw new Error('Failed to encode chortle data');
-            }
-            
-            const shareableUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
-            console.log('Generated share URL:', shareableUrl);
-            
-            // Try native sharing first, then clipboard fallback
-            const shareResult = await window.ChortleUtils.shareUrl(shareableUrl, 'Check out my Chortle!');
-            
-            if (shareResult.success) {
-                if (shareResult.method === 'native') {
-                    // Native sharing succeeded
-                    shareBtn.textContent = '✅ Shared Successfully!';
-                    shareBtn.style.background = '#28a745';
-                    
-                    setTimeout(() => {
-                        shareBtn.textContent = originalText;
-                        shareBtn.style.background = '';
-                    }, 3000);
-                } else if (shareResult.method === 'clipboard') {
-                    // Fallback to clipboard succeeded
-                    shareBtn.textContent = '📋 Copied to Clipboard!';
-                    shareBtn.style.background = '#17a2b8';
-                    
-                    // Also show the link section for manual sharing
-                    document.getElementById('generated-link').value = shareableUrl;
-                    document.getElementById('link-section').classList.add('active');
-                    
-                    setTimeout(() => {
-                        shareBtn.textContent = originalText;
-                        shareBtn.style.background = '';
-                    }, 3000);
-                }
-            } else {
-                // Both native and clipboard failed - show link manually
-                throw new Error('Sharing and clipboard access failed');
-            }
+        // Set up share buttons on reading page
+        const readingCopyBtn = document.getElementById('reading-copy-btn');
+        if (readingCopyBtn) {
+            readingCopyBtn.addEventListener('click', () => {
+                this.copyToClipboard();
+            });
+        }
 
-        } catch (error) {
-            console.error('Share error:', error);
-            
-            // Fallback: show link section for manual copying
-            try {
-                const wizardData = window.ChortleWizard.getWizardData();
-                const encodedData = window.ChortleUtils.encodeChortleData(wizardData);
-                const shareableUrl = window.ChortleUtils.getBaseUrl() + '#chortle=' + encodedData;
-                
-                document.getElementById('generated-link').value = shareableUrl;
-                document.getElementById('link-section').classList.add('active');
-                
-                shareBtn.textContent = '📱 Link Ready Below';
-                shareBtn.style.background = '#ffc107';
-                shareBtn.style.color = '#000';
-                
-                setTimeout(() => {
-                    shareBtn.textContent = originalText;
-                    shareBtn.style.background = '';
-                    shareBtn.style.color = '';
-                }, 3000);
-                
-            } catch (fallbackError) {
-                this.showError('Failed to generate sharing link. Please try again.');
-            }
-        } finally {
-            shareBtn.classList.remove('btn-loading');
-            shareBtn.disabled = false;
+        const readingShareBtn = document.getElementById('reading-share-btn');
+        if (readingShareBtn) {
+            readingShareBtn.addEventListener('click', () => {
+                this.shareNatively();
+            });
         }
     },
 
-    // Copy share link (fallback)
-    copyShareLink: function() {
-        const linkInput = document.getElementById('generated-link');
-        const copyBtn = document.getElementById('copy-link');
-
-        if (!linkInput || !linkInput.value) {
-            this.showError('No link to copy');
-            return;
-        }
-
-        window.ChortleUtils.copyToClipboard(linkInput.value).then(success => {
-            if (success) {
-                const originalText = copyBtn.textContent;
-                copyBtn.textContent = '✅ Copied!';
-                copyBtn.style.background = '#28a745';
-
-                setTimeout(() => {
-                    copyBtn.textContent = originalText;
-                    copyBtn.style.background = '';
-                }, window.ChortleConfig.UI.copySuccessTimeout || 3000);
-            } else {
-                alert('Copy failed. Please manually copy this link:\n\n' + linkInput.value);
-            }
-        });
-    },
-
-    // Setup navigation buttons
+    // Setup navigation
     setupNavigation: function() {
-        // Create new buttons
-        const createNewBtns = document.querySelectorAll('#create-new, #create-another');
-        createNewBtns.forEach(btn => {
-            btn.addEventListener('click', () => this.createNewChortle());
-        });
-
-        // Back buttons
-        const backBtns = document.querySelectorAll('.back-btn');
-        backBtns.forEach(btn => {
-            btn.addEventListener('click', () => this.goBack());
-        });
-    },
-
-    // Setup intro page functionality
-    setupIntroPage: function() {
-        const getStartedBtn = document.getElementById('get-started-btn');
-        if (getStartedBtn) {
-            getStartedBtn.addEventListener('click', () => {
+        // Back to templates from wizard
+        const backBtn = document.getElementById('back-to-templates');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
                 this.showPage('template-selection-page');
             });
         }
     },
 
-    // Create new chortle
+    // Setup intro page
+    setupIntroPage: function() {
+        const getStartedBtn = document.getElementById('get-started-btn');
+        if (getStartedBtn) {
+            console.log('✓ Get Started button found');
+            getStartedBtn.addEventListener('click', () => {
+                console.log('Get Started button clicked');
+                this.startChortle();
+            });
+        } else {
+            console.warn('⚠️ Get Started button not found - retrying...');
+            // Try again after a short delay
+            setTimeout(() => {
+                console.log('Retrying to find Get Started button...');
+                const retryBtn = document.getElementById('get-started-btn');
+                if (retryBtn) {
+                    console.log('✓ Get Started button found on retry');
+                    retryBtn.addEventListener('click', () => {
+                        console.log('Get Started button clicked (retry)');
+                        this.startChortle();
+                    });
+                } else {
+                    console.error('❌ Get Started button still not found on retry');
+                }
+            }, 500);
+        }
+    },
+
+    // Start chortle creation from intro
+    startChortle: function() {
+        console.log('Starting chortle creation...');
+        this.showPage('template-selection-page');
+    },
+ 
+    // Create new chortle (reset app) - FIXED with background cleanup
     createNewChortle: function() {
-        window.ChortleState.reset();
+        // Clear URL hash
+        window.location.hash = '';
+        
+        // Reset app state
+        this.resetApp();
+        
+        // Show template selection
         this.showPage('template-selection-page');
     },
 
-    // Go back to previous page
-    goBack: function() {
-        const currentPage = window.ChortleState.currentPage;
-        
-        switch (currentPage) {
-            case 'wizard-page':
-                this.showPage('template-selection-page');
-                break;
-            case 'share-page':
-                this.showPage('wizard-page');
-                break;
-            case 'reading-view':
-                this.showPage('share-page');
-                break;
-            default:
-                this.showPage('template-selection-page');
+    // Reset app to initial state - FIXED with background cleanup
+    resetApp: function() {
+        // Reset global state
+        Object.assign(window.ChortleState, {
+            currentTemplate: null,
+            currentCategory: 'all',
+            searchTerm: '',
+            currentStep: 0,
+            wizardData: {},
+            currentPage: 'template-selection-page',
+            currentChortleId: null
+        });
+
+        // Reset wizard
+        window.ChortleWizard.reset();
+
+        // Reset share page
+        document.getElementById('link-section')?.classList.remove('active');
+        const linkInput = document.getElementById('generated-link');
+        if (linkInput) {
+            linkInput.value = '';
         }
+
+        // FIXED: Clean up background resources
+        if (window.ChortleBackgrounds) {
+            window.ChortleBackgrounds.cleanup();
+        }
+
+        // Clean up video resources
+        if (window.ChortleVideo) {
+            window.ChortleVideo.cleanup();
+        }
+
+        // Re-render templates
+        this.renderTemplates();
+
+        console.log('App reset complete');
     },
 
-    // Handle wizard completion
-    handleWizardComplete: function(templateKey, formData) {
-        console.log('Wizard completed:', templateKey, formData);
-        
-        // Store the completed data
-        window.ChortleState.currentTemplate = templateKey;
-        window.ChortleState.currentData = formData;
-        
-        // Generate share link
-        const chortleData = {
-            template: templateKey,
-            ...formData
-        };
-        
-        const shareLink = this.generateShareLink(chortleData);
-        if (shareLink) {
-            window.ChortleState.currentShareLink = shareLink;
-            
-            // Update share link input
-            const linkInput = document.getElementById('generated-link');
-            if (linkInput) {
-                linkInput.value = shareLink;
-            }
-        }
-        
-        // Show share page
-        this.showPage('share-page');
-    },
-
-    // Generate share link
-    generateShareLink: function(chortleData) {
-        try {
-            const encodedData = window.ChortleUtils.encodeChortleData(chortleData);
-            if (!encodedData) {
-                throw new Error('Failed to encode chortle data');
-            }
-            
-            const baseUrl = window.ChortleUtils.getBaseUrl();
-            return `${baseUrl}#chortle=${encodedData}`;
-        } catch (error) {
-            console.error('Error generating share link:', error);
-            return null;
-        }
-    },
-
-    // Show completed chortle from share link
+    // Show completed chortle (when someone clicks a link) - FIXED to store data
     showCompletedChortle: function(data) {
-        if (!data || !data.template) {
-            this.showError('Invalid chortle data. This link may be corrupted.');
+        console.log('Showing completed chortle with data:', data);
+
+        // Validate data
+        if (!window.ChortleUtils.validateChortleData(data)) {
+            this.showError('Invalid Chortle data. This link may be corrupted.');
             return;
         }
 
@@ -405,173 +330,164 @@ window.ChortleApp = {
             return;
         }
 
-        console.log('Template found, showing reading view');
-        this.showPage('reading-view');
-
-        // Enable backgrounds if available
-        if (window.ChortleBackgrounds && window.ChortleConfig.FEATURES.backgroundsEnabled) {
+        // FIXED: Enable backgrounds for the completed template
+        if (window.ChortleBackgrounds && window.ChortleConfig?.FEATURES?.backgroundsEnabled) {
+            console.log('🎨 Enabling backgrounds for completed template:', template);
             window.ChortleBackgrounds.enableBackgroundsForTemplate(template);
         }
+
+        // Update global state for completed chortle
+        window.ChortleState.currentTemplate = template;
+        window.ChortleState.wizardData = templateData;
+
+        // Update chortle history with data
+        if (window.ChortleHistory) {
+            window.ChortleHistory.updateChortleData(data.id, templateData);
+        }
+
+        // Populate reading page with data
+        const readingContent = document.getElementById('reading-content');
+        if (readingContent) {
+            const populatedText = window.ChortleUtils.populateTemplate(templateObj.template, templateData);
+            readingContent.textContent = populatedText;
+        }
+
+        // Show reading page
+        this.showPage('reading-page');
+
+        console.log('Completed chortle displayed successfully');
+    },
+
+    // Create sharable link
+    createSharableLink: function() {
+        const wizardData = window.ChortleWizard.getAllData();
+        const template = window.ChortleState.currentTemplate;
         
-        // Render the completed story
-        const story = window.ChortleTemplates.renderTemplate(template, templateData);
-        const storyContainer = document.getElementById('completed-story');
-        if (storyContainer) {
-            storyContainer.innerHTML = story;
+        if (!template || !wizardData || Object.keys(wizardData).length === 0) {
+            this.showError('Please complete all fields first');
+            return;
         }
 
-        // Store the complete chortle data for video recording
-        window.ChortleState.currentChortleData = data;
+        // Generate unique ID
+        const chortleId = window.ChortleUtils.generateId();
+        
+        // Create data object
+        const chortleData = {
+            id: chortleId,
+            template: template,
+            timestamp: Date.now(),
+            ...wizardData
+        };
 
-        console.log('Generated story displayed and chortle data stored');
+        // Save to history
+        if (window.ChortleHistory) {
+            window.ChortleHistory.saveChortle(chortleData);
+        }
+
+        // Store current chortle ID for potential video linking
+        window.ChortleState.currentChortleId = chortleId;
+
+        // Create URL
+        const url = window.ChortleUtils.createShareUrl(chortleData);
+        
+        // Update UI
+        const linkInput = document.getElementById('generated-link');
+        const linkSection = document.getElementById('link-section');
+        
+        if (linkInput && linkSection) {
+            linkInput.value = url;
+            linkSection.classList.add('active');
+        }
+
+        console.log('Sharable link created:', url);
     },
 
-    // Check for incoming links (chortle or video)
-    checkForIncomingLinks: function() {
-        const hash = window.location.hash;
-        console.log('Checking for incoming links, hash:', hash);
+    // Copy link to clipboard
+    copyToClipboard: async function() {
+        const linkInput = document.getElementById('generated-link');
+        
+        if (!linkInput || !linkInput.value) {
+            this.showError('No link to copy');
+            return;
+        }
 
-        if (hash.startsWith('#chortle=')) {
-            try {
-                const chortleData = hash.substring(9);
-                console.log('Found chortle data:', chortleData);
-                const data = window.ChortleUtils.decodeChortleData(chortleData);
-                console.log('Decoded chortle:', data);
-                this.showCompletedChortle(data);
-                return true;
-            } catch (e) {
-                console.error('Invalid chortle data:', e);
-                this.showError('Invalid chortle link. Please check the link and try again.');
-                return false;
+        try {
+            await navigator.clipboard.writeText(linkInput.value);
+            
+            // Update button text temporarily
+            const copyBtn = document.getElementById('copy-link-btn') || document.getElementById('reading-copy-btn');
+            if (copyBtn) {
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = '✓ Copied!';
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
             }
-        } else if (hash.startsWith('#video=')) {
+            
+            console.log('Link copied to clipboard');
+            
+        } catch (err) {
+            console.error('Failed to copy:', err);
+            
+            // Fallback: select the text
+            linkInput.select();
+            linkInput.setSelectionRange(0, 99999);
+            
+            this.showMessage('Link selected - press Ctrl+C to copy');
+        }
+    },
+
+    // Native sharing (if supported)
+    shareNatively: async function() {
+        const linkInput = document.getElementById('generated-link');
+        
+        if (!linkInput || !linkInput.value) {
+            this.showError('No link to share');
+            return;
+        }
+
+        // Check if native sharing is supported
+        if (navigator.share) {
             try {
-                const videoData = hash.substring(7);
-                console.log('Found video data:', videoData);
-                if (window.ChortleVideo) {
-                    window.ChortleVideo.showVideoPlayback(videoData);
+                await navigator.share({
+                    title: 'Check out my Chortle!',
+                    text: 'I created a funny Chortle for you to read and react to!',
+                    url: linkInput.value
+                });
+                console.log('Successfully shared');
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('Error sharing:', err);
+                    this.copyToClipboard(); // Fallback to copy
                 }
-                return true;
-            } catch (e) {
-                console.error('Invalid video data:', e);
-                this.showError('Invalid video link. Please check the link and try again.');
-                return false;
             }
+        } else {
+            // Fallback to copy
+            this.copyToClipboard();
         }
-
-        return false;
     },
 
-    // Show error message
+    // Update chortle status (called from video.js when recording completes)
+    updateChortleStatus: function(chortleId, videoUrl) {
+        if (window.ChortleHistory) {
+            window.ChortleHistory.updateChortleStatus(chortleId, 'completed', {
+                videoUrl: videoUrl,
+                completedAt: Date.now()
+            });
+        }
+        
+        console.log('Chortle status updated:', chortleId, videoUrl);
+    },
+
+    // Error handling
     showError: function(message) {
-        // Remove existing error messages
-        document.querySelectorAll('.error-message').forEach(el => el.remove());
-
-        // Create error element
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-message';
-        errorDiv.style.cssText = `
-            background: #f8d7da;
-            color: #721c24;
-            padding: 12px;
-            border: 1px solid #f5c6cb;
-            border-radius: 4px;
-            margin: 10px 0;
-            font-size: 0.9em;
-        `;
-        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
-
-        // Add to current page
-        const activePage = document.querySelector('.page.active');
-        if (activePage) {
-            activePage.insertBefore(errorDiv, activePage.firstChild);
-        } else {
-            document.body.appendChild(errorDiv);
-        }
-
-        // Auto-remove after timeout
-        setTimeout(() => {
-            errorDiv.remove();
-        }, window.ChortleConfig.UI.errorDisplayTimeout || 5000);
-
-        // Log error
-        window.ChortleUtils.logError(new Error(message), 'UI');
+        console.error('App Error:', message);
+        alert('Error: ' + message); // Simple error display for now
     },
 
-    // Get current app state for debugging
-    getState: function() {
-        return {
-            globalState: window.ChortleState,
-            currentPage: window.ChortleState.currentPage,
-            templateStats: window.ChortleTemplates ? window.ChortleTemplates.getStats() : null,
-            wizardState: window.ChortleWizard ? window.ChortleWizard.debug() : null
-        };
-    },
-
-    // Feature detection and graceful degradation
-    checkBrowserSupport: function() {
-        const features = {
-            mediaRecorder: 'MediaRecorder' in window,
-            getUserMedia: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
-            wakeLock: 'wakeLock' in navigator,
-            vibrate: 'vibrate' in navigator,
-            clipboard: !!(navigator.clipboard && navigator.clipboard.writeText),
-            webGL: !!window.WebGLRenderingContext,
-            localStorage: (() => {
-                try {
-                    const test = 'test';
-                    localStorage.setItem(test, test);
-                    localStorage.removeItem(test);
-                    return true;
-                } catch (e) {
-                    return false;
-                }
-            })(),
-            webShare: !!(navigator.share)
-        };
-
-        console.log('Browser support check:', features);
-
-        // Warn about missing critical features
-        if (!features.mediaRecorder || !features.getUserMedia) {
-            console.warn('Video recording not supported in this browser');
-        }
-
-        if (!features.localStorage) {
-            console.warn('localStorage not supported - history will not be saved');
-        }
-
-        if (features.webShare) {
-            console.log('✅ Native sharing supported');
-        } else {
-            console.log('ℹ️ Native sharing not supported - will use clipboard fallback');
-        }
-
-        return features;
-    },
-
-    // Handle app visibility changes (for cleanup)
-    handleVisibilityChange: function() {
-        if (document.hidden) {
-            // App hidden - cleanup if needed
-            console.log('App hidden - performing cleanup');
-        } else {
-            // App visible
-            console.log('App visible');
-        }
-    },
-
-    // Handle window beforeunload (cleanup)
-    handleBeforeUnload: function() {
-        if (window.ChortleVideo) {
-            window.ChortleVideo.cleanup();
-        }
+    // Show message to user
+    showMessage: function(message) {
+        console.log('App Message:', message);
+        // Could be enhanced with a proper notification system
     }
 };
-
-// Backward compatibility
-window.ChortleApp.init = function() {
-    return this.initialize();
-};
-
-console.log('📱 Chortle App v5.7 loaded successfully');
