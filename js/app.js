@@ -15,6 +15,25 @@ window.ChortleApp = {
         console.log('App initialization complete');
     },
 
+    // Check browser support for various features
+    checkBrowserSupport: function() {
+        return {
+            mediaRecorder: typeof MediaRecorder !== 'undefined',
+            getUserMedia: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+            localStorage: (() => {
+                try {
+                    const test = '__localStorage_test__';
+                    localStorage.setItem(test, test);
+                    localStorage.removeItem(test);
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            })()
+        };
+    },
+
+    
     // Page navigation system
     showPage: function(pageId) {
         // Hide all pages
