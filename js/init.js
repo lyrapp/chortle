@@ -1,4 +1,4 @@
-/* Chortle v5.3 - App Initialization with Props Support */
+/* Chortle v5.3 - App Initialization with Props Support - FIXED */
 
 // MOBILE DEBUG: Add mobile-specific logging
 const isMobileDevice = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -25,7 +25,10 @@ function initializeChortle() {
             return;
         }
         
-        // Check browser support
+        // Initialize modules in order FIRST
+        initializeModules();
+        
+        // FIXED: Check browser support AFTER modules are initialized
         const browserSupport = window.ChortleApp.checkBrowserSupport();
         
         // MOBILE FIX: Only show warnings that don't block the UI on mobile
@@ -41,9 +44,6 @@ function initializeChortle() {
         if (!browserSupport.localStorage && !isMobileDevice) {
             showLocalStorageWarning();
         }
-        
-        // Initialize modules in order
-        initializeModules();
         
         // Setup event listeners
         setupGlobalEventListeners();
@@ -86,7 +86,8 @@ function checkModulesLoaded() {
         'ChortleWizard',
         'ChortleVideo',
         'ChortleApp',
-        'ChortleProps'  // Added props module
+        'ChortleProps',  // Added props module
+        'ChortleBackgrounds'  // NEW: Add backgrounds module
     ];
     
     const missingModules = requiredModules.filter(module => !window[module]);
@@ -122,7 +123,15 @@ function initializeModules() {
             logMobile('⚠️ Props module not loaded (optional)');
         }
         
-        // App (main logic)
+         // NEW: Backgrounds system (v5.4)
+        if (window.ChortleBackgrounds) {
+            logMobile('✓ Backgrounds module loaded');
+            // Backgrounds initialize themselves when enabled
+        } else {
+            logMobile('⚠️ Backgrounds module not loaded (optional)');
+        }
+
+        // App (main logic) - MUST initialize before calling its methods
         if (window.ChortleApp && typeof window.ChortleApp.initialize === 'function') {
             window.ChortleApp.initialize();
             logMobile('✓ App module initialized');
