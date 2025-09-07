@@ -22,12 +22,9 @@ window.ChortleWizard = {
 
         // Setup event listeners
         this.setupEventListeners(template);
-<<<<<<< HEAD
         
         // Setup back to templates button
         this.setupBackToTemplatesButton();
-=======
->>>>>>> 8e9862e9d93a80ec1da206250056eb3650b7c500
 
         // Show first step
         this.showStep(0);
@@ -63,13 +60,8 @@ window.ChortleWizard = {
             ` : ''}
         </div>
         <div class="step-navigation">
-<<<<<<< HEAD
             <button class="nav-btn btn-back" ${index === 0 ? 'data-back-to-templates="true"' : ''}>
                 ←
-=======
-            <button class="nav-btn btn-back" ${index === 0 ? 'style="visibility: hidden;"' : ''}>
-                ← 
->>>>>>> 8e9862e9d93a80ec1da206250056eb3650b7c500
             </button>
             <button class="nav-btn btn-next" disabled>
                 ${index === template.fields.length - 1 ? 'Finish' : 'Next →'}
@@ -125,7 +117,6 @@ setupEventListeners: function(template) {
     // Back button navigation
     document.querySelectorAll('.btn-back').forEach(btn => {
         btn.addEventListener('click', () => {
-<<<<<<< HEAD
             // If this is the first step's back button, go back to templates
             if (btn.dataset.backToTemplates === 'true') {
                 // Ask for confirmation if user has started filling out fields
@@ -142,9 +133,6 @@ setupEventListeners: function(template) {
                 window.ChortleState.wizardData = {};
                 window.ChortleApp.showPage('template-selection-page');
             } else if (window.ChortleState.currentStep > 0) {
-=======
-            if (window.ChortleState.currentStep > 0) {
->>>>>>> 8e9862e9d93a80ec1da206250056eb3650b7c500
                 this.showStep(window.ChortleState.currentStep - 1);
             }
         });
@@ -158,7 +146,6 @@ setupEventListeners: function(template) {
     });
 },
 
-<<<<<<< HEAD
     // Setup back to templates button
     setupBackToTemplatesButton: function() {
         const backBtn = document.getElementById('wizard-back-to-templates');
@@ -183,8 +170,6 @@ setupEventListeners: function(template) {
         }
     },
 
-=======
->>>>>>> 8e9862e9d93a80ec1da206250056eb3650b7c500
     // Handle next button click
     handleNext: function(template) {
         const currentStepElement = document.querySelector(`[data-step="${window.ChortleState.currentStep}"]`);
