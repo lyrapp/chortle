@@ -64,9 +64,12 @@ function initializeChortle() {
         
         logMobile('✅ Chortle initialization complete');
         
+<<<<<<< HEAD
         // Setup development helpers first
         setupDevelopmentHelpers();
         
+=======
+>>>>>>> 8e9862e9d93a80ec1da206250056eb3650b7c500
         // Debug information
         if (window.ChortleDebug) {
             console.log('🐛 Debug mode active');
@@ -585,6 +588,10 @@ function waitForDOMAndInitialize() {
         // Small delay to ensure all scripts are fully loaded
         setTimeout(() => {
             initializeChortle();
+<<<<<<< HEAD
+=======
+            setupDevelopmentHelpers();
+>>>>>>> 8e9862e9d93a80ec1da206250056eb3650b7c500
         }, 50);
     }
 }
@@ -597,6 +604,10 @@ window.addEventListener('load', () => {
         logMobile('Initialization not complete, running backup initialization');
         setTimeout(() => {
             initializeChortle();
+<<<<<<< HEAD
+=======
+            setupDevelopmentHelpers();
+>>>>>>> 8e9862e9d93a80ec1da206250056eb3650b7c500
         }, 200);
     }
 });

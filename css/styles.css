@@ -241,14 +241,18 @@ body {
 .wizard-header {
     text-align: center;
     margin-bottom: 15px;
+<<<<<<< HEAD
     position: relative;
     padding-top: 30px;
+=======
+>>>>>>> 8e9862e9d93a80ec1da206250056eb3650b7c500
 }
 
 .wizard-header h2 {
     display: none; /* Hide "Fill Out Your Chortle" */
 }
 
+<<<<<<< HEAD
 .wizard-back-btn {
     background: rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -269,6 +273,8 @@ body {
     transform: translateX(-2px);
 }
 
+=======
+>>>>>>> 8e9862e9d93a80ec1da206250056eb3650b7c500
 .wizard-header .template-name {
     color: #667eea;
     font-weight: 600;

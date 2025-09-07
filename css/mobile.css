@@ -138,18 +138,10 @@
 /* Ultra-compact wizard for keyboard visibility */
 .wizard-header {
     margin-bottom: 8px; /* Tighter */
-    padding-top: 35px; /* More space for back button on mobile */
 }
 
 .wizard-header .template-name {
     font-size: 1em;
-}
-
-.wizard-back-btn {
-    font-size: 0.8em;
-    padding: 6px 12px;
-    top: 5px;
-    left: 15px;
 }
 
 .progress-bar {
