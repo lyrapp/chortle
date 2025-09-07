@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chortle Props System Demo</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .demo-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #00BBF9;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .status-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #00BBF9;
+        }
+        
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+        }
+        
+        .test-btn {
+            background: #00BBF9;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 1em;
+        }
+        
+        .test-btn:hover {
+            background: #0099CC;
+        }
+        
+        .test-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        
+        .debug-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .template-card {
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .template-card.has-prop {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+        
+        .template-card.no-prop {
+            border-color: #ffc107;
+            background: #fffbf0;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>🎭 Chortle Props System Demo</h1>
+        
+        <div class="status-section">
+            <h3>System Status</h3>
+            <div id="system-status">
+                <p>🔄 Checking system status...</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Props System Tests</h3>
+            <button class="test-btn" onclick="testPropsInitialization()">Test Initialization</button>
+            <button class="test-btn" onclick="testTemplateMapping()">Test Template Mapping</button>
+            <button class="test-btn" onclick="testPropLoading()">Test Prop Loading</button>
+            <button class="test-btn" onclick="testFaceDetection()" id="face-test-btn" disabled>Test Face Detection</button>
+            <button class="test-btn" onclick="showDebugInfo()">Show Debug Info</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>Template → Prop Mapping</h3>
+            <div id="template-mapping"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Debug Output</h3>
+            <div id="debug-output" class="debug-output"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Instructions</h3>
+            <ol>
+                <li><strong>Fix the main errors first:</strong> Make sure you have the corrected <code>js/config.js</code> and <code>js/props.js</code> files</li>
+                <li><strong>Create placeholder prop images:</strong> Create a <code>/props/</code> folder and add simple placeholder images for testing</li>
+                <li><strong>Test the system:</strong> Click the test buttons above to verify each component</li>
+                <li><strong>Check browser console:</strong> Look for any remaining errors</li>
+            </ol>
+            
+            <h4>Required Prop Files:</h4>
+            <ul>
+                <li>props/ghost-hat.png</li>
+                <li>props/sleep-mask.png</li>
+                <li>props/animal-ears.png</li>
+                <li>props/tie.png</li>
+                <li>props/sunglasses.png</li>
+                <li>props/superhero-mask.png</li>
+                <li>props/heart-glasses.png</li>
+                <li>props/bowtie.png</li>
+                <li>props/alien-hat.png</li>
+                <li>props/chef-hat.png</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Load Chortle modules -->
+    <script src="js/config.js"></script>
+    <script src="js/templates.js"></script>
+    <script src="js/props.js"></script>
+
+    <script>
+        let debugLog = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            debugLog.push(logEntry);
+            
+            const output = document.getElementById('debug-output');
+            output.innerHTML = debugLog.slice(-20).join('\n'); // Show last 20 entries
+            output.scrollTop = output.scrollHeight;
+            
+            console.log(message);
+        }
+        
+        function updateSystemStatus() {
+            const statusDiv = document.getElementById('system-status');
+            let status = '';
+            
+            // Check if core modules are loaded
+            const coreModules = ['ChortleConfig', 'ChortleTemplates', 'ChortleProps'];
+            const moduleStatus = coreModules.map(module => {
+                const loaded = !!window[module];
+                return `<p class="${loaded ? 'success' : 'error'}">${loaded ? '✅' : '❌'} ${module}</p>`;
+            }).join('');
+            
+            // Check props feature flag
+            const propsEnabled = window.ChortleConfig?.FEATURES?.propsEnabled;
+            const flagStatus = `<p class="${propsEnabled ? 'success' : 'warning'}">${propsEnabled ? '✅' : '⚠️'} Props Feature Flag: ${propsEnabled ? 'Enabled' : 'Disabled'}</p>`;
+            
+            // Check props initialization
+            const propsInit = window.ChortleProps?.isInitialized;
+            const initStatus = `<p class="${propsInit ? 'success' : 'warning'}">${propsInit ? '✅' : '⚠️'} Props Initialized: ${propsInit ? 'Yes' : 'No'}</p>`;
+            
+            statusDiv.innerHTML = moduleStatus + flagStatus + initStatus;
+            
+            // Enable face detection test if props are initialized
+            const faceTestBtn = document.getElementById('face-test-btn');
+            if (propsInit) {
+                faceTestBtn.disabled = false;
+            }
+        }
+        
+        function showTemplateMapping() {
+            const mappingDiv = document.getElementById('template-mapping');
+            
+            if (!window.ChortleProps || !window.ChortleTemplates) {
+                mappingDiv.innerHTML = '<p class="error">❌ Required modules not loaded</p>';
+                return;
+            }
+            
+            const templates = window.ChortleTemplates.templates;
+            const props = window.ChortleProps.templateProps;
+            
+            let html = '<div class="template-grid">';
+            
+            Object.keys(templates).forEach(templateKey => {
+                const template = templates[templateKey];
+                const hasProp = !!props[templateKey];
+                const propFile = props[templateKey] || 'No prop defined';
+                
+                html += `
+                    <div class="template-card ${hasProp ? 'has-prop' : 'no-prop'}">
+                        <h4>${template.title}</h4>
+                        <p><strong>Template:</strong> ${templateKey}</p>
+                        <p><strong>Prop:</strong> ${propFile}</p>
+                        <p class="${hasProp ? 'success' : 'warning'}">${hasProp ? '✅ Has Prop' : '⚠️ No Prop'}</p>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            mappingDiv.innerHTML = html;
+        }
+        
+        async function testPropsInitialization() {
+            log('🧪 Testing Props Initialization...');
+            
+            if (!window.ChortleProps) {
+                log('❌ ChortleProps module not found', 'error');
+                return;
+            }
+            
+            if (!window.ChortleConfig?.FEATURES?.propsEnabled) {
+                log('⚠️ Props disabled by feature flag', 'warning');
+                return;
+            }
+            
+            try {
+                const result = await window.ChortleProps.initialize();
+                if (result) {
+                    log('✅ Props initialization successful', 'success');
+                } else {
+                    log('❌ Props initialization failed', 'error');
+                }
+            } catch (error) {
+                log(`❌ Props initialization error: ${error.message}`, 'error');
+            }
+            
+            updateSystemStatus();
+        }
+        
+        function testTemplateMapping() {
+            log('🧪 Testing Template Mapping...');
+            
+            if (!window.ChortleProps) {
+                log('❌ ChortleProps module not found', 'error');
+                return;
+            }
+            
+            const templates = Object.keys(window.ChortleTemplates?.templates || {});
+            const props = window.ChortleProps.templateProps;
+            
+            log(`📊 Found ${templates.length} templates`);
+            
+            let withProps = 0;
+            templates.forEach(templateKey => {
+                const hasProp = window.ChortleProps.hasPropsForTemplate(templateKey);
+                if (hasProp) {
+                    withProps++;
+                    const propFile = window.ChortleProps.getPropForTemplate(templateKey);
+                    log(`✅ ${templateKey} → ${propFile}`);
+                } else {
+                    log(`⚠️ ${templateKey} → No prop defined`, 'warning');
+                }
+            });
+            
+            log(`📊 Summary: ${withProps}/${templates.length} templates have props`);
+            showTemplateMapping();
+        }
+        
+        function testPropLoading() {
+            log('🧪 Testing Prop Loading...');
+            
+            if (!window.ChortleProps?.isInitialized) {
+                log('❌ Props system not initialized', 'error');
+                return;
+            }
+            
+            // Test loading a prop for silly-story template
+            const testTemplate = 'silly-story';
+            log(`🔄 Testing prop loading for template: ${testTemplate}`);
+            
+            const success = window.ChortleProps.enablePropsForTemplate(testTemplate);
+            if (success) {
+                log(`✅ Props enabled for ${testTemplate}`, 'success');
+                
+                // Check if prop image loads
+                setTimeout(() => {
+                    if (window.ChortleProps.propImage) {
+                        log('✅ Prop image loaded successfully', 'success');
+                    } else {
+                        log('⚠️ Prop image not yet loaded (may need more time)', 'warning');
+                    }
+                }, 2000);
+            } else {
+                log(`❌ Failed to enable props for ${testTemplate}`, 'error');
+            }
+        }
+        
+        async function testFaceDetection() {
+            log('🧪 Testing Face Detection...');
+            
+            if (!window.ChortleProps?.isInitialized) {
+                log('❌ Props system not initialized', 'error');
+                return;
+            }
+            
+            try {
+                log('🔄 Loading MediaPipe Face Detection...');
+                await window.ChortleProps.loadFaceDetection();
+                log('✅ Face detection loaded successfully', 'success');
+                
+                // Test with dummy data
+                window.ChortleProps.testProps('silly-story');
+                log('✅ Face detection test completed', 'success');
+                
+            } catch (error) {
+                log(`❌ Face detection test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function showDebugInfo() {
+            log('🧪 Collecting Debug Info...');
+            
+            if (!window.ChortleProps) {
+                log('❌ ChortleProps module not found', 'error');
+                return;
+            }
+            
+            const debugInfo = window.ChortleProps.getDebugInfo();
+            log('📊 Debug Info:');
+            Object.keys(debugInfo).forEach(key => {
+                log(`  ${key}: ${JSON.stringify(debugInfo[key])}`);
+            });
+        }
+        
+        // Initialize demo when page loads
+        window.addEventListener('load', () => {
+            log('🎭 Props Demo Page Loaded');
+            updateSystemStatus();
+            showTemplateMapping();
+            
+            // Auto-test initialization if props are enabled
+            setTimeout(() => {
+                if (window.ChortleConfig?.FEATURES?.propsEnabled) {
+                    testPropsInitialization();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
