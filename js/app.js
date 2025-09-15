@@ -12,6 +12,7 @@ window.ChortleApp = {
         this.setupNavigation();
         this.setupIntroPage();
         this.setupHowToPlayModals();
+        this.setupGameDemo();
         
         console.log('App initialization complete');
     },
@@ -660,6 +661,111 @@ showCompletedChortle: function(data) {
                 modal.style.display = 'none';
             }, 300); // Match CSS transition duration
         }
+    },
+
+    // Setup game demo animation
+    setupGameDemo: function() {
+        const sentences = document.querySelectorAll('.sentence');
+
+        // Initialize all blanks to underscores
+        sentences.forEach(sentence => {
+            this.resetSentenceBlanks(sentence);
+        });
+
+        // Start simple cycle
+        this.startSimpleCycle(sentences);
+    },
+
+    // Simple animation cycle - one sentence at a time
+    startSimpleCycle: function(sentences) {
+        let currentIndex = 0;
+
+        const showNextSentence = () => {
+            // Hide all sentences
+            sentences.forEach(s => s.classList.remove('active'));
+
+            // Show current sentence
+            const currentSentence = sentences[currentIndex];
+            currentSentence.classList.add('active');
+
+            // Reset and animate this sentence
+            this.resetSentenceBlanks(currentSentence);
+            this.animateWordsInSequence(currentSentence);
+
+            // Move to next sentence
+            currentIndex = (currentIndex + 1) % sentences.length;
+        };
+
+        // Start immediately
+        showNextSentence();
+
+        // Repeat every 15 seconds
+        setInterval(showNextSentence, 15000);
+    },
+
+    // Animate words in a sentence one by one
+    animateWordsInSequence: function(sentence) {
+        const blanks = sentence.querySelectorAll('.blank');
+        let delay = 1000; // Start after 1 second
+
+        blanks.forEach((blank, index) => {
+            setTimeout(() => {
+                this.fillBlankWithEffect(blank);
+            }, delay);
+
+            // Add time for this word's animation
+            const wordLength = blank.dataset.word.length;
+            delay += (wordLength * 200) + 1500; // Typewriter + effects time
+        });
+    },
+
+    // Reset all blanks in a sentence
+    resetSentenceBlanks: function(sentence) {
+        const blanks = sentence.querySelectorAll('.blank');
+        blanks.forEach(blank => {
+            blank.textContent = '_____';
+            blank.classList.remove('filled', 'typewriter', 'bounce', 'sparkle');
+            blank.style.color = '#cbd5e0';
+        });
+    },
+
+    // Fill a blank with fun effects
+    fillBlankWithEffect: function(blank) {
+        const word = blank.dataset.word;
+
+        // Add typewriter effect
+        this.typewriterEffect(blank, word);
+    },
+
+    // Typewriter effect - letters appear one by one
+    typewriterEffect: function(blank, word) {
+        blank.textContent = '';
+        blank.classList.add('typewriter');
+        blank.style.color = '#FE5946';
+
+        let i = 0;
+        const typeInterval = setInterval(() => {
+            blank.textContent += word[i];
+            i++;
+
+            if (i === word.length) {
+                clearInterval(typeInterval);
+
+                // Remove typewriter class and add bounce
+                blank.classList.remove('typewriter');
+                blank.classList.add('filled', 'bounce');
+
+                // Add sparkle effect after bounce starts
+                setTimeout(() => {
+                    blank.classList.add('sparkle');
+
+                    // Remove sparkle after animation
+                    setTimeout(() => {
+                        blank.classList.remove('sparkle');
+                    }, 1000);
+                }, 300);
+            }
+        }, 200); // Slower typing speed
     }
 };
 

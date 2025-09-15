@@ -876,13 +876,68 @@
         width: 95%;
     }
 
+    /* Ensure mobile stays vertical */
+    .how-to-play-steps {
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+
     .step {
-        flex-direction: column;
-        text-align: center;
-        gap: 15px;
+        flex-direction: row !important;
+        text-align: left !important;
+        gap: 16px !important;
+        align-items: center !important;
     }
 
     .step-image {
         align-self: center;
+    }
+
+    /* Mobile-specific arrow adjustments */
+    .step:not(:last-child)::after {
+        content: "↓" !important;
+        bottom: -18px !important;
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+    }
+
+    /* Game demo mobile adjustments */
+    .game-demo {
+        max-width: 95%;
+        margin-bottom: 15px;
+        min-height: 120px;
+        padding: 15px;
+    }
+
+    .sentence {
+        font-size: 1.5em;
+        padding: 0 5px;
+        font-weight: 600;
+    }
+
+    .sentence .blank {
+        min-width: 70px;
+        margin: 0 3px;
+    }
+
+    /* Mobile intro content */
+    .intro-content {
+        padding: 15px !important;
+    }
+
+    .demo-subtitle {
+        font-size: 1em;
+        margin: 0 0 10px 0;
+    }
+
+    .intro-content .primary-btn {
+        margin-top: 10px;
+        padding: 16px 32px;
+        font-size: 1.1em;
+    }
+
+    .how-to-play-buttons {
+        margin-top: 10px;
     }
 }
