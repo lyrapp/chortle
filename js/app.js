@@ -11,6 +11,7 @@ window.ChortleApp = {
         this.setupSharePage();
         this.setupNavigation();
         this.setupIntroPage();
+        this.setupHowToPlayModals();
         
         console.log('App initialization complete');
     },
@@ -288,7 +289,7 @@ window.ChortleApp = {
     // Setup intro page functionality
     setupIntroPage: function() {
         console.log('Setting up intro page...');
-        
+
         const getStartedBtn = document.getElementById('get-started-btn');
         if (getStartedBtn) {
             console.log('✓ Get Started button found, adding event listener');
@@ -312,6 +313,32 @@ window.ChortleApp = {
                     console.error('❌ Get Started button still not found on retry');
                 }
             }, 500);
+        }
+
+        // Determine which How to Play button to show based on URL context
+        this.setupIntroPageContext();
+    },
+
+    // Setup intro page context to show appropriate How to Play button
+    setupIntroPageContext: function() {
+        const hash = window.location.hash;
+        const senderBtn = document.getElementById('how-to-play-sender-btn');
+        const receiverBtn = document.getElementById('how-to-play-receiver-btn');
+
+        if (!senderBtn || !receiverBtn) {
+            console.error('How to Play buttons not found');
+            return;
+        }
+
+        // Default: show sender button (for people creating Chortles)
+        // Hide receiver button initially
+        senderBtn.style.display = 'inline-block';
+        receiverBtn.style.display = 'none';
+
+        // If they came via a chortle link, show receiver button instead
+        if (hash.startsWith('#chortle=')) {
+            senderBtn.style.display = 'none';
+            receiverBtn.style.display = 'inline-block';
         }
     },
 
@@ -553,6 +580,85 @@ showCompletedChortle: function(data) {
     handleBeforeUnload: function() {
         if (window.ChortleVideo) {
             window.ChortleVideo.cleanup();
+        }
+    },
+
+    // Setup How to Play modals
+    setupHowToPlayModals: function() {
+        // Get modal elements
+        const senderModal = document.getElementById('how-to-play-sender-modal');
+        const receiverModal = document.getElementById('how-to-play-receiver-modal');
+        const senderBtn = document.getElementById('how-to-play-sender-btn');
+        const receiverBtn = document.getElementById('how-to-play-receiver-btn');
+
+        if (!senderModal || !receiverModal || !senderBtn || !receiverBtn) {
+            console.error('How to Play modal elements not found');
+            return;
+        }
+
+        // Sender button click
+        senderBtn.addEventListener('click', () => {
+            this.showHowToPlayModal('sender');
+        });
+
+        // Receiver button click
+        receiverBtn.addEventListener('click', () => {
+            this.showHowToPlayModal('receiver');
+        });
+
+        // Close modal when clicking X or outside modal
+        this.setupModalCloseHandlers(senderModal);
+        this.setupModalCloseHandlers(receiverModal);
+    },
+
+    // Show How to Play modal
+    showHowToPlayModal: function(type) {
+        const modalId = type === 'sender' ? 'how-to-play-sender-modal' : 'how-to-play-receiver-modal';
+        const modal = document.getElementById(modalId);
+
+        if (modal) {
+            modal.style.display = 'block';
+            // Add class for CSS animations if needed
+            setTimeout(() => {
+                modal.classList.add('modal-open');
+            }, 10);
+        }
+    },
+
+    // Setup modal close handlers
+    setupModalCloseHandlers: function(modal) {
+        if (!modal) return;
+
+        // Close button
+        const closeBtn = modal.querySelector('.modal-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                this.closeHowToPlayModal(modal);
+            });
+        }
+
+        // Click outside modal
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                this.closeHowToPlayModal(modal);
+            }
+        });
+
+        // Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('modal-open')) {
+                this.closeHowToPlayModal(modal);
+            }
+        });
+    },
+
+    // Close How to Play modal
+    closeHowToPlayModal: function(modal) {
+        if (modal) {
+            modal.classList.remove('modal-open');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300); // Match CSS transition duration
         }
     }
 };

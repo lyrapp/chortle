@@ -27,9 +27,14 @@
         
         <!-- NEW: Intro Page -->
         <div id="intro-page" class="page active">
-            <div class="intro-content"> 
+            <div class="intro-content">
                 <img src="intro-image.png" alt="Chortle intro" style="width: 300px; height: auto; margin-bottom: 20px;">
                 <button id="get-started-btn" class="primary-btn">Get Started</button>
+
+                <div class="how-to-play-buttons">
+                    <button id="how-to-play-sender-btn" class="secondary-btn">How to Play</button>
+                    <button id="how-to-play-receiver-btn" class="secondary-btn">How to Play</button>
+                </div>
             </div>
         </div>
 
@@ -168,6 +173,85 @@
             </div>
             
             <button id="create-another" class="create-new-btn">🔁 Create Another Chortle</button>
+        </div>
+    </div>
+
+    <!-- How to Play Modals -->
+    <div id="how-to-play-sender-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>How to Play</h2>
+
+            <div class="how-to-play-steps">
+                <div class="step">
+                    <div class="step-image">
+                        <img src="chortle-create-step.png" alt="Create step">
+                    </div>
+                    <div class="step-content">
+                        <h3>1. Create</h3>
+                        <p>Fill in the blanks to create a story</p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-image">
+                        <img src="chortle-send-arrow.png" alt="Send step">
+                    </div>
+                    <div class="step-content">
+                        <h3>2. Send</h3>
+                        <p>Share the story with a friend to perform</p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-image">
+                        <img src="chortle-watch-step.png" alt="Watch step">
+                    </div>
+                    <div class="step-content">
+                        <h3>3. Watch</h3>
+                        <p>Enjoy your friend's video performance</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="how-to-play-receiver-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>How to Play</h2>
+
+            <div class="how-to-play-steps">
+                <div class="step">
+                    <div class="step-image">
+                        <img src="chortle-receive-step.png" alt="Receive step">
+                    </div>
+                    <div class="step-content">
+                        <h3>1. Receive</h3>
+                        <p>Get a custom story from your friend</p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-image">
+                        <img src="chortle-perform-step.png" alt="Perform step">
+                    </div>
+                    <div class="step-content">
+                        <h3>2. Perform</h3>
+                        <p>Record yourself acting out the story</p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-image">
+                        <img src="chortle-send-arrow.png" alt="Send back step">
+                    </div>
+                    <div class="step-content">
+                        <h3>3. Send</h3>
+                        <p>Share your video back with your friend</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
