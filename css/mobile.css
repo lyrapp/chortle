@@ -862,11 +862,11 @@
         flex-direction: column;
         align-items: center;
         gap: 10px;
-        margin-top: 20px;
+        margin-top: 60px;
     }
 
     .how-to-play-buttons .secondary-btn {
-        width: 200px;
+        /* Remove fixed width to hug contents */
     }
 
     /* Modal mobile adjustments */
@@ -968,6 +968,7 @@
 
     .intro-content .primary-btn {
         margin-top: 10px;
+        margin-bottom: 16px;
         padding: 16px 32px;
         font-size: 1.1em;
     }

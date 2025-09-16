@@ -1078,12 +1078,14 @@ body {
 /* Intro Page */
 .intro-content {
     text-align: center;
-    padding: 20px 0;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     min-height: 400px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .intro-tagline {
@@ -1276,11 +1278,11 @@ body {
     display: flex;
     gap: 15px;
     justify-content: center;
-    margin-top: 20px;
+    margin-top: 60px;
 }
 
 .how-to-play-buttons .secondary-btn {
-    min-width: 120px;
+    /* Remove fixed width to hug contents */
 }
 
 /* Modal Styles */
@@ -1462,6 +1464,8 @@ body {
     background: rgba(255, 255, 255, 0.8);
     border-radius: 16px;
     border: 2px solid rgba(254, 89, 70, 0.1);
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .sentence {
@@ -1469,11 +1473,15 @@ body {
     font-size: 1.8em;
     font-weight: 600;
     line-height: 1.5;
-    text-align: center;
+    text-align: center !important;
     color: #2D3748;
     opacity: 0;
-    position: absolute;
-    width: 100%;
+    position: absolute !important;
+    width: calc(100% - 40px) !important;
+    left: 20px !important;
+    right: 20px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
     transition: opacity 0.5s ease;
 }
 
@@ -1562,25 +1570,16 @@ body {
 
 @keyframes sparkle {
     0% {
-        box-shadow: 0 0 0 rgba(254, 89, 70, 0);
+        text-shadow: none;
     }
     25% {
-        box-shadow:
-            0 0 10px rgba(254, 89, 70, 0.4),
-            0 0 20px rgba(254, 89, 70, 0.2),
-            0 0 30px rgba(254, 89, 70, 0.1);
-        text-shadow: 0 0 10px rgba(254, 89, 70, 0.3);
+        text-shadow: 0 0 10px rgba(254, 89, 70, 0.4);
     }
     50% {
-        box-shadow:
-            0 0 15px rgba(254, 89, 70, 0.6),
-            0 0 25px rgba(254, 89, 70, 0.3),
-            0 0 35px rgba(254, 89, 70, 0.2);
-        text-shadow: 0 0 15px rgba(254, 89, 70, 0.5);
+        text-shadow: 0 0 15px rgba(254, 89, 70, 0.6);
         transform: scale(1.05);
     }
     100% {
-        box-shadow: 0 0 0 rgba(254, 89, 70, 0);
         text-shadow: none;
         transform: scale(1);
     }
@@ -1597,13 +1596,11 @@ body {
     opacity: 0.9;
 }
 
-/* Intro content spacing */
-.intro-content {
-    padding: 20px;
-}
+/* Removed duplicate - centering handled by main .intro-content rule above */
 
 .intro-content .primary-btn {
     margin-top: 15px;
+    margin-bottom: 16px;
 }
 
 .how-to-play-buttons {
@@ -1620,7 +1617,7 @@ body {
     transition: opacity 0.3s ease;
     font-family: 'Outfit', sans-serif;
     position: absolute;
-    bottom: -8px;
+    bottom: 8px;
     right: 8px;
     background: rgba(255, 255, 255, 0.95);
     border-radius: 12px;

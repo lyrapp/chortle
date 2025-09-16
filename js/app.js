@@ -736,7 +736,10 @@ showCompletedChortle: function(data) {
     resetSentenceBlanks: function(sentence) {
         const blanks = sentence.querySelectorAll('.blank');
         blanks.forEach(blank => {
-            blank.textContent = '_____';
+            // Create underscores matching the word length
+            const word = blank.dataset.word;
+            const underscores = '_'.repeat(word.length);
+            blank.textContent = underscores;
             blank.classList.remove('filled', 'typewriter', 'bounce', 'sparkle');
             blank.style.color = '#cbd5e0';
         });
@@ -752,6 +755,12 @@ showCompletedChortle: function(data) {
 
     // Typewriter effect - letters appear one by one
     typewriterEffect: function(blank, word) {
+        // Store the current width to prevent layout shift
+        const currentWidth = blank.offsetWidth;
+        blank.style.width = currentWidth + 'px';
+        blank.style.display = 'inline-block';
+
+        // Start with empty content but maintain width
         blank.textContent = '';
         blank.classList.add('typewriter');
         blank.style.color = '#FE5946';
@@ -763,6 +772,9 @@ showCompletedChortle: function(data) {
 
             if (i === word.length) {
                 clearInterval(typeInterval);
+
+                // Remove fixed width and restore natural width
+                blank.style.width = '';
 
                 // Remove typewriter class and add bounce
                 blank.classList.remove('typewriter');
