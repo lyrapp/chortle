@@ -871,41 +871,76 @@
 
     /* Modal mobile adjustments */
     .modal-content {
-        margin: 10% auto;
-        padding: 25px;
+        margin: 2% auto;
+        padding: 15px;
         width: 95%;
+        max-width: none;
+        text-align: center;
+        max-height: 90vh;
+        overflow-y: auto;
     }
 
-    /* Ensure mobile stays vertical */
+    /* Ensure mobile stays vertical with images above text */
     .how-to-play-steps {
         flex-direction: column !important;
-        gap: 12px !important;
+        gap: 8px !important;
+        align-items: center !important;
     }
 
     .step {
-        flex-direction: row !important;
-        text-align: left !important;
-        gap: 16px !important;
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 2px !important;
         align-items: center !important;
+        padding: 12px 10px !important;
+        width: 100% !important;
+        max-width: 280px !important;
     }
 
     .step-image {
         align-self: center;
+        width: 48px !important;
+        height: 48px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+    }
+
+    .step-image img {
+        width: 48px !important;
+        height: 48px !important;
+    }
+
+    .step-content h3 {
+        font-size: 1.1em !important;
+        margin: 0 0 2px 0 !important;
+    }
+
+    .step-content p {
+        font-size: 0.9em !important;
+        margin: 0 !important;
+        line-height: 1.3 !important;
+    }
+
+    .modal h2 {
+        font-size: 1.4em !important;
+        margin-bottom: 15px !important;
     }
 
     /* Mobile-specific arrow adjustments */
     .step:not(:last-child)::after {
         content: "↓" !important;
-        bottom: -18px !important;
+        bottom: -12px !important;
         left: 50% !important;
         right: auto !important;
         transform: translateX(-50%) !important;
+        font-size: 14px !important;
     }
 
     /* Game demo mobile adjustments */
     .game-demo {
         max-width: 95%;
-        margin-bottom: 15px;
+        margin: 0 auto 15px auto;
         min-height: 120px;
         padding: 15px;
     }

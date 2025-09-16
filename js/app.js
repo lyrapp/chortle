@@ -607,6 +607,14 @@ showCompletedChortle: function(data) {
             this.showHowToPlayModal('receiver');
         });
 
+        // Reading view how to play button
+        const readingHowToPlayBtn = document.getElementById('reading-how-to-play-btn');
+        if (readingHowToPlayBtn) {
+            readingHowToPlayBtn.addEventListener('click', () => {
+                this.showHowToPlayModal('receiver');
+            });
+        }
+
         // Close modal when clicking X or outside modal
         this.setupModalCloseHandlers(senderModal);
         this.setupModalCloseHandlers(receiverModal);
@@ -717,6 +725,11 @@ showCompletedChortle: function(data) {
             const wordLength = blank.dataset.word.length;
             delay += (wordLength * 200) + 1500; // Typewriter + effects time
         });
+
+        // Show recording indicator after all animations complete
+        // Add small buffer for effects to finish, then show recording for remaining time
+        const recordingStartDelay = delay + 500; // 500ms buffer after all effects
+        this.showRecordingIndicator(recordingStartDelay);
     },
 
     // Reset all blanks in a sentence
@@ -766,6 +779,26 @@ showCompletedChortle: function(data) {
                 }, 300);
             }
         }, 200); // Slower typing speed
+    },
+
+    // Show recording indicator for remaining time in 15-second cycle
+    showRecordingIndicator: function(delayMs) {
+        const recordingIndicator = document.getElementById('recording-indicator');
+        if (!recordingIndicator) return;
+
+        setTimeout(() => {
+            // Show recording indicator
+            recordingIndicator.classList.add('visible');
+
+            // Calculate remaining time until 15-second cycle ends
+            // Show for ~2-3 seconds or whatever time is left
+            const showDuration = Math.min(3000, 15000 - delayMs - 300); // 300ms buffer before next cycle
+
+            setTimeout(() => {
+                // Hide recording indicator
+                recordingIndicator.classList.remove('visible');
+            }, showDuration);
+        }, delayMs);
     }
 };
 

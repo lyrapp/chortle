@@ -1609,3 +1609,49 @@ body {
 .how-to-play-buttons {
     margin-top: 15px;
 }
+
+/* Recording Indicator */
+.recording-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 8px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    font-family: 'Outfit', sans-serif;
+    position: absolute;
+    bottom: -8px;
+    right: 8px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: rotate(-8deg);
+}
+
+.recording-indicator.visible {
+    opacity: 1;
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+.recording-text {
+    font-size: 0.8em;
+    font-weight: 600;
+    color: #2D3748;
+    white-space: nowrap;
+}
+
+@keyframes badgePulse {
+    0% {
+        transform: rotate(-8deg) scale(1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    50% {
+        transform: rotate(-8deg) scale(1.02);
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+    }
+    100% {
+        transform: rotate(-8deg) scale(1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+}
