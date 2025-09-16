@@ -11,6 +11,8 @@ window.ChortleApp = {
         this.setupSharePage();
         this.setupNavigation();
         this.setupIntroPage();
+        this.setupHowToPlayModals();
+        this.setupGameDemo();
         
         console.log('App initialization complete');
     },
@@ -288,7 +290,7 @@ window.ChortleApp = {
     // Setup intro page functionality
     setupIntroPage: function() {
         console.log('Setting up intro page...');
-        
+
         const getStartedBtn = document.getElementById('get-started-btn');
         if (getStartedBtn) {
             console.log('✓ Get Started button found, adding event listener');
@@ -312,6 +314,32 @@ window.ChortleApp = {
                     console.error('❌ Get Started button still not found on retry');
                 }
             }, 500);
+        }
+
+        // Determine which How to Play button to show based on URL context
+        this.setupIntroPageContext();
+    },
+
+    // Setup intro page context to show appropriate How to Play button
+    setupIntroPageContext: function() {
+        const hash = window.location.hash;
+        const senderBtn = document.getElementById('how-to-play-sender-btn');
+        const receiverBtn = document.getElementById('how-to-play-receiver-btn');
+
+        if (!senderBtn || !receiverBtn) {
+            console.error('How to Play buttons not found');
+            return;
+        }
+
+        // Default: show sender button (for people creating Chortles)
+        // Hide receiver button initially
+        senderBtn.style.display = 'inline-block';
+        receiverBtn.style.display = 'none';
+
+        // If they came via a chortle link, show receiver button instead
+        if (hash.startsWith('#chortle=')) {
+            senderBtn.style.display = 'none';
+            receiverBtn.style.display = 'inline-block';
         }
     },
 
@@ -554,6 +582,235 @@ showCompletedChortle: function(data) {
         if (window.ChortleVideo) {
             window.ChortleVideo.cleanup();
         }
+    },
+
+    // Setup How to Play modals
+    setupHowToPlayModals: function() {
+        // Get modal elements
+        const senderModal = document.getElementById('how-to-play-sender-modal');
+        const receiverModal = document.getElementById('how-to-play-receiver-modal');
+        const senderBtn = document.getElementById('how-to-play-sender-btn');
+        const receiverBtn = document.getElementById('how-to-play-receiver-btn');
+
+        if (!senderModal || !receiverModal || !senderBtn || !receiverBtn) {
+            console.error('How to Play modal elements not found');
+            return;
+        }
+
+        // Sender button click
+        senderBtn.addEventListener('click', () => {
+            this.showHowToPlayModal('sender');
+        });
+
+        // Receiver button click
+        receiverBtn.addEventListener('click', () => {
+            this.showHowToPlayModal('receiver');
+        });
+
+        // Reading view how to play button
+        const readingHowToPlayBtn = document.getElementById('reading-how-to-play-btn');
+        if (readingHowToPlayBtn) {
+            readingHowToPlayBtn.addEventListener('click', () => {
+                this.showHowToPlayModal('receiver');
+            });
+        }
+
+        // Close modal when clicking X or outside modal
+        this.setupModalCloseHandlers(senderModal);
+        this.setupModalCloseHandlers(receiverModal);
+    },
+
+    // Show How to Play modal
+    showHowToPlayModal: function(type) {
+        const modalId = type === 'sender' ? 'how-to-play-sender-modal' : 'how-to-play-receiver-modal';
+        const modal = document.getElementById(modalId);
+
+        if (modal) {
+            modal.style.display = 'block';
+            // Add class for CSS animations if needed
+            setTimeout(() => {
+                modal.classList.add('modal-open');
+            }, 10);
+        }
+    },
+
+    // Setup modal close handlers
+    setupModalCloseHandlers: function(modal) {
+        if (!modal) return;
+
+        // Close button
+        const closeBtn = modal.querySelector('.modal-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                this.closeHowToPlayModal(modal);
+            });
+        }
+
+        // Click outside modal
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                this.closeHowToPlayModal(modal);
+            }
+        });
+
+        // Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('modal-open')) {
+                this.closeHowToPlayModal(modal);
+            }
+        });
+    },
+
+    // Close How to Play modal
+    closeHowToPlayModal: function(modal) {
+        if (modal) {
+            modal.classList.remove('modal-open');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300); // Match CSS transition duration
+        }
+    },
+
+    // Setup game demo animation
+    setupGameDemo: function() {
+        const sentences = document.querySelectorAll('.sentence');
+
+        // Initialize all blanks to underscores
+        sentences.forEach(sentence => {
+            this.resetSentenceBlanks(sentence);
+        });
+
+        // Start simple cycle
+        this.startSimpleCycle(sentences);
+    },
+
+    // Simple animation cycle - one sentence at a time
+    startSimpleCycle: function(sentences) {
+        let currentIndex = 0;
+
+        const showNextSentence = () => {
+            // Hide all sentences
+            sentences.forEach(s => s.classList.remove('active'));
+
+            // Show current sentence
+            const currentSentence = sentences[currentIndex];
+            currentSentence.classList.add('active');
+
+            // Reset and animate this sentence
+            this.resetSentenceBlanks(currentSentence);
+            this.animateWordsInSequence(currentSentence);
+
+            // Move to next sentence
+            currentIndex = (currentIndex + 1) % sentences.length;
+        };
+
+        // Start immediately
+        showNextSentence();
+
+        // Repeat every 15 seconds
+        setInterval(showNextSentence, 15000);
+    },
+
+    // Animate words in a sentence one by one
+    animateWordsInSequence: function(sentence) {
+        const blanks = sentence.querySelectorAll('.blank');
+        let delay = 1000; // Start after 1 second
+
+        blanks.forEach((blank, index) => {
+            setTimeout(() => {
+                this.fillBlankWithEffect(blank);
+            }, delay);
+
+            // Add time for this word's animation
+            const wordLength = blank.dataset.word.length;
+            delay += (wordLength * 200) + 1500; // Typewriter + effects time
+        });
+
+        // Show recording indicator after all animations complete
+        // Add small buffer for effects to finish, then show recording for remaining time
+        const recordingStartDelay = delay + 500; // 500ms buffer after all effects
+        this.showRecordingIndicator(recordingStartDelay);
+    },
+
+    // Reset all blanks in a sentence
+    resetSentenceBlanks: function(sentence) {
+        const blanks = sentence.querySelectorAll('.blank');
+        blanks.forEach(blank => {
+            // Create underscores matching the word length
+            const word = blank.dataset.word;
+            const underscores = '_'.repeat(word.length);
+            blank.textContent = underscores;
+            blank.classList.remove('filled', 'typewriter', 'bounce', 'sparkle');
+            blank.style.color = '#cbd5e0';
+        });
+    },
+
+    // Fill a blank with fun effects
+    fillBlankWithEffect: function(blank) {
+        const word = blank.dataset.word;
+
+        // Add typewriter effect
+        this.typewriterEffect(blank, word);
+    },
+
+    // Typewriter effect - letters appear one by one
+    typewriterEffect: function(blank, word) {
+        // Store the current width to prevent layout shift
+        const currentWidth = blank.offsetWidth;
+        blank.style.width = currentWidth + 'px';
+        blank.style.display = 'inline-block';
+
+        // Start with empty content but maintain width
+        blank.textContent = '';
+        blank.classList.add('typewriter');
+        blank.style.color = '#FE5946';
+
+        let i = 0;
+        const typeInterval = setInterval(() => {
+            blank.textContent += word[i];
+            i++;
+
+            if (i === word.length) {
+                clearInterval(typeInterval);
+
+                // Remove fixed width and restore natural width
+                blank.style.width = '';
+
+                // Remove typewriter class and add bounce
+                blank.classList.remove('typewriter');
+                blank.classList.add('filled', 'bounce');
+
+                // Add sparkle effect after bounce starts
+                setTimeout(() => {
+                    blank.classList.add('sparkle');
+
+                    // Remove sparkle after animation
+                    setTimeout(() => {
+                        blank.classList.remove('sparkle');
+                    }, 1000);
+                }, 300);
+            }
+        }, 200); // Slower typing speed
+    },
+
+    // Show recording indicator for remaining time in 15-second cycle
+    showRecordingIndicator: function(delayMs) {
+        const recordingIndicator = document.getElementById('recording-indicator');
+        if (!recordingIndicator) return;
+
+        setTimeout(() => {
+            // Show recording indicator
+            recordingIndicator.classList.add('visible');
+
+            // Calculate remaining time until 15-second cycle ends
+            // Show for ~2-3 seconds or whatever time is left
+            const showDuration = Math.min(3000, 15000 - delayMs - 300); // 300ms buffer before next cycle
+
+            setTimeout(() => {
+                // Hide recording indicator
+                recordingIndicator.classList.remove('visible');
+            }, showDuration);
+        }, delayMs);
     }
 };
 

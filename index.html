@@ -27,9 +27,43 @@
         
         <!-- NEW: Intro Page -->
         <div id="intro-page" class="page active">
-            <div class="intro-content"> 
-                <img src="intro-image.png" alt="Chortle intro" style="width: 300px; height: auto; margin-bottom: 20px;">
+            <div class="intro-content">
+                <h3 class="demo-subtitle" style="color: #000000; font-size: 1.4em; font-weight: 700;">Stories with friends</h3>
+                <div class="game-demo">
+                    <div class="sentence" id="sentence1">
+                        <span class="text">The</span>
+                        <span class="blank" data-word="breathtaking">_____</span>
+                        <span class="text">elephant</span>
+                        <span class="blank" data-word="plays jazz">_____</span>
+                        <span class="text">in the kitchen.</span>
+                    </div>
+
+                    <div class="sentence" id="sentence2">
+                        <span class="text">My</span>
+                        <span class="blank" data-word="saucy">_____</span>
+                        <span class="text">teacher loves to</span>
+                        <span class="blank" data-word="fart">_____</span>
+                        <span class="text">loudly.</span>
+                    </div>
+
+                    <div class="sentence" id="sentence3">
+                        <span class="text">Yesterday I</span>
+                        <span class="blank" data-word="accidentally">_____</span>
+                        <span class="text">ate a</span>
+                        <span class="blank" data-word="microscopic">_____</span>
+                        <span class="text">sandwich.</span>
+                    </div>
+                    <div class="recording-indicator" id="recording-indicator">
+                        <div class="recording-text">🔴 Start Recording!</div>
+                    </div>
+                </div>
+
                 <button id="get-started-btn" class="primary-btn">Get Started</button>
+
+                <div class="how-to-play-buttons">
+                    <button id="how-to-play-sender-btn" class="secondary-btn">How to Play</button>
+                    <button id="how-to-play-receiver-btn" class="secondary-btn">How to Play</button>
+                </div>
             </div>
         </div>
 
@@ -102,16 +136,20 @@
 
         <!-- Reading View (for people who click Chortle links) -->
         <div id="reading-view" class="page reading-view">
-            <h2 style="text-align: center; color: #667eea; margin-bottom: 20px;"> You got a Chortle!</h2>
+            <h2 style="text-align: center; color: #000000; margin-bottom: 20px;"> You got a Chortle!</h2>
             <p style="text-align: center; margin-bottom: 30px; font-size: 1.1em;">Read the story when recording:</p>
-            
+
             <!-- Hide the completed story - it will only show during recording -->
             <div id="completed-story" class="completed-madlib" style="display: none;"></div>
-            
+
             <!-- Video Recording Section -->
                 <div id="camera-setup" class="camera-setup">
                         <img src="recording-graphic.png" alt="Caption location guide" style="width: 200px; height: auto; margin-bottom: 30px; border-radius: 12px;">
                     <button id="start-camera" class="video-btn primary-btn">📹 Record & Read</button>
+
+                    <div style="text-align: center; margin-top: 8px;">
+                        <button id="reading-how-to-play-btn" class="secondary-btn" style="margin: 16px auto 0 auto !important;">How to Play</button>
+                    </div>
                 </div>
                 
                 <div id="recording-area" class="recording-area" style="display: none;">
@@ -168,6 +206,85 @@
             </div>
             
             <button id="create-another" class="create-new-btn">🔁 Create Another Chortle</button>
+        </div>
+    </div>
+
+    <!-- How to Play Modals -->
+    <div id="how-to-play-sender-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>How to Play</h2>
+
+            <div class="how-to-play-steps">
+                <div class="step">
+                    <div class="step-image">
+                        <img src="chortle-create-step.png" alt="Create step">
+                    </div>
+                    <div class="step-content">
+                        <h3>1. Create</h3>
+                        <p>Fill in the blanks to create a story</p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-image">
+                        <img src="chortle-send-arrow.png" alt="Send step">
+                    </div>
+                    <div class="step-content">
+                        <h3>2. Send</h3>
+                        <p>Share the story with a friend to perform</p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-image">
+                        <img src="chortle-watch-step.png" alt="Watch step">
+                    </div>
+                    <div class="step-content">
+                        <h3>3. Watch</h3>
+                        <p>Enjoy your friend's video performance</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="how-to-play-receiver-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>How to Play</h2>
+
+            <div class="how-to-play-steps">
+                <div class="step">
+                    <div class="step-image">
+                        <img src="chortle-create-step.png" alt="Receive step">
+                    </div>
+                    <div class="step-content">
+                        <h3>1. Receive</h3>
+                        <p>You got a custom story (this Chortle) from your friend</p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-image">
+                        <img src="chortle-watch-step.png" alt="Perform step">
+                    </div>
+                    <div class="step-content">
+                        <h3>2. Perform</h3>
+                        <p>Record yourself acting out the story</p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-image">
+                        <img src="chortle-send-arrow.png" alt="Send back step">
+                    </div>
+                    <div class="step-content">
+                        <h3>3. Send</h3>
+                        <p>Share your video back with your friend</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
