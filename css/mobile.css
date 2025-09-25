@@ -154,44 +154,10 @@
     margin-top: 5px;
 }
 
-    /* CTA buttons on mobile */
-    .btn-next,
-    .share-btn,
-    .video-btn,
-    .copy-btn,
-    .create-new-btn,
-    .primary-btn {
-        background: #00BBF9 !important;
-        color: white !important;
-        box-shadow: 5px 5px 0px #000000 !important;
-        font-family: 'Outfit', sans-serif !important;
-        font-weight: 600 !important;
-    }
-
-    .btn-next:hover,
-    .share-btn:hover,
-    .video-btn:hover,
-    .copy-btn:hover,
-    .create-new-btn:hover,
-    .primary-btn:hover {
-        background: #0099CC !important;
-        box-shadow: 7px 7px 0px #000000 !important;
-    }
-
-    .secondary-btn {
-        background: transparent !important;
-        color: #2D3748 !important;
-        border: 2px solid #e2e8f0 !important;
-        padding: 12px 24px !important;
-        font-size: 1em !important;
-        font-weight: 500 !important;
-        box-shadow: none !important;
-    }
-    
-    .secondary-btn:hover {
-        background: #f7fafc !important;
-        border-color: #cbd5e0 !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    /* Mobile responsive button sizes */
+    .primary-btn, .secondary-btn {
+        padding: 12px 20px !important;
+        font-size: 0.95em !important;
     }
 
     /* Share Page Mobile */
@@ -709,23 +675,15 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
-    /* CTA button shadows on mobile */
-    .btn-next,
-    .share-btn,
-    .video-btn:not(.record-btn):not(.stop-btn):not(#re-record),
-    .copy-btn,
-    .create-new-btn,
-    .primary-btn {
-        box-shadow: 3px 3px 0px #000000 !important;
-    }
-
-    .btn-next:hover,
-    .share-btn:hover,
-    .video-btn:not(.record-btn):not(.stop-btn):not(#re-record):hover,
-    .copy-btn:hover,
-    .create-new-btn:hover,
-    .primary-btn:hover {
-        box-shadow: 5px 5px 0px #000000 !important;
+    /* Mobile button touch adjustments */
+    .btn-next:active,
+    .share-btn:active,
+    .video-btn:active,
+    .copy-btn:active,
+    .create-new-btn:active,
+    .primary-btn:active,
+    .secondary-btn:active {
+        transform: translateY(1px) !important;
     }
 }
 
@@ -940,9 +898,9 @@
     /* Game demo mobile adjustments */
     .game-demo {
         max-width: 95%;
-        margin: 0 auto 15px auto;
-        min-height: 120px;
-        padding: 15px;
+        margin: 5px auto 20px auto;
+        min-height: 140px;
+        padding: 25px 15px;
     }
 
     .sentence {
