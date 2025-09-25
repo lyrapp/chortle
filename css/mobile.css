@@ -898,9 +898,9 @@
     /* Game demo mobile adjustments */
     .game-demo {
         max-width: 95%;
-        margin: 0 auto 15px auto;
-        min-height: 120px;
-        padding: 15px;
+        margin: 5px auto 20px auto;
+        min-height: 140px;
+        padding: 25px 15px;
     }
 
     .sentence {
