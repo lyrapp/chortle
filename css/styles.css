@@ -371,33 +371,100 @@ body {
 }
 
 .btn-next {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
     flex: 1; /* Take up remaining 75% width */
 }
 
-/* CTA Buttons - Sky blue with black drop shadow */
+/* Primary CTA Button */
+.primary-btn {
+    background: linear-gradient(180deg, #00D4FF 0%, #00BBF9 50%, #0099CC 100%) !important;
+    color: white !important;
+    border: 3px solid #0088BB !important;
+    padding: 15px 30px !important;
+    border-radius: 50px !important;
+    font-size: 1em !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 6px 0 #0077AA, 0 8px 15px rgba(0, 0, 0, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.4) !important;
+    font-family: 'Outfit', sans-serif !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.primary-btn:hover {
+    background: linear-gradient(180deg, #00E6FF 0%, #00D4FF 50%, #00BBF9 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 0 #0077AA, 0 12px 20px rgba(0, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.5) !important;
+}
+
+.primary-btn:active {
+    transform: translateY(2px) !important;
+    box-shadow: 0 2px 0 #0077AA, 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Secondary CTA Button */
+.secondary-btn {
+    background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%) !important;
+    color: #2D3748 !important;
+    border: 3px solid #cbd5e0 !important;
+    padding: 15px 30px !important;
+    border-radius: 50px !important;
+    font-size: 1em !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    font-family: 'Outfit', sans-serif !important;
+    box-shadow: 0 4px 0 #a0aec0, 0 6px 12px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.8) !important;
+    text-shadow: none !important;
+}
+
+.secondary-btn:hover {
+    background: linear-gradient(180deg, #f7fafc 0%, #e2e8f0 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 0 #a0aec0, 0 10px 18px rgba(0, 0, 0, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+.secondary-btn:active {
+    transform: translateY(1px) !important;
+    box-shadow: 0 2px 0 #a0aec0, 0 3px 8px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Apply primary button styles to existing CTA buttons */
 .btn-next,
 .share-btn,
 .video-btn,
 .copy-btn,
-.create-new-btn,
-.primary-btn {
-    background: #00BBF9 !important; /* Sky blue */
+.create-new-btn {
+    background: linear-gradient(180deg, #00D4FF 0%, #00BBF9 50%, #0099CC 100%) !important;
     color: white !important;
-    box-shadow: 5px 5px 0px #000000 !important; /* Black drop shadow */
-    border: none !important;
+    border: 3px solid #0088BB !important;
+    padding: 15px 30px !important;
+    border-radius: 50px !important;
+    font-size: 1em !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 6px 0 #0077AA, 0 8px 15px rgba(0, 0, 0, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.4) !important;
+    font-family: 'Outfit', sans-serif !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
 }
 
 .btn-next:hover,
 .share-btn:hover,
 .video-btn:hover,
 .copy-btn:hover,
-.create-new-btn:hover,
-.primary-btn:hover {
-    background: #0099CC !important; /* Slightly darker blue on hover */
+.create-new-btn:hover {
+    background: linear-gradient(180deg, #00E6FF 0%, #00D4FF 50%, #00BBF9 100%) !important;
     transform: translateY(-2px) !important;
-    box-shadow: 7px 7px 0px #000000 !important; /* Larger shadow on hover */
+    box-shadow: 0 8px 0 #0077AA, 0 12px 20px rgba(0, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.5) !important;
+}
+
+.btn-next:active,
+.share-btn:active,
+.video-btn:active,
+.copy-btn:active,
+.create-new-btn:active {
+    transform: translateY(2px) !important;
+    box-shadow: 0 2px 0 #0077AA, 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.4) !important;
 }
 
 .template-btn-icon {
@@ -420,11 +487,34 @@ body {
     transform: scale(1.05);
 }
 
-.btn-next:disabled {
-    background: #cbd5e0 !important;
+/* Disabled State */
+.primary-btn:disabled,
+.secondary-btn:disabled,
+.btn-next:disabled,
+.share-btn:disabled,
+.video-btn:disabled,
+.copy-btn:disabled,
+.create-new-btn:disabled {
+    background: linear-gradient(180deg, #e2e8f0 0%, #cbd5e0 50%, #a0aec0 100%) !important;
+    color: #718096 !important;
+    border: 3px solid #9ca3af !important;
     cursor: not-allowed !important;
     transform: none !important;
-    box-shadow: 3px 3px 0px #999999 !important; /* Gray shadow when disabled */
+    transition: none !important;
+    box-shadow: 0 3px 0 #9ca3af, 0 4px 8px rgba(0, 0, 0, 0.1), inset 0 2px 0 rgba(255, 255, 255, 0.3) !important;
+    text-shadow: none !important;
+    opacity: 0.7 !important;
+}
+
+.primary-btn:disabled:hover,
+.secondary-btn:disabled:hover,
+.btn-next:disabled:hover,
+.share-btn:disabled:hover,
+.video-btn:disabled:hover,
+.copy-btn:disabled:hover,
+.create-new-btn:disabled:hover {
+    transform: none !important;
+    box-shadow: 0 3px 0 #9ca3af, 0 4px 8px rgba(0, 0, 0, 0.1), inset 0 2px 0 rgba(255, 255, 255, 0.3) !important;
 }
 
 /* Share Page */
@@ -1010,53 +1100,10 @@ body {
     text-align: center !important;
 }
 
-/* Primary button styling */
-.primary-btn {
-    background: #00BBF9 !important;
-    color: white !important;
-    border: none !important;
-    padding: 20px 40px !important;
-    border-radius: 50px !important;
-    font-size: 1.3em !important;
-    font-weight: 700 !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-    box-shadow: 5px 5px 0px #000000 !important;
-    font-family: 'Outfit', sans-serif !important;
-}
-
-/* Secondary button styling */
-.secondary-btn {
-    background: transparent !important;
-    color: #2D3748 !important;
-    border: 2px solid #e2e8f0 !important;
-    padding: 12px 24px !important;
-    border-radius: 12px !important;
-    font-size: 1em !important;
-    font-weight: 500 !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-    font-family: 'Outfit', sans-serif !important;
-    box-shadow: none !important;
-}
-
-.secondary-btn:hover {
-    background: #f7fafc !important;
-    border-color: #cbd5e0 !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-}
-
 /* Center align secondary buttons in reading view */
 .reading-view .secondary-btn {
     display: block !important;
     margin: 20px auto !important;
-}
-
-.primary-btn:hover {
-    transform: translateY(-3px) !important;
-    box-shadow: 7px 7px 0px #000000 !important;
-    background: #0099CC !important;
 }
 
 /* Clean video section styling - no container styling */
