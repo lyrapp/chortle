@@ -8,7 +8,8 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(python:*)",
-      "Bash(open http://localhost:8000)"
+      "Bash(open http://localhost:8000)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

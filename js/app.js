@@ -291,6 +291,9 @@ window.ChortleApp = {
     setupIntroPage: function() {
         console.log('Setting up intro page...');
 
+        // Update intro page with today's template
+        this.updateIntroPageWithTodaysTemplate();
+
         const getStartedBtn = document.getElementById('get-started-btn');
         if (getStartedBtn) {
             console.log('✓ Get Started button found, adding event listener');
@@ -320,6 +323,25 @@ window.ChortleApp = {
         this.setupIntroPageContext();
     },
 
+    // Update intro page to show today's template
+    updateIntroPageWithTodaysTemplate: function() {
+        const todaysTemplate = window.ChortleTemplates.getTodaysTemplate();
+
+        if (todaysTemplate) {
+            // Update the subtitle to show today's template theme
+            const subtitle = document.querySelector('.demo-subtitle');
+            if (subtitle) {
+                subtitle.innerHTML = `Today's Chortle: <strong>${todaysTemplate.template.theme}</strong>`;
+            }
+
+            // Update the Get Started button text
+            const getStartedBtn = document.getElementById('get-started-btn');
+            if (getStartedBtn) {
+                getStartedBtn.textContent = `Fill Out Today's Chortle`;
+            }
+        }
+    },
+
     // Setup intro page context to show appropriate How to Play button
     setupIntroPageContext: function() {
         const hash = window.location.hash;
@@ -343,22 +365,38 @@ window.ChortleApp = {
         }
     },
 
-    // Start chortle creation from intro
+    // Start chortle creation from intro - skip template selection
     startChortle: function() {
-        console.log('Starting chortle creation...');
-        this.showPage('template-selection-page');
+        console.log('Starting chortle creation with today\'s template...');
+
+        // Get today's template automatically
+        const todaysTemplate = window.ChortleTemplates.getTodaysTemplate();
+        console.log('Today\'s template:', todaysTemplate);
+
+        if (!todaysTemplate) {
+            this.showError('No template available for today');
+            return;
+        }
+
+        // Setup wizard with today's template
+        const success = window.ChortleWizard.setup(todaysTemplate.key);
+        if (success) {
+            this.showPage('wizard-page');
+        } else {
+            this.showError('Failed to setup wizard for today\'s template');
+        }
     },
  
     // Create new chortle (reset app)
     createNewChortle: function() {
         // Clear URL hash
         window.location.hash = '';
-        
+
         // Reset app state
         this.resetApp();
-        
-        // Show template selection
-        this.showPage('template-selection-page');
+
+        // Go directly to today's template
+        this.startChortle();
     },
 
     // Reset app to initial state
@@ -370,7 +408,7 @@ window.ChortleApp = {
             searchTerm: '',
             currentStep: 0,
             wizardData: {},
-            currentPage: 'template-selection-page',
+            currentPage: 'intro-page',
             currentChortleId: null
         });
 
