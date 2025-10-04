@@ -25,7 +25,7 @@ input, textarea, select, button,
 }
 
 html {
-    height: 100%;
+    min-height: 100%;
 }
 
 body {
@@ -34,8 +34,8 @@ body {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: fixed;
-    min-height: 100%;
+    background-attachment: scroll;
+    min-height: 100vh;
     color: #2D3748; /* Dark gray text */
 }
 
@@ -557,7 +557,7 @@ body {
 }
 
 .ready-content h2 {
-    color: #00BBF9;
+    color: #2D3748;
     font-size: 1.8em;
     margin-bottom: 20px;
     font-weight: 700;
@@ -577,10 +577,10 @@ body {
 
 .share-instructions {
     background: rgba(0, 187, 249, 0.1);
-    border-radius: 15px;
-    padding: 25px;
+    border-radius: 20px;
+    padding: 15px 25px;
     margin: 25px 0;
-    border-left: 4px solid #00BBF9;
+    border-left: none;
 }
 
 .share-step {
@@ -590,12 +590,14 @@ body {
     font-size: 1em;
     font-weight: 500;
     gap: 15px;
+    text-align: left;
 }
 
 .share-step-text {
     flex: 1;
     line-height: 1.4;
     padding-top: 2px; /* Align with number circle */
+    text-align: left;
 }
 
 .share-step-number {
@@ -610,7 +612,7 @@ body {
     margin-right: 15px;
     font-weight: 700;
     font-size: 0.9em;
-    box-shadow: 2px 2px 0px #000000;
+    box-shadow: none;
 }
 
 .share-btn {

@@ -199,6 +199,15 @@
     }
 
     /* Share Page Mobile */
+    .ready-content {
+        padding-top: 0 !important;
+    }
+
+    .ready-content h2 {
+        margin-top: 0 !important;
+        color: #2D3748 !important;
+    }
+
     .share-btn {
         padding: 18px 35px;
         font-size: 1.2em;
@@ -207,9 +216,9 @@
 
     .share-instructions {
         background: rgba(0, 187, 249, 0.1);
-        border-left: 4px solid #00BBF9;
-        padding: 20px;
-        border-radius: 12px;
+        border-left: none !important;
+        padding: 15px 20px !important;
+        border-radius: 20px !important;
     }
 
     .share-step {
@@ -219,14 +228,16 @@
         font-size: 0.95em;
         font-weight: 500;
         gap: 12px;
+        text-align: left !important;
     }
-    
+
     .share-step-text {
         flex: 1;
         line-height: 1.4;
         padding-top: 1px; /* Align with smaller number circle on mobile */
+        text-align: left !important;
     }
-    
+
     .share-step span {
         flex: 1;
         line-height: 1.4;
@@ -234,7 +245,7 @@
 
     .share-step-number {
         background: #00BBF9;
-        box-shadow: 2px 2px 0px #000000;
+        box-shadow: none !important;
         width: 26px;
         height: 26px;
         font-size: 0.85em;
@@ -287,7 +298,8 @@
         display: flex;
         flex-direction: column;
         gap: 12px;
-        margin-top: 20px;
+        margin-top: 0 !important;
+        margin-bottom: 15px !important;
         width: 100%;
     }
 
@@ -313,22 +325,21 @@
         padding: 0;
         display: none; /* Hidden by default until recording is complete */
     }
-    
+
     .playback-area.active {
         display: block;
     }
 
     .playback-area h4 {
-        color: #00BBF9;
-        margin-bottom: 15px;
-        font-weight: 600;
+        display: none; /* Hide "Your Recording" heading */
     }
 
     .playback-area #recorded-video {
         width: 100%;
         max-width: 100%;
         border-radius: 15px;
-        margin-bottom: 20px;
+        margin-top: 0 !important;
+        margin-bottom: 15px !important;
         aspect-ratio: 3/4; /* Vertical video aspect ratio */
     }
 
@@ -502,12 +513,25 @@
 
 /* Mobile camera setup spacing */
 @media (max-width: 768px) {
+    .reading-view {
+        padding-top: 20px !important;
+    }
+
+    .reading-view h2 {
+        margin-top: 0 !important;
+        margin-bottom: 15px !important;
+    }
+
+    .reading-view > p {
+        margin-bottom: 20px !important;
+    }
+
     .camera-setup {
         padding: 10px 15px !important;
         min-height: 200px !important;
         gap: 10px !important;
     }
-    
+
     .camera-setup img {
         width: 180px !important;
         margin-bottom: 15px !important;

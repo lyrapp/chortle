@@ -1119,6 +1119,12 @@ startPropsDetection: function(preview) {
         playbackArea.style.display = 'block';
         playbackArea.classList.add('active');
 
+        // Hide confusing headers during playback
+        const readingViewHeader = document.querySelector('#reading-view h2');
+        const readingViewSubtitle = document.querySelector('#reading-view > p');
+        if (readingViewHeader) readingViewHeader.style.display = 'none';
+        if (readingViewSubtitle) readingViewSubtitle.style.display = 'none';
+
         // Stop camera stream
         if (window.ChortleState.stream) {
             window.ChortleState.stream.getTracks().forEach(track => track.stop());
@@ -1145,11 +1151,17 @@ startPropsDetection: function(preview) {
     reRecord: function() {
         // Hide playback area
         document.getElementById('playback-area').style.display = 'none';
-        
+
+        // Restore headers when returning to camera setup
+        const readingViewHeader = document.querySelector('#reading-view h2');
+        const readingViewSubtitle = document.querySelector('#reading-view > p');
+        if (readingViewHeader) readingViewHeader.style.display = '';
+        if (readingViewSubtitle) readingViewSubtitle.style.display = '';
+
         // Reset to camera setup
         document.getElementById('camera-setup').style.display = 'block';
         document.getElementById('recording-area').style.display = 'none';
-        
+
         // Reset recording state
         window.ChortleState.recordedChunks = [];
         
