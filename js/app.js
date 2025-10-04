@@ -36,58 +36,59 @@ window.ChortleApp = {
 
     // Setup template selection functionality
     setupTemplateSelection: function() {
-        // Initial render
-        this.renderTemplates();
-        
-        // Template button click handlers are added dynamically in renderTemplates
-    },
-
-    // Render templates based on current filters
-    renderTemplates: function() {
-        const container = document.getElementById('template-container');
-        const emptyState = document.getElementById('templates-empty');
-        
-        if (!container || !emptyState) {
-            console.error('Template container elements not found');
-            return;
-        }
-
-        container.innerHTML = '';
-
-        // Get filtered templates
-        const templates = window.ChortleTemplates.filterTemplates(
-            window.ChortleState.currentCategory, 
-            window.ChortleState.searchTerm
-        );
-
-        const templateEntries = Object.entries(templates);
-
-        if (templateEntries.length === 0) {
-            emptyState.style.display = 'block';
-        } else {
-            emptyState.style.display = 'none';
-
-            templateEntries.forEach(([key, template]) => {
-                const button = document.createElement('button');
-                button.className = 'template-btn';
-                button.dataset.template = key;
-                button.innerHTML = `
-                    <div style="display: flex; align-items: flex-start; gap: 15px;">
-                        <img src="${template.icon}" alt="${template.title}" class="template-icon-img" style="flex-shrink: 0;">
-                        <div style="flex: 1;">
-                            <div class="template-btn-title">${template.title}</div>
-                            <div class="template-btn-desc">${template.description}</div>
-                        </div>
-                    </div>
-                `;
-                
-                // Add click handler
-                button.addEventListener('click', () => this.selectTemplate(key));
-                
-                container.appendChild(button);
+        // Setup Start button click handler
+        const startBtn = document.getElementById('start-template-btn');
+        if (startBtn) {
+            startBtn.addEventListener('click', () => {
+                // Get today's template and start wizard
+                const todaysTemplate = window.ChortleTemplates.getTodaysTemplate();
+                if (todaysTemplate) {
+                    this.selectTemplate(todaysTemplate.key);
+                }
             });
         }
     },
+
+    // Show template selection page with today's template
+    showTemplateSelection: function(todaysTemplate) {
+        console.log('showTemplateSelection called with:', todaysTemplate);
+
+        // Update hero image
+        const heroIcon = document.getElementById('template-hero-icon');
+        console.log('Hero icon element:', heroIcon);
+        if (heroIcon) {
+            heroIcon.src = todaysTemplate.template.icon;
+            heroIcon.alt = todaysTemplate.template.title;
+            console.log('Set icon src to:', todaysTemplate.template.icon);
+        } else {
+            console.error('template-hero-icon element not found!');
+        }
+
+        // Update title
+        const heroTitle = document.getElementById('template-hero-title');
+        console.log('Hero title element:', heroTitle);
+        if (heroTitle) {
+            heroTitle.textContent = todaysTemplate.template.title;
+            console.log('Set title to:', todaysTemplate.template.title);
+        } else {
+            console.error('template-hero-title element not found!');
+        }
+
+        // Update description
+        const heroDescription = document.getElementById('template-hero-description');
+        console.log('Hero description element:', heroDescription);
+        if (heroDescription) {
+            heroDescription.textContent = todaysTemplate.template.description;
+            console.log('Set description to:', todaysTemplate.template.description);
+        } else {
+            console.error('template-hero-description element not found!');
+        }
+
+        // Show the template selection page
+        console.log('Calling showPage with template-selection-page');
+        this.showPage('template-selection-page');
+    },
+
 
     // Handle template selection
     selectTemplate: function(templateKey) {
@@ -291,9 +292,6 @@ window.ChortleApp = {
     setupIntroPage: function() {
         console.log('Setting up intro page...');
 
-        // Update intro page with today's template
-        this.updateIntroPageWithTodaysTemplate();
-
         const getStartedBtn = document.getElementById('get-started-btn');
         if (getStartedBtn) {
             console.log('✓ Get Started button found, adding event listener');
@@ -323,25 +321,6 @@ window.ChortleApp = {
         this.setupIntroPageContext();
     },
 
-    // Update intro page to show today's template
-    updateIntroPageWithTodaysTemplate: function() {
-        const todaysTemplate = window.ChortleTemplates.getTodaysTemplate();
-
-        if (todaysTemplate) {
-            // Update the subtitle to show today's template theme
-            const subtitle = document.querySelector('.demo-subtitle');
-            if (subtitle) {
-                subtitle.innerHTML = `Today's Chortle: <strong>${todaysTemplate.template.theme}</strong>`;
-            }
-
-            // Update the Get Started button text
-            const getStartedBtn = document.getElementById('get-started-btn');
-            if (getStartedBtn) {
-                getStartedBtn.textContent = `Fill Out Today's Chortle`;
-            }
-        }
-    },
-
     // Setup intro page context to show appropriate How to Play button
     setupIntroPageContext: function() {
         const hash = window.location.hash;
@@ -365,11 +344,11 @@ window.ChortleApp = {
         }
     },
 
-    // Start chortle creation from intro - skip template selection
+    // Start chortle creation from intro - show template selection
     startChortle: function() {
-        console.log('Starting chortle creation with today\'s template...');
+        console.log('Starting chortle creation - showing template selection...');
 
-        // Get today's template automatically
+        // Get today's template
         const todaysTemplate = window.ChortleTemplates.getTodaysTemplate();
         console.log('Today\'s template:', todaysTemplate);
 
@@ -378,13 +357,8 @@ window.ChortleApp = {
             return;
         }
 
-        // Setup wizard with today's template
-        const success = window.ChortleWizard.setup(todaysTemplate.key);
-        if (success) {
-            this.showPage('wizard-page');
-        } else {
-            this.showError('Failed to setup wizard for today\'s template');
-        }
+        // Show template selection page with today's template
+        this.showTemplateSelection(todaysTemplate);
     },
  
     // Create new chortle (reset app)
@@ -395,8 +369,8 @@ window.ChortleApp = {
         // Reset app state
         this.resetApp();
 
-        // Go directly to today's template
-        this.startChortle();
+        // Return to intro page
+        this.showPage('intro-page');
     },
 
     // Reset app to initial state
@@ -428,9 +402,6 @@ window.ChortleApp = {
         if (window.ChortleVideo) {
             window.ChortleVideo.cleanup();
         }
-
-        // Re-render templates
-        this.renderTemplates();
 
         console.log('App reset complete');
     },

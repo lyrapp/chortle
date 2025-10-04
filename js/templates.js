@@ -1,5 +1,6 @@
 /* Chortle v3.0 - Daily Templates with Themes */
 
+
 window.ChortleTemplates = {
     // Daily templates array - cycles through sequentially
     dailyTemplates: [
@@ -516,6 +517,7 @@ window.ChortleTemplates = {
         return this.getTodaysTemplate();
     }
 };
+
 
 // Export for debugging
 if (window.ChortleDebug) {

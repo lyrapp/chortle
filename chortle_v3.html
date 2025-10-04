@@ -24,10 +24,10 @@
             <img src="chortle-wordmark.png" alt="Chortle" class="wordmark">
         </div>
 
-        <!-- Intro Page - Shows Today's Template -->
+        <!-- Intro Page -->
         <div id="intro-page" class="page active">
             <div class="intro-content">
-                <h3 class="demo-subtitle" style="color: #000000; font-size: 1.4em; font-weight: 700;">Stories with friends</h3>
+                <h3 class="demo-subtitle" style="color: #000000; font-size: 1.6em; font-weight: 700; margin-bottom: 20px;">Stories with friends</h3>
                 <div class="game-demo">
                     <div class="sentence" id="sentence1">
                         <span class="text">The</span>
@@ -53,7 +53,7 @@
                         <span class="text">sandwich.</span>
                     </div>
                     <div class="recording-indicator" id="recording-indicator">
-                        <div class="recording-text">🔴 Start Recording!</div>
+                        <div class="recording-text">● Start Recording!</div>
                     </div>
                 </div>
 
@@ -66,7 +66,20 @@
             </div>
         </div>
 
-        <!-- Page 1: Fill Out Chortle (Wizard) - No more template selection -->
+        <!-- Template Selection Page - Shows Today's Daily Template -->
+        <div id="template-selection-page" class="page">
+            <div class="template-hero">
+                <div class="template-hero-image">
+                    <img id="template-hero-icon" src="" alt="Today's Template">
+                </div>
+                <p class="template-hero-label">Today's Chortle</p>
+                <h2 id="template-hero-title" class="template-hero-title">Template Title</h2>
+                <p id="template-hero-description" class="template-hero-description">Template description goes here</p>
+                <button id="start-template-btn" class="primary-btn">Start</button>
+            </div>
+        </div>
+
+        <!-- Page 1: Fill Out Chortle (Wizard) -->
         <div id="wizard-page" class="page">
             <div class="wizard-header">
                 <h2>Fill Out Your Chortle</h2>
@@ -138,8 +151,8 @@
                 <div id="recording-area" class="recording-area" style="display: none;">
                     <video id="camera-preview" autoplay muted playsinline></video>
                     <div class="recording-controls">
-                        <button id="start-recording" class="video-btn record-btn">🔴 Start Recording</button>
-                        <button id="stop-recording" class="video-btn stop-btn" style="display: none;">⏹️ Stop Recording</button>
+                        <button id="start-recording" class="video-btn record-btn">● Start Recording</button>
+                        <button id="stop-recording" class="video-btn stop-btn" style="display: none;">■ Stop Recording</button>
                         <div id="recording-timer" class="timer" style="display: none;">00:00</div>
                     </div>
                 </div>

@@ -1,5 +1,38 @@
 /* Chortle v5.2 - Mobile Styles with New Design System */
 
+/* Back button styling */
+.back-btn {
+    background: transparent;
+    border: none;
+    color: #666;
+    font-size: 1.1em;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+    margin-bottom: 10px;
+}
+
+.back-btn:hover {
+    background-color: #f0f0f0;
+}
+
+/* Demo subtitle enhanced styling for template focus */
+.demo-subtitle {
+    text-align: center;
+    animation: none !important; /* Disable any existing animations */
+}
+
+/* Reduce animation distraction in game demo */
+.game-demo {
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.game-demo:hover {
+    opacity: 1;
+}
+
 /* Mobile optimizations */
 @media (max-width: 768px) {
     .container {

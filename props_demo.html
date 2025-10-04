@@ -212,12 +212,12 @@
                 mappingDiv.innerHTML = '<p class="error">❌ Required modules not loaded</p>';
                 return;
             }
-            
-            const templates = window.ChortleTemplates.templates;
+
+            const templates = window.ChortleTemplates.getAllTemplates();
             const props = window.ChortleProps.templateProps;
-            
+
             let html = '<div class="template-grid">';
-            
+
             Object.keys(templates).forEach(templateKey => {
                 const template = templates[templateKey];
                 const hasProp = !!props[templateKey];

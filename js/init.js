@@ -111,10 +111,10 @@ function initializeModules() {
         // Config and Utils are already loaded (no init needed)
         
         // Templates (no init needed - just data)
-        if (window.ChortleTemplates && window.ChortleTemplates.templates) {
-            logMobile('✓ Templates loaded:', Object.keys(window.ChortleTemplates.templates).length + ' templates');
+        if (window.ChortleTemplates && window.ChortleTemplates.dailyTemplates) {
+            logMobile('✓ Daily templates loaded:', window.ChortleTemplates.dailyTemplates.length + ' templates');
         } else {
-            throw new Error('ChortleTemplates not loaded properly');
+            throw new Error('ChortleTemplates dailyTemplates not loaded properly');
         }
         
         // Props system (v5.3)
@@ -206,16 +206,13 @@ function setupGlobalEventListeners() {
 // MOBILE FIX: Enhanced creation interface setup with better button handling
 function setupCreationInterface() {
     logMobile('Setting up creation interface...');
-    
+
     // Show intro page first
     window.ChortleApp.showPage('intro-page');
-    
-    // Initial template render (for when user navigates to template page) 
-    window.ChortleApp.renderTemplates();
-    
+
     // MOBILE FIX: Enhanced button setup with multiple retry attempts
     setupGetStartedButton();
-    
+
     logMobile('✓ Creation interface ready');
 }
 
@@ -240,14 +237,14 @@ function setupGetStartedButton(attempt = 1) {
             e.preventDefault();
             
             try {
-                if (window.ChortleApp && typeof window.ChortleApp.showPage === 'function') {
-                    window.ChortleApp.showPage('template-selection-page');
-                    logMobile('✓ Navigated to template selection');
+                if (window.ChortleApp && typeof window.ChortleApp.startChortle === 'function') {
+                    window.ChortleApp.startChortle();
+                    logMobile('✓ Started daily template creation');
                 } else {
-                    throw new Error('ChortleApp.showPage not available');
+                    throw new Error('ChortleApp.startChortle not available');
                 }
             } catch (error) {
-                logMobile('❌ Error navigating from get started button:', error.message);
+                logMobile('❌ Error starting chortle from get started button:', error.message);
                 showInitializationError(error);
             }
         });
@@ -328,13 +325,7 @@ function setupErrorHandling() {
 function handleWindowResize() {
     // Update mobile detection
     const isMobileNow = window.ChortleUtils?.isSmallScreen();
-    
-    // Re-render templates if needed (for responsive grid)
-    if (window.ChortleState?.currentPage === 'template-selection-page') {
-        // Force template re-render for responsive layout
-        window.ChortleApp?.renderTemplates();
-    }
-    
+
     // Adjust video elements if active
     if (window.ChortleState?.stream) {
         // Video is active - might need adjustments
@@ -480,7 +471,7 @@ function setupDevelopmentHelpers() {
                 console.group('🎭 Chortle Debug Info');
                 console.log('Version:', window.ChortleConfig?.APP?.version || 'UNKNOWN');
                 console.log('Device:', isMobileDevice ? 'Mobile' : 'Desktop');
-                console.log('Templates loaded:', Object.keys(window.ChortleTemplates?.templates || {}).length);
+                console.log('Daily templates loaded:', window.ChortleTemplates?.dailyTemplates?.length || 0);
                 console.log('Props enabled:', window.ChortleConfig?.FEATURES?.propsEnabled || false);
                 console.log('Props initialized:', window.ChortleProps?.isInitialized || false);
                 console.log('Current state:', window.ChortleState);
