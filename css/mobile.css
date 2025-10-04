@@ -127,6 +127,11 @@
 }
 
 /* Wizard Mobile */
+.wizard-header {
+    padding-top: 0 !important;
+    margin-bottom: 10px !important;
+}
+
 .step-input {
     padding: 16px;
     font-size: 1em;
