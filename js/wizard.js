@@ -14,8 +14,8 @@ window.ChortleWizard = {
         window.ChortleState.currentStep = 0;
         window.ChortleState.wizardData = { template: templateKey };
 
-        // Update wizard header
-        document.getElementById('wizard-template-name').textContent = `Write: ${template.title}`;
+        // Update wizard header with theme
+        document.getElementById('wizard-template-name').textContent = `Today's Chortle: ${template.theme}`;
 
         // Generate wizard steps
         this.generateSteps(template);
@@ -23,8 +23,8 @@ window.ChortleWizard = {
         // Setup event listeners
         this.setupEventListeners(template);
         
-        // Setup back to templates button
-        this.setupBackToTemplatesButton();
+        // Setup back button (goes to intro)
+        this.setupBackButton();
 
         // Show first step
         this.showStep(0);
@@ -147,25 +147,25 @@ setupEventListeners: function(template) {
 },
 
     // Setup back to templates button
-    setupBackToTemplatesButton: function() {
+    setupBackButton: function() {
         const backBtn = document.getElementById('wizard-back-to-templates');
         if (backBtn) {
             backBtn.addEventListener('click', () => {
                 // Ask for confirmation if user has started filling out fields
                 const hasData = Object.keys(window.ChortleState.wizardData).length > 1; // > 1 because template is always there
-                
+
                 if (hasData) {
                     const confirmed = confirm('Going back will lose your progress. Are you sure?');
                     if (!confirmed) {
                         return;
                     }
                 }
-                
+
                 // Reset wizard state
                 this.reset();
-                
-                // Go back to template selection
-                window.ChortleApp.showPage('template-selection-page');
+
+                // Go back to intro page
+                window.ChortleApp.showPage('intro-page');
             });
         }
     },

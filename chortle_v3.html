@@ -1,15 +1,14 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-        <title>Chortle - Write. Share. Chortle.</title>
-        
+        <title>Chortle v3.0 - Daily Templates</title>
+
         <!-- Google Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+
         <!-- Stylesheets -->
         <link rel="stylesheet" href="css/styles.css">
         <link rel="stylesheet" href="css/mobile.css">
@@ -24,11 +23,11 @@
        <div class="header">
             <img src="chortle-wordmark.png" alt="Chortle" class="wordmark">
         </div>
-        
-        <!-- NEW: Intro Page -->
+
+        <!-- Intro Page -->
         <div id="intro-page" class="page active">
             <div class="intro-content">
-                <h3 class="demo-subtitle" style="color: #000000; font-size: 1.4em; font-weight: 700;">Stories with friends</h3>
+                <h3 class="demo-subtitle" style="color: #000000; font-size: 1.6em; font-weight: 700; margin-bottom: 20px;">Stories with friends</h3>
                 <div class="game-demo">
                     <div class="sentence" id="sentence1">
                         <span class="text">The</span>
@@ -54,7 +53,7 @@
                         <span class="text">sandwich.</span>
                     </div>
                     <div class="recording-indicator" id="recording-indicator">
-                        <div class="recording-text">🔴 Start Recording!</div>
+                        <div class="recording-text">● Start Recording!</div>
                     </div>
                 </div>
 
@@ -80,7 +79,7 @@
             </div>
         </div>
 
-        <!-- Page 2: Fill Out Chortle (Wizard) -->
+        <!-- Page 1: Fill Out Chortle (Wizard) -->
         <div id="wizard-page" class="page">
             <div class="wizard-header">
                 <h2>Fill Out Your Chortle</h2>
@@ -96,12 +95,12 @@
             </div>
         </div>
 
-    <!-- Page 3: Ready to Share -->
+    <!-- Page 2: Ready to Share -->
     <div id="share-page" class="page">
         <div class="ready-content">
             <h2>Share Your Chortle</h2>
             <p>Almost done! Send to a friend to record.</p>
-            
+
             <div class="share-instructions">
                 <div class="share-step">
                     <div class="share-step-number">1</div>
@@ -116,9 +115,9 @@
                     <div class="share-step-text">You'll get a link to watch their reaction</div>
                 </div>
             </div>
-    
+
             <button id="share-btn" class="primary-btn">📱 Share with Friend</button>
-    
+
             <div id="link-section" class="link-section">
                 <h4>📎 Copy & Share This Link:</h4>
                 <div class="link-box">
@@ -126,7 +125,7 @@
                     <button id="copy-link" class="copy-btn">Copy</button>
                 </div>
             </div>
-    
+
             <button id="create-new-chortle" class="secondary-btn" style="margin-top: 30px;">Create Another Chortle</button>
         </div>
     </div>
@@ -148,26 +147,26 @@
                         <button id="reading-how-to-play-btn" class="secondary-btn" style="margin: 16px auto 0 auto !important;">How to Play</button>
                     </div>
                 </div>
-                
+
                 <div id="recording-area" class="recording-area" style="display: none;">
                     <video id="camera-preview" autoplay muted playsinline></video>
                     <div class="recording-controls">
-                        <button id="start-recording" class="video-btn record-btn">🔴 Start Recording</button>
-                        <button id="stop-recording" class="video-btn stop-btn" style="display: none;">⏹️ Stop Recording</button>
+                        <button id="start-recording" class="video-btn record-btn">● Start Recording</button>
+                        <button id="stop-recording" class="video-btn stop-btn" style="display: none;">■ Stop Recording</button>
                         <div id="recording-timer" class="timer" style="display: none;">00:00</div>
                     </div>
                 </div>
-                
+
                 <div id="playback-area" class="playback-area" style="display: none;">
                     <h4>📺 Your Recording</h4>
                     <video id="recorded-video" controls playsinline></video>
-                    
+
                     <div class="playback-controls">
                         <button id="send-video" class="video-btn primary-btn">✅ Send to Creator</button>
                         <button id="re-record" class="video-btn secondary-btn">🔄 Record Again</button>
                     </div>
                 </div>
-                
+
                 <div id="upload-progress" class="upload-progress" style="display: none;">
                     <h4>🍿 Preparing your Chortle...</h4>
                     <div class="upload-progress-bar">
@@ -175,7 +174,7 @@
                     </div>
                     <p id="upload-status">Preparing video...</p>
                 </div>
-                
+
                 <div id="video-sent" class="video-sent" style="display: none;">
                     <h4>Share with your friends</h4>
                     <p>Your performance is ready to be sent!</p>
@@ -191,17 +190,17 @@
         <div id="video-playback-view" class="page reading-view">
             <h2 style="text-align: center; color: #667eea; margin-bottom: 20px;">👏 What a Performance!</h2>
             <p style="text-align: center; margin-bottom: 30px;">Here's how your friend read your Chortle:</p>
-            
+
             <div class="video-playback-container">
                 <div id="playback-video-area" class="playback-video-area">
                     <div id="api-video-player"></div>
                 </div>
-                
+
                 <div id="original-chortle-text" class="completed-madlib">
                     <!-- Original Chortle text inserted here -->
                 </div>
             </div>
-            
+
             <button id="create-another" class="create-new-btn">🔁 Create Another Chortle</button>
         </div>
     </div>
@@ -295,4 +294,3 @@
     <script src="js/init.js"></script>
 </body>
 </html>
-

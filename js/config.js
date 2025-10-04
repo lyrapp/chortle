@@ -204,12 +204,12 @@ window.ChortleUtils = {
     validateChortleData: function(data) {
         if (!data || typeof data !== 'object') return false;
         if (!data.template || typeof data.template !== 'string') return false;
-        
+
         // Check if template exists
-        if (!window.ChortleTemplates || !window.ChortleTemplates.templates[data.template]) {
+        if (!window.ChortleTemplates || !window.ChortleTemplates.getTemplate(data.template)) {
             return false;
         }
-        
+
         return true;
     },
     

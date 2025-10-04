@@ -3,7 +3,15 @@
     "allow": [
       "Bash(find:*)",
       "Bash(python3:*)",
-      "WebFetch(domain:localhost)"
+      "WebFetch(domain:localhost)",
+      "Bash(git stash:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(python:*)",
+      "Bash(open http://localhost:8000)",
+      "Bash(git push:*)",
+      "Bash(node:*)",
+      "Bash(open http://localhost:8000/chortle_v3.html)"
     ],
     "deny": [],
     "ask": []
