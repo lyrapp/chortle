@@ -47,6 +47,15 @@ window.ChortleVideo = {
         if (copyPlaybackBtn) {
             copyPlaybackBtn.addEventListener('click', () => this.copyPlaybackLink());
         }
+
+        // Create new Chortle button (from video completion screen)
+        const createChortleBtn = document.getElementById('create-chortle-from-video');
+        if (createChortleBtn) {
+            createChortleBtn.addEventListener('click', () => {
+                // Reset to intro page to create a new Chortle
+                window.ChortleApp.createNewChortle();
+            });
+        }
     },
 
            // Start camera for recording with vertical video support and props
@@ -1189,27 +1198,27 @@ startPropsDetection: function(preview) {
         console.log('Starting video upload process...');
         console.log('Video blob size:', videoBlob.size, 'bytes');
 
-        // Show upload progress
-        document.getElementById('playback-area').style.display = 'none';
-        document.getElementById('upload-progress').style.display = 'block';
+        // Add loading state to send button (keep playback area visible)
+        const sendBtn = document.getElementById('send-video');
+        const originalText = sendBtn ? sendBtn.textContent : '';
+        if (sendBtn) {
+            sendBtn.disabled = true;
+            sendBtn.classList.add('btn-loading');
+            sendBtn.textContent = '⏳ Sending...';
+        }
 
         try {
-            // Upload video to Cloudinary (single step)
-            this.updateUploadProgress(10, 'Starting upload...');
+            // Upload video to Cloudinary (no UI updates - silent background upload)
             const uploadResult = await this.uploadToCloudinary(videoBlob);
             const videoId = uploadResult.videoId;
-            
+
             console.log('Cloudinary upload completed, ID:', videoId);
-            
+
             if (!videoId) {
                 throw new Error('No video ID returned from Cloudinary');
             }
 
-            // Step 3: Finalize
-            this.updateUploadProgress(95, 'Finalizing upload...');
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            // Step 4: Create playback link
+            // Create playback link
             const chortleData = this.getCurrentChortleData();
             // Validate chortle data
             if (!chortleData || !chortleData.template) {
@@ -1232,29 +1241,17 @@ startPropsDetection: function(preview) {
             const playbackUrl = window.ChortleUtils.getBaseUrl() + '#video=' + encodedLinkData;
             console.log('Generated playback URL:', playbackUrl);
 
-            // UPDATED: Try native sharing first, then fall back to copy link
-            this.updateUploadProgress(100, 'Upload complete!');
-            document.getElementById('upload-progress').style.display = 'none';
-            
-            // Try to share using native Web Share API
+            // Try to share using native Web Share API (button is already in loading state)
             const shareResult = await window.ChortleUtils.shareUrl(
-                playbackUrl, 
+                playbackUrl,
                 'Watch my hilarious Chortle performance!'
             );
 
-            if (shareResult.success && shareResult.method === 'native') {
-                // Native sharing succeeded - show simple success message
-                document.getElementById('video-sent').innerHTML = `
-                    <h4>🎉 Video Shared!</h4>
-                    <p>Your performance has been shared successfully!</p>
-                    <p style="font-size: 0.9em; color: #666; margin-top: 10px;">Video ID: ${videoId}</p>
-                `;
-                document.getElementById('video-sent').style.display = 'block';
-            } else {
-                // Fall back to showing the copy link interface
-                document.getElementById('playback-link').value = playbackUrl;
-                document.getElementById('video-sent').style.display = 'block';
-            }
+            // Always show completion screen with link (whether share succeeded or not)
+            document.getElementById('playback-area').style.display = 'none';
+            document.getElementById('playback-link').value = playbackUrl;
+            document.getElementById('video-sent').style.display = 'block';
+            window.ChortleUtils.scrollToElement('video-sent');
 
             // Haptic feedback
             window.ChortleUtils.vibrate([200, 100, 200]);
@@ -1264,6 +1261,14 @@ startPropsDetection: function(preview) {
 
         } catch (error) {
             console.error('Video upload process failed:', error);
+
+            // Reset button state on error
+            if (sendBtn) {
+                sendBtn.classList.remove('btn-loading');
+                sendBtn.disabled = false;
+                sendBtn.textContent = originalText;
+            }
+
             this.handleUploadError(error);
         }
     },
@@ -1281,12 +1286,11 @@ startPropsDetection: function(preview) {
             
             const xhr = new XMLHttpRequest();
     
-            // Track upload progress
+            // Track upload progress (console only - no UI updates)
             xhr.upload.addEventListener('progress', (event) => {
                 if (event.lengthComputable) {
-                    const percentComplete = 20 + (event.loaded / event.total) * 70; // 20-90%
-                    this.updateUploadProgress(percentComplete, `Uploading... ${Math.round(percentComplete - 20)}%`);
-                    console.log('Upload progress:', Math.round(percentComplete - 20) + '%');
+                    const percentComplete = Math.round((event.loaded / event.total) * 100);
+                    console.log('Upload progress:', percentComplete + '%');
                 }
             });
     
